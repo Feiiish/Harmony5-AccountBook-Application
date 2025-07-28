@@ -1,0 +1,98 @@
+//from system
+import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
+
+//from myself
+import { calculateTotalAssets, calculateMonthlySummary } from "../utils/moneyCount"
+import { RecordItem, RecordsData } from '../models/recordItemReference';
+import { displayExchangeRates } from '../utils/currencyExchange';
+import { MultiCurrencyComposition } from '../components/multiCurrency';
+//components
+import { BottomNavigation } from "../components/bottomNavi"
+import { MonthlySummary, RecordListView } from '../components/MainPageComponents';
+import { PopupComponent } from '../components/MenuPopup';
+
+
+// 接受序列化失败的回调
+PersistenceV2.notifyOnError((key: string, reason: string, msg: string) => {
+  console.error(`error key: ${key}, reason: ${reason}, message: ${msg}`);
+});
+
+
+const RECORDS_DATA_KEY = 'incomeExpenseRecords';
+
+//获取指定货币的汇率
+displayExchangeRates("USD")
+
+
+@Entry
+@ComponentV2
+struct Index {
+  @Local currentTabIndex: number = 0
+  @Local
+  recordsData: RecordsData = PersistenceV2.connect(
+    RecordsData,
+    RECORDS_DATA_KEY,
+    () => new RecordsData()
+  )!;
+  @Local
+  tempMessage: string = ""
+
+  private async fetchRate() {
+    this.tempMessage = "本位币总额" + (await calculateTotalAssets(this.recordsData.items, "CNY")).toString()
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.Bottom }) {
+
+      Tabs({ barPosition: BarPosition.End }) {
+        TabContent() {
+
+          Scroll() {
+            // 主体内容
+            Column({ space: 2 }) {
+              Row() {
+                Text('我的账本')
+                  .fontSize(25)
+                  .fontWeight(FontWeight.Bold)
+
+                PopupComponent()
+
+              }.justifyContent(FlexAlign.SpaceBetween).width("90%").margin({ bottom: 18 })
+
+              MonthlySummary({
+                totalAmount: this.tempMessage
+              })
+
+              MultiCurrencyComposition({ recordList: this.recordsData.items })
+
+              RecordListView({ recordList: this.recordsData.items })
+
+
+              Button().onClick((event: ClickEvent) => {
+                this.fetchRate();
+              })
+
+            }
+            .height("100%")
+            .padding(10)
+            .layoutWeight(1)
+
+          }.scrollBar(BarState.Off).edgeEffect(EdgeEffect.Spring)
+
+        }.tabBar('首页')
+
+
+        TabContent() {
+          Text("12322")
+        }.tabBar('统计')
+      }
+
+
+      BottomNavigation({
+        currentTab: this.currentTabIndex
+      })
+
+
+    }
+  }
+}
