@@ -6,6 +6,7 @@ import { calculateTotalAssets, calculateMonthlySummary } from "../utils/moneyCou
 import { RecordItem, RecordsData } from '../models/recordItemReference';
 import { displayExchangeRates } from '../utils/currencyExchange';
 import { MultiCurrencyComposition } from '../components/multiCurrency';
+
 //components
 import { BottomNavigation } from "../components/bottomNavi"
 import { MonthlySummary, RecordListView } from '../components/MainPageComponents';
@@ -67,10 +68,10 @@ struct Index {
 
               RecordListView({ recordList: this.recordsData.items })
 
-
               Button().onClick((event: ClickEvent) => {
                 this.fetchRate();
               })
+
 
             }
             .height("100%")
@@ -80,6 +81,7 @@ struct Index {
           }.scrollBar(BarState.Off).edgeEffect(EdgeEffect.Spring)
 
         }.tabBar('首页')
+
 
 
         TabContent() {

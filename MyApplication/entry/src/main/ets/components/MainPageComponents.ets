@@ -1,6 +1,6 @@
 import { RecordItem } from '../models/recordItemReference';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced'
-
+import { findFlag } from '../components/FindCountryFlags';
 
 //规定普通Row样式
 @Extend(Row)
@@ -105,7 +105,11 @@ export struct RecordItemView {
         Text(`${this.item.type === 'expense' ? '' : '+'}${this.item.amount}`)
           .fontSize(16)
           .fontColor(this.item.type === 'expense' ? '#FF3A3A' : '#00B300')
+          .margin({right:8})
+        findFlag({flagName: this.item.unit})
         Text(this.item.unit).fontSize(16).margin({left:6})
+
+
       }
 
       /*

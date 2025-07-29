@@ -4,6 +4,7 @@ import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { RecordItem, RecordsData, singleCurrency } from '../models/recordItemReference';
 import { displayExchangeRates } from '../utils/currencyExchange';
 import { calculateEachAmount } from '../utils/moneyCount';
+import { findFlag } from '../components/FindCountryFlags';
 
 
 // 接受序列化失败的回调
@@ -35,8 +36,21 @@ function basicCard() {
 @ComponentV2
 export struct MultiCurrencyComposition {
   @Require @Param recordList: RecordItem[]; // 必需传入的账单数据
-  
-  private watchedRecordList: RecordItem[] = []
+
+  //catching the change
+  @Local private internalRecordList: RecordItem[] = [];
+  @Local private updateTrigger: number = 0;
+  @Monitor("internalRecordList")
+  onRecordListChange(monitor: IMonitor) {
+    monitor.dirty.forEach((path: string) => {
+      console.log(`RecordList changed at path: ${path}`);
+      this.refreshData();
+    });
+  }
+  @Monitor("updateTrigger")
+  onTriggerChange(monitor: IMonitor) {
+    this.refreshData();
+  }
 
   @Local
   userSetting: UserSetting = PersistenceV2.connect(// 本地持久化用户设置
@@ -44,6 +58,7 @@ export struct MultiCurrencyComposition {
     "userSetting",
     () => new UserSetting()
   )!;
+
   @Local
   currencyAmounts: singleCurrency[] = []; // 货币金额数组
   @Local
@@ -52,10 +67,29 @@ export struct MultiCurrencyComposition {
   errorMessage: string = ""; // 错误信息
   @Local DEBUG: boolean = true;
 
-  // 组件即将显示时触发
   aboutToAppear() {
-    this.initializeCurrencies(); // 初始化货币设置
-    this.calculateCurrencyAmounts(); // 计算货币金额
+    this.internalRecordList = [...this.recordList];
+    this.refreshData();
+
+    // 设置定时器自动更新（可选）
+    setInterval(() => {
+      this.updateTrigger++; // 改变状态触发刷新
+    }, 1000);
+  }
+
+  private async refreshData() {
+    if (this.DEBUG) console.log('Refreshing currency data...');
+    this.isLoading = true;
+
+    try {
+      await this.initializeCurrencies();
+      await this.calculateCurrencyAmounts();
+    } catch (error) {
+      this.errorMessage = error.message;
+      console.error('Refresh failed:', error);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   // 初始化货币设置（去重+确保包含首选货币）
@@ -194,6 +228,7 @@ export struct MultiCurrencyComposition {
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .width(60);
+        findFlag({flagName: currency.unit})
 
         // 金额显示
         Text(currency.amount.toFixed(2))
