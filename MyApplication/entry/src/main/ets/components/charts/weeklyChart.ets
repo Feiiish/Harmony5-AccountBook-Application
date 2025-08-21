@@ -1,13 +1,21 @@
+
+@Styles
+function basicChart() {
+  .width('90%')
+  .padding(26)
+  .borderRadius(15)
+  .margin({ bottom: 12 })
+  .backgroundColor("#EFEFEF")
+}
+
+
 @Component
 export struct WeeklyChart {
+
+
   // 接收外部传入的周数据，默认为0
   @Prop data: number[] = [0, 0, 0, 0, 0, 0, 0];
 
-  // 柱子颜色数组
-  private colors: number[] = [
-    0xFF4CAF50, 0xFF2196F3, 0xFFFF9800, 0xFFF44336,
-    0xFF9C27B0, 0xFF607D8B, 0xFFFFEB3B
-  ];
 
   // 星期标签
   private days: string[] = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
@@ -44,28 +52,15 @@ export struct WeeklyChart {
 
   build() {
     Column() {
-
       // 图表主体
       Row() {
-        // Y轴刻度
-        Column() {
-          ForEach(this.getYAxisValues(), (value:number) => {
-            Text(this.formatValue(value))
-              .fontSize(10)
-              .fontColor(0x666666)
-              .height(20)
-              .width(35)
-              .textAlign(TextAlign.End)
-              .margin({ right: 8, bottom: 12 })
-          })
-        }
-        .justifyContent(FlexAlign.SpaceBetween)
 
         // 柱状图区域
         Column() {
           // 柱状图
-          Row({ space: '12%' }) {
-            ForEach(this.data, (value: number, index) => {
+          Row() {
+            ForEach(this.data, (value: number, index: number) => {
+              // 每个柱子、标签的容器 - 关键修改：固定宽度确保对齐
               Column() {
                 // 柱子上的数值标签
                 if (value > 0) {
@@ -74,19 +69,34 @@ export struct WeeklyChart {
                     .fontColor(0x333333)
                     .margin({ bottom: 4 })
                     .opacity(0.8)
+                    .width('100%')
+                    .textAlign(TextAlign.Center)
+                } else {
+                  // 空占位，保持高度一致
+                  Text('')
+                    .fontSize(11)
+                    .margin({ bottom: 4 })
+                    .height(16)
+                    .opacity(0)
                 }
 
                 // 柱子容器
                 Stack() {
+                  // 柱子背景（可选，用于视觉参考）
+                  Column()
+                    .width(15)
+                    .height(180)
+                    .backgroundColor(0x10000000)
+                    .borderRadius(6)
 
                   // 柱子前景（根据数值比例）
-                  if (value > 0) {
+                  if (value != 0) {
                     Column()
                       .width(15)
                       .height(180 * (value / this.getMaxValue()))
-                      .backgroundColor(this.colors[index])
+                      .backgroundColor(value > 0 ? 0xFF4CAF50 : 0xFFF44336)
                       .borderRadius(6)
-                      .position({ y: 180 - (180 * (value / this.getMaxValue())) })
+                      .align(Alignment.Bottom)
                   }
                 }
                 .width(28)
@@ -97,40 +107,41 @@ export struct WeeklyChart {
                   .fontSize(12)
                   .fontColor(0x666666)
                   .margin({ top: 8 })
+                  .width('100%')
+                  .textAlign(TextAlign.Center)
               }
+              .width(28) // 固定每个柱状图区域的宽度
               .alignItems(HorizontalAlign.Center)
               .onClick(() => {
                 console.log(`点击了${this.days[index]}, 数值: ${value}`);
               })
             })
           }
-          .height(180)
-          .alignItems(VerticalAlign.Bottom)
+          .justifyContent(FlexAlign.SpaceBetween)
           .width('100%')
-
-
+          .height(220)
         }
         .layoutWeight(1)
       }
       .height(250)
 
+
       // 数据统计摘要
       Row() {
         Text(`总计: ${this.getTotal()}`)
-          .fontSize(12)
+          .fontSize(15)
           .fontColor(0x666666)
 
         Text(`平均: ${this.getAverage()}`)
-          .fontSize(12)
+          .fontSize(15)
           .fontColor(0x666666)
           .margin({ left: 16 })
       }
-      .margin({ top: 12 })
-    }
-    .padding(16)
-    .backgroundColor(0xFFFFFFFF)
-    .borderRadius(12)
+      .margin({ top: 8 })
+      .justifyContent(FlexAlign.Center)
+
+    }      .basicChart()
     .shadow({ radius: 6, color: 0x0A000000, offsetX: 0, offsetY: 2 })
-    .width('100%')
+
   }
 }

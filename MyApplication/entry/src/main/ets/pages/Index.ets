@@ -51,7 +51,7 @@ struct Index {
   @Local
   tempMessage: string = ""
 
-  @Local weeklyData: number[] = [12440, 85, 2800, 65, 4150, 3050, 180];
+  @Local weeklyData: number[] = [2440, 85, 2800, 65, 4150, 3050, 180];
 
 
   private async fetchRate() {
@@ -90,7 +90,7 @@ struct Index {
                 Button().onClick((event: ClickEvent) => {
                   this.fetchRate();
                 })
-              }.padding(8)
+              }.padding(10)
 
             }
 
@@ -106,7 +106,10 @@ struct Index {
 
         TabContent() {
 
-          WeeklyChart({ data: this.weeklyData })
+          Column({ space: 2 }){
+            WeeklyChart({ data: this.weeklyData })
+          }.padding(10)
+
 
         }.tabBar('我的')
       }
