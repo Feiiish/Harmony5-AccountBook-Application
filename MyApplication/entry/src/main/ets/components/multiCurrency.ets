@@ -155,9 +155,8 @@ export struct MultiCurrencyComposition {
       // 正常数据展示
       else {
 
-        Grid(){
-          this.buildCurrencyList();
-        }.rowsGap(2)
+        Column(){  this.buildCurrencyList(); }.justifyContent(FlexAlign.Start)
+
 
       }
     }
@@ -231,6 +230,7 @@ export struct MultiCurrencyComposition {
         Text(currency.unit)
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
+          .margin({right:2})
         findFlag({flagName: currency.unit})
 
         // 金额显示
@@ -241,11 +241,11 @@ export struct MultiCurrencyComposition {
           .flexGrow(1)
           .textAlign(TextAlign.End);
       }
-      .padding(16)
+      .padding(6)
       .borderRadius(8)
       .backgroundColor(this.userSetting.preferredCurrency === currency.unit ?
         "#e6f7ff" : "#fafafa")
-      .margin({ bottom: 8 });
+      .margin({ bottom: 6 });
     })
   }
 }

@@ -7,6 +7,7 @@ import { RecordItem, RecordsData } from '../models/recordItemReference';
 import { displayExchangeRates } from '../utils/currencyExchange';
 import { MultiCurrencyComposition } from '../components/multiCurrency';
 import { UserSetting } from "../models/userSetting"
+import {WeeklyChart} from "../components/charts/weeklyChart"
 
 //components
 import { BottomNavigation } from "../components/bottomNavi"
@@ -36,7 +37,6 @@ struct Index {
     RECORDS_DATA_KEY,
     () => new RecordsData()
   )!;
-
   @Local
   userSetting: UserSetting = PersistenceV2.connect(// 本地持久化用户设置
     UserSetting,
@@ -51,38 +51,33 @@ struct Index {
   @Local
   tempMessage: string = ""
 
+  @Local weeklyData: number[] = [12440, 85, 2800, 65, 4150, 3050, 180];
+
+
   private async fetchRate() {
-    this.tempMessage = "本位币总额" + (await calculateTotalAssets(this.recordsData.items, "CNY")).toString()
+    this.tempMessage = "约为" + this.userSetting.preferredCurrency +
+    (await calculateTotalAssets(this.recordsData.items, "CNY")).toFixed(2).toString()
   }
-
-
-
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
-
-
       Tabs({ barPosition: BarPosition.End }) {
         TabContent() {
 
+          List() {
+            ListItem() {
 
-            Scroll() {
-
-
-              // 主体内容
               Column({ space: 2 }) {
 
                 //顶栏
                 Row() {
-                  Text('我的账本')
+                  Text('日期选择 ↓')
                     .fontSize(25)
                     .fontWeight(FontWeight.Bold)
 
                   PopupComponent()
 
                 }.justifyContent(FlexAlign.SpaceBetween).width("90%").margin({ bottom: 18 })
-
-
 
                 MonthlySummary({
                   totalAmount: this.tempMessage
@@ -95,12 +90,15 @@ struct Index {
                 Button().onClick((event: ClickEvent) => {
                   this.fetchRate();
                 })
+              }.padding(8)
 
-              }
-              .padding(10)
-              .height("100%")
+            }
 
-            }.scrollBar(BarState.Off).edgeEffect(EdgeEffect.Spring)
+          }.sticky(StickyStyle.Header)
+          .scrollBar(BarState.Off)
+          .listDirection(Axis.Vertical)
+          .edgeEffect(EdgeEffect.Spring)
+          .height("100%")
 
 
         }.tabBar('首页')
@@ -108,12 +106,12 @@ struct Index {
 
         TabContent() {
 
-          
+          WeeklyChart({ data: this.weeklyData })
 
         }.tabBar('我的')
       }
 
-     BottomNavigation()
+      BottomNavigation()
 
 
     }.height("100%")
