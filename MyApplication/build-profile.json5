@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_dKgcy_0G1wn_A8oX6gTYf9oEeRPzMzkA_h7rz5JzmuA=.cer",
+          "certpath": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B79A92C8255F3A4E50A5BAB5673D2C5AD922976DE887EBC83FFAF309D43135D470D0AD6D2FA02F3",
-          "profile": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_dKgcy_0G1wn_A8oX6gTYf9oEeRPzMzkA_h7rz5JzmuA=.p7b",
+          "keyPassword": "0000001A7403A476210A251E268E4F653F0629354BF519FF8974E48DA139ACD1A2007F9E010A1E8AD799",
+          "profile": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_dKgcy_0G1wn_A8oX6gTYf9oEeRPzMzkA_h7rz5JzmuA=.p12",
-          "storePassword": "0000001B8436D3CC32A89E6AF8534928917BAB80628A1F3F6AE31F28B8CD0978EF41F83638C1251DB3C148"
+          "storeFile": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
+          "storePassword": "0000001A70EDA22CE0BE89D09F4A0E6EDD421C42D8A256CB9CEF68BE0589278DEBA6A2E50E1A9420215C"
         }
       }
     ],
@@ -20,7 +20,7 @@
         "name": "default",
         "signingConfig": "default",
         "targetSdkVersion": "5.1.1(19)",
-        "compatibleSdkVersion": "5.0.1(13)",
+        "compatibleSdkVersion": "5.0.0(12)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {

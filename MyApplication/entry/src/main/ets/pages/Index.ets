@@ -6,6 +6,7 @@ import { calculateTotalAssets, calculateMonthlySummary } from "../utils/moneyCou
 import { RecordItem, RecordsData } from '../models/recordItemReference';
 import { displayExchangeRates } from '../utils/currencyExchange';
 import { MultiCurrencyComposition } from '../components/multiCurrency';
+import { UserSetting } from "../models/userSetting"
 
 //components
 import { BottomNavigation } from "../components/bottomNavi"
@@ -35,6 +36,18 @@ struct Index {
     RECORDS_DATA_KEY,
     () => new RecordsData()
   )!;
+
+  @Local
+  userSetting: UserSetting = PersistenceV2.connect(// 本地持久化用户设置
+    UserSetting,
+    "userSetting",
+    () => new UserSetting()
+  )!;
+
+  onPageShow(): void {
+    this.userSetting.chosenCurrency = ["CNY", "CAD", "USD", "JPY"]
+  }
+
   @Local
   tempMessage: string = ""
 
@@ -42,59 +55,68 @@ struct Index {
     this.tempMessage = "本位币总额" + (await calculateTotalAssets(this.recordsData.items, "CNY")).toString()
   }
 
+
+
+
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
+
 
       Tabs({ barPosition: BarPosition.End }) {
         TabContent() {
 
-          Scroll() {
-            // 主体内容
-            Column({ space: 2 }) {
-              Row() {
-                Text('我的账本')
-                  .fontSize(25)
-                  .fontWeight(FontWeight.Bold)
 
-                PopupComponent()
-
-              }.justifyContent(FlexAlign.SpaceBetween).width("90%").margin({ bottom: 18 })
-
-              MonthlySummary({
-                totalAmount: this.tempMessage
-              })
-
-              MultiCurrencyComposition({ recordList: this.recordsData.items })
-
-              RecordListView({ recordList: this.recordsData.items })
-
-              Button().onClick((event: ClickEvent) => {
-                this.fetchRate();
-              })
+            Scroll() {
 
 
-            }
-            .height("100%")
-            .padding(10)
-            .layoutWeight(1)
+              // 主体内容
+              Column({ space: 2 }) {
 
-          }.scrollBar(BarState.Off).edgeEffect(EdgeEffect.Spring)
+                //顶栏
+                Row() {
+                  Text('我的账本')
+                    .fontSize(25)
+                    .fontWeight(FontWeight.Bold)
+
+                  PopupComponent()
+
+                }.justifyContent(FlexAlign.SpaceBetween).width("90%").margin({ bottom: 18 })
+
+
+
+                MonthlySummary({
+                  totalAmount: this.tempMessage
+                })
+
+                MultiCurrencyComposition({ recordList: this.recordsData.items })
+
+                RecordListView({ recordList: this.recordsData.items })
+
+                Button().onClick((event: ClickEvent) => {
+                  this.fetchRate();
+                })
+
+              }
+              .padding(10)
+              .height("100%")
+
+            }.scrollBar(BarState.Off).edgeEffect(EdgeEffect.Spring)
+
 
         }.tabBar('首页')
 
 
-
         TabContent() {
-          Text("12322")
-        }.tabBar('统计')
+
+          
+
+        }.tabBar('我的')
       }
 
-
-      BottomNavigation({
-        currentTab: this.currentTabIndex
-      })
+     BottomNavigation()
 
 
-    }
+    }.height("100%")
+
   }
 }

@@ -4,7 +4,7 @@ import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { RecordItem, RecordsData, singleCurrency } from '../models/recordItemReference';
 import { displayExchangeRates } from '../utils/currencyExchange';
 import { calculateEachAmount } from '../utils/moneyCount';
-import { findFlag } from '../components/FindCountryFlags';
+import { findFlag } from '../utils/FindCountryFlags';
 
 
 // 接受序列化失败的回调
@@ -154,7 +154,11 @@ export struct MultiCurrencyComposition {
       }
       // 正常数据展示
       else {
-        this.buildCurrencyList();
+
+        Grid(){
+          this.buildCurrencyList();
+        }.rowsGap(2)
+
       }
     }
     .padding(12)
@@ -227,11 +231,11 @@ export struct MultiCurrencyComposition {
         Text(currency.unit)
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .width(60);
         findFlag({flagName: currency.unit})
 
         // 金额显示
         Text(currency.amount.toFixed(2))
+          .margin({left:4})
           .fontSize(18)
           .fontColor("#333")
           .flexGrow(1)

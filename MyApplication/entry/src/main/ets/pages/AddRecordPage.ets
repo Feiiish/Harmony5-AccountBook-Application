@@ -4,6 +4,7 @@ import { RecordItem, RecordsData } from "../models/recordItemReference"
 import preferences from '@ohos.data.preferences';
 import { safeCalculate } from '../utils/safeCalculate';
 import {UserSetting} from "../models/userSetting"
+import { findFlag } from '../utils/FindCountryFlags';
 
 
 
@@ -145,8 +146,8 @@ struct IncomePage {
 
           //currency Sign
           Row({ space: 4 }) {
-            //Image($r("app.media.CNY")).width(28)
-            Text(this.tempUnit).fontWeight(FontWeight.Bold)
+            findFlag({flagName: this.tempUnit})
+
           }.onClick(() => {
             TextPickerDialog.show({
 

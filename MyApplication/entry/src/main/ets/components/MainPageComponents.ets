@@ -1,6 +1,6 @@
 import { RecordItem } from '../models/recordItemReference';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced'
-import { findFlag } from '../components/FindCountryFlags';
+import { findFlag } from '../utils/FindCountryFlags';
 
 //规定普通Row样式
 @Extend(Row)
@@ -91,7 +91,9 @@ export struct RecordItemView {
         Column() {
           Text(this.item.tag)
             .fontSize(16)
-          /*
+
+
+          /* 暂时不需要时间显示 因为已经通过时间
           Text(formatDateAdvanced(Date.parse(this.item.date), "MM-DD"))
             .fontSize(12)
             .fontColor('#666666')
@@ -107,7 +109,6 @@ export struct RecordItemView {
           .fontColor(this.item.type === 'expense' ? '#FF3A3A' : '#00B300')
           .margin({right:8})
         findFlag({flagName: this.item.unit})
-        Text(this.item.unit).fontSize(16).margin({left:6})
 
 
       }
@@ -210,8 +211,10 @@ export struct RecordListView {
               Line()
                 .startPoint([0, 0])
                 .endPoint([300, 0])
-                .stroke(Color.Black)
-                .strokeWidth(0.4)
+                .stroke(Color.Gray)
+                .strokeWidth(1.2)
+                .margin({top:4})
+
 
               ForEach(group.items, (item: RecordItem) => {
                 RecordItemView({ item })
