@@ -1,7 +1,7 @@
 
 @Styles
 function basicChart() {
-  .width('90%')
+  .width('95%')
   .padding(26)
   .borderRadius(15)
   .margin({ bottom: 12 })
@@ -13,28 +13,38 @@ function basicChart() {
 export struct WeeklyChart {
 
 
+  @State pillarHeight: number = 120
   // 接收外部传入的周数据，默认为0
   @Prop data: number[] = [0, 0, 0, 0, 0, 0, 0];
 
 
   // 星期标签
-  private days: string[] = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  private days: string[] = ['一', '二', '三', '四', '五', '六', '日'];
 
   // 获取最大值用于计算比例
-  private getMaxValue(): number {
-    const max = Math.max(...this.data);
-    return max > 0 ? max * 1.1 : 100;
-  }
+  private getMaxAbsValue(): number {
+    if (this.data.length === 0) return 100;
 
+    const maxPositive = Math.max(...this.data.filter(val => val >= 0));
+    const minNegative = Math.min(...this.data.filter(val => val < 0));
+
+    const maxAbs = Math.max(
+      maxPositive > 0 ? maxPositive : 0,
+      Math.abs(minNegative < 0 ? minNegative : 0)
+    );
+
+    return maxAbs > 0 ? maxAbs * 1.1 : 100;
+  }
   // 获取Y轴刻度值
   private getYAxisValues(): number[] {
-    const maxValue = this.getMaxValue();
+    const maxValue = this.getMaxAbsValue();
     return [0, Math.floor(maxValue * 0.25), Math.floor(maxValue * 0.5), Math.floor(maxValue * 0.75), Math.floor(maxValue)];
   }
 
   // 格式化数值显示
   private formatValue(value: number): string {
-    if (value >= 1000) {
+    const absValue = Math.abs(value);
+    if (absValue >= 1000) {
       return (value / 1000).toFixed(1) + 'k';
     }
     return value.toString();
@@ -52,6 +62,7 @@ export struct WeeklyChart {
 
   build() {
     Column() {
+      Text("本周总结")
       // 图表主体
       Row() {
 
@@ -85,7 +96,7 @@ export struct WeeklyChart {
                   // 柱子背景（可选，用于视觉参考）
                   Column()
                     .width(15)
-                    .height(180)
+                    .height(this.pillarHeight)
                     .backgroundColor(0x10000000)
                     .borderRadius(6)
 
@@ -93,14 +104,14 @@ export struct WeeklyChart {
                   if (value != 0) {
                     Column()
                       .width(15)
-                      .height(180 * (value / this.getMaxValue()))
+                      .height(this.pillarHeight * (Math.abs(value) / this.getMaxAbsValue()))
                       .backgroundColor(value > 0 ? 0xFF4CAF50 : 0xFFF44336)
                       .borderRadius(6)
                       .align(Alignment.Bottom)
                   }
                 }
                 .width(28)
-                .height(180)
+                .height(this.pillarHeight)
 
                 // X轴日期标签
                 Text(this.days[index])
@@ -119,11 +130,11 @@ export struct WeeklyChart {
           }
           .justifyContent(FlexAlign.SpaceBetween)
           .width('100%')
-          .height(220)
+          .height(180)
         }
         .layoutWeight(1)
       }
-      .height(250)
+      .height(200)
 
 
       // 数据统计摘要

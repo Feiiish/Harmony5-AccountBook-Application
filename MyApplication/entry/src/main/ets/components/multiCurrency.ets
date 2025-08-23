@@ -2,8 +2,7 @@ import { UserSetting } from "../models/userSetting"
 
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { RecordItem, RecordsData, singleCurrency } from '../models/recordItemReference';
-import { displayExchangeRates } from '../utils/currencyExchange';
-import { calculateEachAmount } from '../utils/moneyCount';
+import { calculateEachCurrencyAmount } from '../utils/moneyCount';
 import { findFlag } from '../utils/FindCountryFlags';
 
 
@@ -12,7 +11,6 @@ PersistenceV2.notifyOnError((key: string, reason: string, msg: string) => {
   console.error(`error key: ${key}, reason: ${reason}, message: ${msg}`);
 });
 
-const RECORDS_DATA_KEY = 'incomeExpenseRecords';
 
 //规定普通Row样式
 @Extend(Row)
@@ -20,7 +18,7 @@ function currencyCard() {
   .justifyContent(FlexAlign.Start)
   .width("28%")
   .padding(4)
-  //.backgroundColor(Color.Red)
+
 }
 
 @Styles
@@ -30,25 +28,16 @@ function basicCard() {
   .padding(16)
   .borderRadius(15)
   .margin({ bottom: 12 })
-  .backgroundColor("#EFEFEF")
+  .backgroundColor($r("app.color.Basic_Card_background"))
 }
 
 @ComponentV2
 export struct MultiCurrencyComposition {
-  @Require @Param recordList: RecordItem[]; // 必需传入的账单数据
+  @Require @Param recordList: RecordItem[];
 
-  //catching the change
-  @Local private internalRecordList: RecordItem[] = [];
-  @Local private updateTrigger: number = 0;
-  @Monitor("internalRecordList")
-  onRecordListChange(monitor: IMonitor) {
-    monitor.dirty.forEach((path: string) => {
-      console.log(`RecordList changed at path: ${path}`);
-      this.refreshData();
-    });
-  }
-  @Monitor("updateTrigger")
-  onTriggerChange(monitor: IMonitor) {
+  @Monitor('recordList')
+  onItemsChange(monitor: IMonitor) {
+    console.log("MultiCurrency Inital")
     this.refreshData();
   }
 
@@ -68,17 +57,11 @@ export struct MultiCurrencyComposition {
   @Local DEBUG: boolean = true;
 
   aboutToAppear() {
-    this.internalRecordList = [...this.recordList];
     this.refreshData();
-
-    // 设置定时器自动更新（可选）
-    setInterval(() => {
-      this.updateTrigger++; // 改变状态触发刷新
-    }, 1000);
   }
 
   private async refreshData() {
-    if (this.DEBUG) console.log('Refreshing currency data...');
+    //if (this.DEBUG) console.log('Refreshing currency data...');
     this.isLoading = true;
 
     try {
@@ -107,7 +90,7 @@ export struct MultiCurrencyComposition {
     this.errorMessage = "";
 
     try {
-      const amounts = await calculateEachAmount(this.recordList);
+      const amounts = await calculateEachCurrencyAmount(this.recordList);
 
       // 过滤并排序货币数据
       this.currencyAmounts = amounts

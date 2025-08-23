@@ -1,9 +1,8 @@
-
+import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { http } from '@kit.NetworkKit';
+import { UserSetting } from "../models/userSetting"
 
-// 用户设置中的本位币
-let userCurrency: string = 'CNY';  // 假设用户设置中的本位币是CNY
-let apiUrl: string = 'https://api.exchangerate-api.com/v4/latest/' + userCurrency;
+let apiUrl: string = 'https://api.exchangerate-api.com/v4/latest/'
 
 
 interface ExchangeRateApiResponse {
@@ -22,7 +21,7 @@ let cachedRates: ExchangeRates | null = null;
 let lastUpdated: number | null = null;
 
 
-export async function getExchangeRatesWithCache(): Promise<ExchangeRates> {
+export async function getExchangeRatesWithCache(userCurrency:string): Promise<ExchangeRates> {
   // 如果缓存未过期（假设1小时有效），使用缓存
   const now = Math.floor(Date.now() / 1000); // 转换为秒
   if (cachedRates && lastUpdated && (now - lastUpdated < 3600)) {
@@ -32,7 +31,7 @@ export async function getExchangeRatesWithCache(): Promise<ExchangeRates> {
 
   try {
     const req = http.createHttp();
-    const res = await req.request(apiUrl);
+    const res = await req.request(apiUrl+ userCurrency);
     const data: ExchangeRateApiResponse = JSON.parse(res.result as string);
 
     // 验证数据格式
@@ -57,18 +56,18 @@ export async function getExchangeRatesWithCache(): Promise<ExchangeRates> {
   }
 }
 
-export async function displayExchangeRates(currencyCode?: string): Promise<number | void> {
+export async function displayExchangeRates(userCurrency: string, oneCurrency?: string): Promise<number> {
   try {
-    const rates = await getExchangeRatesWithCache();
+    const rates = await getExchangeRatesWithCache(userCurrency);
 
-    if (currencyCode) {
+    if (oneCurrency) {
       // 显示特定货币汇率
-      const rate = rates[currencyCode];
+      const rate = rates[oneCurrency];
       if (rate !== undefined) {
-        console.log(`1 ${userCurrency} = ${rate} ${currencyCode}`);
-        return rate; // 唯一新增的 return 语句
+        console.log(`1 ${userCurrency} = ${rate} ${oneCurrency}`);
+        return rate;
       } else {
-        console.error(`未找到货币代码 ${currencyCode} 的汇率`);
+        console.error(`未找到货币代码 ${oneCurrency} 的汇率`);
       }
     } else {
       // 显示所有汇率（保持原样不返回值）
@@ -82,5 +81,7 @@ export async function displayExchangeRates(currencyCode?: string): Promise<numbe
 
   } catch (error) {
     console.error('处理汇率数据时出错:', error);
+
   }
+  return 0
 }

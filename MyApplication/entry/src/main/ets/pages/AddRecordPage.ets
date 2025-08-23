@@ -5,6 +5,7 @@ import preferences from '@ohos.data.preferences';
 import { safeCalculate } from '../utils/safeCalculate';
 import {UserSetting} from "../models/userSetting"
 import { findFlag } from '../utils/FindCountryFlags';
+import { emitter, Callback } from '@kit.BasicServicesKit';
 
 
 
@@ -24,6 +25,7 @@ function secondTitle() {
 @Component
 struct AddRecordPage {
   @State currentTab: number = 0 // 0-收支 1-转账
+
 
   build() {
     Column() {
@@ -94,14 +96,13 @@ struct IncomePage {
     newRecord.tag = this.tempTag;
     newRecord.note = this.tempTag;
 
-    this.recordsData.items.push(newRecord);
+    this.recordsData.items = [...this.recordsData.items, newRecord];
     // 重置表单
     this.tempAmount = 0;
     this.tempUnit = this.userSetting.preferredCurrency
     this.tempDate =  new Date().toISOString();
     this.tempTag = ""
     this.tempNote = '';
-
 
 
     // 数据会自动持久化，无需手动保存

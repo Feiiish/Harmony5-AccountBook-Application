@@ -1,5 +1,5 @@
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
-import { RecordItem, RecordsData } from "../models/recordItemReference"
+import { RecordItem, RecordsData } from "../../models/recordItemReference"
 
 const RECORDS_DATA_KEY = 'incomeExpenseRecords';
 @ComponentV2

@@ -1,6 +1,8 @@
 import { RecordItem } from '../models/recordItemReference';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced'
 import { findFlag } from '../utils/FindCountryFlags';
+import { monthlyInMonthlyOut } from '../utils/moneyCount';
+
 
 //规定普通Row样式
 @Extend(Row)
@@ -18,22 +20,40 @@ function basicCard() {
   .padding(16)
   .borderRadius(15)
   .margin({ bottom: 12 })
-  .backgroundColor("#EFEFEF")
+  .backgroundColor($r("app.color.Basic_Card_background"))
 }
 
 
-@Component
-export struct MonthlySummary {
-  @Prop totalAmount: string = '0';
-  @Prop monthlyExpense: string = '¥ 0';
-  @Prop monthlyIncome: string = '¥ 0';
+@ComponentV2
+export struct MonthlySummaryPanel {
+  @Require @Param recordList: RecordItem[];
+
+  @Monitor('recordList')
+  onItemsChange(monitor: IMonitor) {
+    this.updateMonthlySummary()
+  }
+
+  @Local monthlyInOut: number[] = [0, 0]
+
+  aboutToAppear(): void {
+    this.updateMonthlySummary()
+  }
+
+  private async updateMonthlySummary() {
+    try {
+      this.monthlyInOut = await monthlyInMonthlyOut(this.recordList, "CNY");
+      console.log('月度统计已更新');
+    } catch (error) {
+      console.error('更新月度统计失败:', error);
+    }
+  }
 
   build() {
     Column({ space: 8 }) {
       Row() {
         Column() {
           Text("本月结余≈")
-          Text(this.totalAmount)
+          Text((this.monthlyInOut[0] - this.monthlyInOut[1]).toFixed(2) + "")
             .fontSize(24)
             .fontWeight(FontWeight.Bold)
         }.alignItems(HorizontalAlign.Start)
@@ -44,7 +64,7 @@ export struct MonthlySummary {
             Text('本月支出')
               .fontSize(16)
               .fontColor('#666666')
-            Text(this.monthlyExpense)
+            Text(this.monthlyInOut[1].toFixed(2) + "")
               .fontColor('#FF3A3A')
           }
           .onClick(() => {
@@ -55,7 +75,7 @@ export struct MonthlySummary {
             Text('本月收入')
               .fontSize(16)
               .fontColor('#666666')
-            Text(this.monthlyIncome)
+            Text(this.monthlyInOut[0].toFixed(2) + "")
               .fontColor('#00B300')
           }
           .onClick(() => {
@@ -79,63 +99,40 @@ export struct RecordItemView {
 
   build() {
 
-    Column() {
+      Column(){
+        Line()
+          .width(2000)  // 线的长度
+          .height(1)   // 线的粗细
+          .backgroundColor(Color.Gray)
+          .opacity(0.2)
 
-      Row() {
-        // 用文字符号代替图标
-        Text(this.item.type === 'expense' ? '↓' : '↑')
-          .fontSize(20)
-          .fontColor(this.item.type === 'expense' ? '#FF3A3A' : '#00B300')
-          .margin({ right: 16 })
 
-        Column() {
+        Row(){
           Text(this.item.tag)
             .fontSize(16)
 
 
-          /* 暂时不需要时间显示 因为已经通过时间
-          Text(formatDateAdvanced(Date.parse(this.item.date), "MM-DD"))
-            .fontSize(12)
-            .fontColor('#666666')
-            */
-
-        }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Start)
-
-
-        Text(`${this.item.type === 'expense' ? '' : '+'}${this.item.amount}`)
-          .fontSize(16)
-          .fontColor(this.item.type === 'expense' ? '#FF3A3A' : '#00B300')
-          .margin({right:8})
-        findFlag({flagName: this.item.unit})
+          Row() {
+            Text(`${this.item.type === 'expense' ? '' : '+'}${this.item.amount}`)
+              .fontSize(18)
+              .fontColor(this.item.type === 'expense' ? '#FF3A3A' : '#00B300')
+              .margin({ right: 8 })
+            findFlag({ flagName: this.item.unit })
+          }
+        }     .width("95%").height(40)   .justifyContent(FlexAlign.SpaceBetween)
 
 
-      }
 
-      /*
-      Line()
-        .startPoint([0, 0])
-        .endPoint([300, 0])
-        .stroke(Color.Black)
-        .strokeWidth(1)
-        .padding(2)
-        */
+
     }
-    .margin({
-      left: 10,
-      right: 10,
-      top: 6,
-      bottom: 6
-    })
-    .borderRadius(8)
+    .borderRadius(12)
   }
 }
 
 interface GroupedRecord {
-  date: string;       // 原始日期字符串
+  date: string; // 原始日期字符串
   items: RecordItem[];
-  shownDate: string;  // 显示用的友好日期
+  shownDate: string; // 显示用的友好日期
 }
 
 @ComponentV2
@@ -179,9 +176,12 @@ export struct RecordListView {
     const diffDays = Math.round((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
     switch (diffDays) {
-      case 0: return "今天";
-      case 1: return "昨天";
-      case -1: return "明天";
+      case 0:
+        return "今天";
+      case 1:
+        return "昨天";
+      case -1:
+        return "明天";
       default:
       // 其他情况显示月日
         return formatDateAdvanced(isoDate, 'MM-DD');
@@ -191,7 +191,7 @@ export struct RecordListView {
   build() {
     Column() {
       if (this.recordList.length === 0) {
-        Column(){
+        Column() {
           Text("暂无账单数据")
             .fontSize(16)
             .opacity(0.5)
@@ -207,19 +207,13 @@ export struct RecordListView {
               // 显示友好日期
               Text(group.shownDate)
                 .fontSize(15)
-
-              Line()
-                .startPoint([0, 0])
-                .endPoint([300, 0])
-                .stroke(Color.Gray)
-                .strokeWidth(1.2)
-                .margin({top:4})
-
+                .margin({top:10, bottom:6})
+                .fontWeight(FontWeight.Bold)
 
               ForEach(group.items, (item: RecordItem) => {
                 RecordItemView({ item })
               })
-            }.basicCard()
+            }.basicCard().padding(2)
           }
         })
       }
