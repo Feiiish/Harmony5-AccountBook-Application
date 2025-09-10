@@ -1,9 +1,9 @@
-import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
+import { App, PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { http } from '@kit.NetworkKit';
-import { UserSetting } from "../models/userSetting"
+import { ratesStatus } from '../components/RatesStatus';
+import { CachedRatesStatus, UserSetting } from "../models/userSetting"
 
 let apiUrl: string = 'https://api.exchangerate-api.com/v4/latest/'
-
 
 interface ExchangeRateApiResponse {
   provider: string;
@@ -11,27 +11,32 @@ interface ExchangeRateApiResponse {
   terms: string;
   base: string;
   date: string;
-  time_last_updated: number;
   rates: Record<string, number>;
 }
 
 type ExchangeRates = Record<string, number>;
 
-let cachedRates: ExchangeRates | null = null;
-let lastUpdated: number | null = null;
 
+// 创建持久化存储实例
+const cachedRatesStorage = PersistenceV2.connect(CachedRatesStatus, "cachedRatesStatus", () => new CachedRatesStatus());
 
-export async function getExchangeRatesWithCache(userCurrency:string): Promise<ExchangeRates> {
-  // 如果缓存未过期（假设1小时有效），使用缓存
-  const now = Math.floor(Date.now() / 1000); // 转换为秒
-  if (cachedRates && lastUpdated && (now - lastUpdated < 3600)) {
-    console.log("Overwritten the cache: time difference " + (now - lastUpdated).toString());
-    return cachedRates;
+export async function getExchangeRatesWithCache(userCurrency: string): Promise<ExchangeRates> {
+  // 从持久化存储获取缓存数据
+  const cachedRates = cachedRatesStorage?.cachedData
+  const lastUpdated = cachedRatesStorage?.getParsedTime()
+  const lastUpdatedUnit = cachedRatesStorage?.lastUpdatedUnit
+
+  if (cachedRates && Object.keys(cachedRates).length > 0 && lastUpdated && userCurrency === lastUpdatedUnit) {
+    if (Math.abs(new Date().getTime() - lastUpdated.getTime()) / 1000 < 1800) {
+      console.log("Using cached data: time difference " +
+        Math.abs(new Date().getTime() - lastUpdated.getTime()) / 1000);
+      return cachedRates;
+    }
   }
 
   try {
     const req = http.createHttp();
-    const res = await req.request(apiUrl+ userCurrency);
+    const res = await req.request(apiUrl + userCurrency);
     const data: ExchangeRateApiResponse = JSON.parse(res.result as string);
 
     // 验证数据格式
@@ -39,16 +44,55 @@ export async function getExchangeRatesWithCache(userCurrency:string): Promise<Ex
       throw new Error('Invalid API response format');
     }
 
-    // 更新缓存
-    cachedRates = data.rates;
-    lastUpdated = data.time_last_updated;
+    if (cachedRatesStorage) {
+      cachedRatesStorage.cachedData = data.rates;
+      const lastUpdated = cachedRatesStorage?.getParsedTime()
+      cachedRatesStorage.lastUpdatedUnit = userCurrency;
+    }
 
-    console.log(" the current data"+JSON.stringify( data.rates));
+
+    console.log("Fetched new data: " + JSON.stringify(data.rates));
     return data.rates;
   } catch (error) {
     console.error('获取汇率失败:', error);
     // 如果失败但缓存存在，返回缓存
-    if (cachedRates) {
+    if (cachedRates && Object.keys(cachedRates).length > 0) {
+      console.warn('使用缓存的汇率数据');
+      return cachedRates;
+    }
+    throw new Error('Failed to fetch exchange rates and no cache available');
+  }
+}
+
+export async function updateExchangeRates(userCurrency: string): Promise<ExchangeRates> {
+  const status = PersistenceV2.connect(CachedRatesStatus, "cachedRatesStatus", () => new CachedRatesStatus())
+
+  const cachedRates = cachedRatesStorage?.cachedData
+  const lastUpdated = cachedRatesStorage?.getParsedTime()
+  const lastUpdatedUnit = cachedRatesStorage?.lastUpdatedUnit
+
+  try {
+    const req = http.createHttp();
+    const res = await req.request(apiUrl + userCurrency);
+    const data: ExchangeRateApiResponse = JSON.parse(res.result as string);
+
+    // 验证数据格式
+    if (!data.rates || typeof data.rates !== 'object') {
+      throw new Error('Invalid API response format');
+    }
+
+    if (cachedRatesStorage) {
+      cachedRatesStorage.cachedData = data.rates;
+      cachedRatesStorage.lastUpdateTime = new Date().toISOString()
+      cachedRatesStorage.lastUpdatedUnit = userCurrency;
+    }
+
+    console.log("Fetched new data: " + JSON.stringify(data.rates));
+    return data.rates;
+  } catch (error) {
+    console.error('获取汇率失败:', error);
+    // 如果失败但缓存存在，返回缓存
+    if (cachedRates && Object.keys(cachedRates).length > 0) {
       console.warn('使用缓存的汇率数据');
       return cachedRates;
     }
@@ -81,7 +125,6 @@ export async function displayExchangeRates(userCurrency: string, oneCurrency?: s
 
   } catch (error) {
     console.error('处理汇率数据时出错:', error);
-
   }
   return 0
 }

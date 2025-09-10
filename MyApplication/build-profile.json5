@@ -2,23 +2,23 @@
   "app": {
     "signingConfigs": [
       {
-        "name": "default",
+        "name": "feiiish",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer",
+          "certpath": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001A7403A476210A251E268E4F653F0629354BF519FF8974E48DA139ACD1A2007F9E010A1E8AD799",
-          "profile": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
+          "keyPassword": "0000001B3BF4FB4DA9BE70EBB807E8C12BC5E3F09452B2402A3C24653A18F3BAC09A86EE5AAC903AFF64FB",
+          "profile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\24070\\.ohos\\config\\default_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
-          "storePassword": "0000001A70EDA22CE0BE89D09F4A0E6EDD421C42D8A256CB9CEF68BE0589278DEBA6A2E50E1A9420215C"
+          "storeFile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
+          "storePassword": "0000001BF17B6F326723F07C87402BDF4532D3928A4DA3FE9293FA68F66A7A9979EAAB70BC1B6F53FC0A5A"
         }
       }
     ],
     "products": [
       {
         "name": "default",
-        "signingConfig": "default",
+        "signingConfig": "feiiish",
         "targetSdkVersion": "5.1.1(19)",
         "compatibleSdkVersion": "5.0.0(12)",
         "runtimeOS": "HarmonyOS",

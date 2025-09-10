@@ -7,6 +7,22 @@
     {
       "name": "Basic_Card_background",
       "value": "#f5f5f5"
+    },
+    {
+      "name": "Darker_window_background",
+      "value": "#FFFFFFFF"
+    },
+    {
+      "name": "Font_Color",
+      "value": "#000000"
+    },
+    {
+      "name": "Currency_Card_Main",
+      "value": "#e6f7ff"
+    },
+    {
+      "name": "Currency_Card_1",
+      "value": "#fafafa"
     }
   ]
 }

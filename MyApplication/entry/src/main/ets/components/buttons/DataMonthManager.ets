@@ -7,8 +7,6 @@ import { emitter, Callback } from '@kit.BasicServicesKit';
 export struct MonthPickerComponent {
   @Local selectedYear: number = new Date().getFullYear()
   @Local selectedMonth: number = new Date().getMonth() + 1
-
-
   @Local
   recordsData: RecordsData = PersistenceV2.connect(
     RecordsData,
@@ -43,6 +41,32 @@ export struct MonthPickerComponent {
     })
   }
 
+  public deleteDataFromAll(item: RecordItem) {
+
+    if (!this.recordsData) {
+      promptAction.showToast({ message: '数据连接失败，无法删除记录' });
+      return;
+    }
+
+    const index = this.recordsData.items.findIndex(record =>
+    record.id === item.id
+    );
+
+    if (index !== -1) {
+      if (this.recordsData) {
+        this.recordsData.items = this.recordsData.items.filter((item, i) => i !== index);
+      }
+      // update other component
+      this.filterRecords()
+    } else {
+      promptAction.showToast({ message: '未找到指定记录，无法删除' });
+    }
+  }
+
+  onPageShow(): void {
+    this.filterRecords()
+  }
+
   private filterRecords() {
     // 确保日期格式统一处理
     this.choosedData.items = this.recordsData.items.filter(item => {
@@ -51,12 +75,6 @@ export struct MonthPickerComponent {
         itemDate.getMonth() === this.selectedMonth - 1
     })
   }
-
-  onPageShow(): void {
-    this.filterRecords()
-  }
-
-
 
   build() {
 

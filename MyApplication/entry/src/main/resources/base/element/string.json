@@ -10,7 +10,67 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "label"
+      "value": "S全球货币助手"
+    },
+    {
+      "name": "privatePolicy",
+      "value": "隐私政策"
+    },
+    {
+      "name": "currencySetting",
+      "value": "货币设置"
+    },
+    {
+      "name": "deleteALLRecord",
+      "value": "清除记录"
+    },
+    {
+      "name": "monthlySummary",
+      "value": "本月结余"
+    },
+    {
+      "name": "monthlyIncome",
+      "value": "本月收入"
+    },
+    {
+      "name": "monthlyExpense",
+      "value": "本月支出"
+    },
+    {
+      "name": "normal_exchange_rate",
+      "value": "汇率正常"
+    },
+    {
+      "name": "delayed_exchange_rate",
+      "value": "汇率滞后"
+    },
+    {
+      "name": "today",
+      "value": "今天"
+    },
+    {
+      "name": "mainPage",
+      "value": "首页"
+    },
+    {
+      "name": "mine",
+      "value": "我的"
+    },
+    {
+      "name": "weeklySummary",
+      "value": "本周总结"
+    },
+    {
+      "name": "total",
+      "value": "总计"
+    },
+    {
+      "name": "average",
+      "value": "平均"
+    },
+    {
+      "name": "currentAmount",
+      "value": "货币总额"
     }
   ]
 }

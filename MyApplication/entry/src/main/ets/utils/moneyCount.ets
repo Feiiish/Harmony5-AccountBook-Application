@@ -51,31 +51,33 @@ export async function calculateTotalAssets(
   }
 }
 
-
 export async function calculateEachCurrencyAmount(
-  recordList: RecordItem[]
+  recordList: RecordItem[],
+  preferredCurrency: string
 ): Promise<singleCurrency[]> {
   const currencyMap = new Map<string, number>();
 
-  // 遍历记录并按货币单位汇总金额
-  for (let i = 0; i < recordList.length; i++) {
-    const record = recordList[i];
-    const amount = record.amount;
-    const unit = record.unit;
-    const currentAmount = currencyMap.get(unit) || 0;
-    currencyMap.set(unit, currentAmount + amount);
+  for (const record of recordList) {
+    const currentAmount = currencyMap.get(record.unit) || 0;
+    currencyMap.set(record.unit, currentAmount + record.amount);
   }
-  // 转换为目标格式
-  const result: singleCurrency[] = [];
-  currencyMap.forEach((amount, unit) => {
-    result.push({ amount, unit });
-  });
-  return result;
 
+  const result: singleCurrency[] = [];
+  for (const entry of currencyMap) {
+    const unit = entry[0];
+    const amount = entry[1];
+    let rate = 1;
+    if (unit !== preferredCurrency) {
+      rate = await displayExchangeRates(preferredCurrency, unit);
+    }
+    result.push({ amount, unit, rate });
+  }
+
+  return result;
 }
 
 
-export async function monthlyInMonthlyOut(recordList: RecordItem[], userCurrency: string): Promise<number[]> {
+export async function variousToPreferred(recordList: RecordItem[], userCurrency: string): Promise<number[]> {
   let income: number = 0;
   let expense: number = 0;
 

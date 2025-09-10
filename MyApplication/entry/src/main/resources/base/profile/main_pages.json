@@ -1,6 +1,8 @@
 {
   "src": [
     "pages/Index",
-    "pages/AddRecordPage"
+    "pages/AddRecordPage",
+    "pages/AboutThisApp",
+    "pages/CurrencySetting"
   ]
 }

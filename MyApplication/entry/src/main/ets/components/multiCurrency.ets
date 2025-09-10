@@ -1,10 +1,12 @@
-import { UserSetting } from "../models/userSetting"
-
-import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
+import { UserSetting, CachedRatesStatus } from "../models/userSetting"
+import { displayExchangeRates } from "../utils/currencyExchange"
+import { App, PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { RecordItem, RecordsData, singleCurrency } from '../models/recordItemReference';
 import { calculateEachCurrencyAmount } from '../utils/moneyCount';
-import { findFlag } from '../utils/FindCountryFlags';
-
+import { findFlag, findColor } from '../utils/FindCountryFlags';
+import { formatLargeNumber } from "../utils/formatLargeNumber"
+import { PieChartExample } from "../components/charts/pieChart"
+import { text } from "@kit.ArkGraphics2D";
 
 // 接受序列化失败的回调
 PersistenceV2.notifyOnError((key: string, reason: string, msg: string) => {
@@ -18,13 +20,11 @@ function currencyCard() {
   .justifyContent(FlexAlign.Start)
   .width("28%")
   .padding(4)
-
 }
 
 @Styles
 function basicCard() {
   .width('100%')
-
   .padding(16)
   .borderRadius(15)
   .margin({ bottom: 12 })
@@ -42,11 +42,30 @@ export struct MultiCurrencyComposition {
   }
 
   @Local
+  cachedRatesStorage: CachedRatesStatus = PersistenceV2.connect(
+    CachedRatesStatus,
+    "cachedRatesStatus",
+    () => new CachedRatesStatus()
+  )!;
+
+  @Monitor('cachedRatesStorage.lastUpdateTime')
+  onStatusChange(monitor: IMonitor) {
+    console.log("From Monthly Panel: lastUpdateTime changed");
+    this.refreshData()
+  }
+
+  @Local
   userSetting: UserSetting = PersistenceV2.connect(// 本地持久化用户设置
     UserSetting,
     "userSetting",
     () => new UserSetting()
   )!;
+
+  @Monitor('userSetting')
+  onSettingChange(monitor: IMonitor) {
+    console.log("MultiCurrency Inital: setting changed")
+    this.refreshData();
+  }
 
   @Local
   currencyAmounts: singleCurrency[] = []; // 货币金额数组
@@ -55,6 +74,9 @@ export struct MultiCurrencyComposition {
   @Local
   errorMessage: string = ""; // 错误信息
   @Local DEBUG: boolean = true;
+  @Local isShowSheet: boolean = false;
+  @Local colors: string[] = ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#F44336'];
+  private selectedCurrency: singleCurrency | null = null
 
   aboutToAppear() {
     this.refreshData();
@@ -90,7 +112,7 @@ export struct MultiCurrencyComposition {
     this.errorMessage = "";
 
     try {
-      const amounts = await calculateEachCurrencyAmount(this.recordList);
+      const amounts = await calculateEachCurrencyAmount(this.recordList, this.userSetting.preferredCurrency);
 
       // 过滤并排序货币数据
       this.currencyAmounts = amounts
@@ -115,12 +137,18 @@ export struct MultiCurrencyComposition {
 
   build() {
     Column() {
-      // 调试信息（正式环境可移除）
+
+
       if (this.DEBUG) {
         Text(`当前货币: ${this.userSetting.chosenCurrency.join(", ")}`)
           .fontSize(12)
           .fontColor("#999")
           .margin({ bottom: 8 });
+      }
+
+      //build pie chart
+      if (this.currencyAmounts.length !== 0) {
+        PieChartExample({ pieData: this.currencyAmounts, colors: this.colors })
       }
 
       // 加载状态
@@ -138,9 +166,16 @@ export struct MultiCurrencyComposition {
       // 正常数据展示
       else {
 
-        Column(){  this.buildCurrencyList(); }.justifyContent(FlexAlign.Start)
-
-
+        List({ space: 8, initialIndex: 0 }) {
+          this.buildCurrencyListView();
+        }
+        .lanes(2)
+        .contentStartOffset(20)
+        .contentEndOffset(20)
+        .width('100%')
+        .scrollBar(BarState.Off)
+        .friction(0.6)
+        .alignListItem(ListItemAlign.Center)
       }
     }
     .padding(12)
@@ -204,31 +239,155 @@ export struct MultiCurrencyComposition {
     .justifyContent(FlexAlign.Center)
   }
 
-  // 构建货币列表
   @Builder
-  private buildCurrencyList() {
+  private buildCurrencyListView() {
+    //
     ForEach(this.currencyAmounts, (currency: singleCurrency) => {
-      Row() {
-        // 货币符号
-        Text(currency.unit)
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-          .margin({right:2})
-        findFlag({flagName: currency.unit})
-
-        // 金额显示
-        Text(currency.amount.toFixed(2))
-          .margin({left:4})
-          .fontSize(18)
-          .fontColor("#333")
-          .flexGrow(1)
-          .textAlign(TextAlign.End);
-      }
-      .padding(6)
-      .borderRadius(8)
-      .backgroundColor(this.userSetting.preferredCurrency === currency.unit ?
-        "#e6f7ff" : "#fafafa")
-      .margin({ bottom: 6 });
+      currencyItemView({ currency: currency })
     })
   }
 }
+
+@ComponentV2
+export struct currencyItemView {
+  @Require @Param currency: singleCurrency
+  @Local isShowSheet: boolean = false;
+  @Local forCalcu: number = 0;
+  @Local
+  userSetting: UserSetting = PersistenceV2.connect(
+    UserSetting,
+    "userSetting",
+    () => new UserSetting()
+  )!;
+
+  @Builder
+  mySheet() {
+    Column() {
+      Row() {
+        Text(`${this.currency.unit}`)
+          .fontWeight(FontWeight.Bold)
+          .margin({ right: 12 })
+          .fontSize(22)
+        findFlag({ flagName: this.currency.unit })
+
+      }
+      .width('100%')
+      .margin({ top: 25 })
+
+
+      Column() {
+        //text Input 可以用指定货币换算成目标货币
+        Row() {
+          TextInput({ text: "1" })
+            .type(InputType.NUMBER_DECIMAL)
+            .width(160)
+            .onChange((val: string) => {
+              this.forCalcu = Number(val)
+            })
+          // enter prefered currency
+          Text(this.userSetting.preferredCurrency).margin({ left: 4 })
+        }
+
+        Text(`${"≈" + (this.currency.rate * this.forCalcu).toFixed(2) + " " + this.currency.unit}`)
+          .margin({ top: 12 })
+
+      }
+      .shadow(ShadowStyle.OUTER_DEFAULT_SM)
+      .width("100%")
+      .alignItems(HorizontalAlign.Center)
+      .backgroundColor($r("app.color.Basic_Card_background"))
+      .padding(12)
+      .borderRadius(24)
+      .margin({ top: 22 })
+
+
+      Column() {
+
+        Row() {
+          Text("货币总额：")
+          Text(`${this.currency.amount}`)
+
+            .fontColor(this.currency.amount >= 0 ? '#00B300' : '#FF3A3A')
+        }.margin({ bottom: 12 })
+
+        if (this.currency.unit !== this.userSetting.preferredCurrency) {
+          Row() {
+            Text("汇率：")
+            Text(`${(1 / this.currency.rate).toFixed(4)}`)
+
+          }.margin({ bottom: 12 })
+
+          Row() {
+            Text("大约为：")
+            Text(`${(this.currency.amount / this.currency.rate).toFixed(2) + " " + this.userSetting.preferredCurrency}`)
+          }.margin({ bottom: 12 })
+
+        }
+
+      }.alignItems(HorizontalAlign.Start)
+      .margin({ top: 22 })
+
+    }
+    .width('75%')
+    .alignItems(HorizontalAlign.Start)
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Row() {
+          findFlag({ flagName: this.currency.unit })
+            .width(28)
+            .height(20)
+          Text(this.currency.unit)
+            .fontSize(20)
+        }
+
+        Circle()
+          .width(12)
+          .height(12)
+          .margin({ right: 6 })
+          .fill(findColor(this.currency.unit))
+
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width("100%")
+      .margin({ bottom: 4 })
+
+      Text(formatLargeNumber(this.currency.amount))
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .flexGrow(1)
+      if (this.currency.unit == this.userSetting.preferredCurrency) {
+        Text(" 本位币")
+      } else {
+        Text(`汇率：${parseFloat((1 / this.currency.rate).toFixed(4))}`)
+      }
+
+    }
+    .width("94%")
+    .height(100)
+    .alignItems(HorizontalAlign.Start)
+    .padding(12)
+    .borderRadius(12)
+    .backgroundColor(
+      this.userSetting.preferredCurrency === this.currency.unit
+        ? $r("app.color.Currency_Card_Main")
+        : $r("app.color.Currency_Card_1")
+    )
+    .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+    .onClick(() => {
+      this.isShowSheet = true;
+      console.log(JSON.stringify(this.currency));
+    })
+    .bindSheet(this.isShowSheet, this.mySheet(), {
+      height: 560,
+      onWillDisappear: () => {
+        this.isShowSheet = false;
+      }
+    })
+    .margin({ bottom: 6 })
+  }
+}
+
+

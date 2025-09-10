@@ -2,11 +2,11 @@ import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { RecordItem, RecordsData } from "../../models/recordItemReference"
 
 const RECORDS_DATA_KEY = 'incomeExpenseRecords';
+
 @ComponentV2
 export struct PopupComponent {
   @Local handlePopup: boolean = false;
   @Local menuItems: string[] = ['编辑记录', '删除记录', '分享记录', '导出记录'];
-
   @Local
   recordsData: RecordsData = PersistenceV2.connect(
     RecordsData,
@@ -14,12 +14,9 @@ export struct PopupComponent {
     () => new RecordsData()
   )!;
 
-
-
   @Builder
   popupBuilder() {
     Column() {
-      // 标题
       Text('请选择操作')
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
