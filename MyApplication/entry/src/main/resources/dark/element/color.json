@@ -22,7 +22,11 @@
     },
     {
       "name": "Currency_Card_1",
-      "value": "#708090"
+      "value": "#FF878D8F"
+    },
+    {
+      "name": "button_color",
+      "value": "#FF404040"
     }
   ]
 }

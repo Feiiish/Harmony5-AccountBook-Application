@@ -29,10 +29,46 @@ export interface singleCurrency {
   rate: number
 }
 
+@ObservedV2
+export class BudgetItem {
+  @Trace id: string = Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+  @Trace name: string = '';
+  @Trace tag: string = '';
+  @Trace targetAmount: number = 0;
+  @Trace unit: string = 'CNY';
+  @Trace startDate: string = new Date().toDateString();
+  @Trace endDate: string = '';
+  @Trace countAll: boolean = false
+}
+
 // RecordsData.ets
 @ObservedV2
 export class RecordsData {
   @Type(RecordItem)
   @Trace
   items: RecordItem[] = [];
+  @Type(BudgetItem)
+  @Trace
+  budgets: BudgetItem[] = [];
+}
+
+
+export function filterRecordItems(
+  records: RecordItem[],
+  startDate: Date,
+  endDate: Date,
+  unit?: string,
+  tag?: string
+): RecordItem[] {
+  return records.filter(record => {
+    const recordDate = new Date(record.date);
+
+    const isWithinDateRange =
+      recordDate >= startDate && recordDate <= endDate;
+
+    const matchesUnit = unit ? record.unit === unit : true;
+    const matchesTag = tag ? record.tag === tag : true;
+
+    return isWithinDateRange && matchesUnit && matchesTag;
+  });
 }

@@ -61,7 +61,7 @@ export struct MultiCurrencyComposition {
     () => new UserSetting()
   )!;
 
-  @Monitor('userSetting')
+  @Monitor('userSetting.preferredCurrency')
   onSettingChange(monitor: IMonitor) {
     console.log("MultiCurrency Inital: setting changed")
     this.refreshData();
@@ -76,6 +76,7 @@ export struct MultiCurrencyComposition {
   @Local DEBUG: boolean = true;
   @Local isShowSheet: boolean = false;
   @Local colors: string[] = ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#F44336'];
+  @Local totalAmount: number = 0;
   private selectedCurrency: singleCurrency | null = null
 
   aboutToAppear() {
@@ -127,6 +128,10 @@ export struct MultiCurrencyComposition {
           }
           return a.unit.localeCompare(b.unit); // 其他按字母排序
         });
+      this.totalAmount = this.currencyAmounts.reduce((sum, item) => {
+        return sum + item.amount / item.rate;
+      }, 0);
+
     } catch (error) {
       this.errorMessage = "货币计算失败";
       console.error("计算错误:", error);
@@ -137,19 +142,23 @@ export struct MultiCurrencyComposition {
 
   build() {
     Column() {
-
-
-      if (this.DEBUG) {
-        Text(`当前货币: ${this.userSetting.chosenCurrency.join(", ")}`)
-          .fontSize(12)
-          .fontColor("#999")
-          .margin({ bottom: 8 });
-      }
-
+      Text("货币总额").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 8, top: 4 })
+      /*
+            if (this.DEBUG) {
+              Text(`当前货币: ${this.userSetting.chosenCurrency.join(", ")}`)
+                .fontSize(12)
+                .fontColor("#999")
+                .margin({ bottom: 8 });
+            }
+            * */
       //build pie chart
       if (this.currencyAmounts.length !== 0) {
         PieChartExample({ pieData: this.currencyAmounts, colors: this.colors })
+        Row() {
+          Text(`净资产 ≈ ${this.totalAmount.toFixed(2)} ${this.userSetting.preferredCurrency}`).margin({ top: 4 })
+        }
       }
+
 
       // 加载状态
       if (this.isLoading) {

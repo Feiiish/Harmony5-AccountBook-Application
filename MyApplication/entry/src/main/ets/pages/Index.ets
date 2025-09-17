@@ -13,7 +13,10 @@ import { ratesStatus } from "../components/RatesStatus"
 //components
 import { BottomNavigation } from "../components/bottomNavi"
 import { RecordListView, MonthlySummaryPanel } from '../components/mainPageComponents';
-import { MonthPickerComponent, } from '../components/buttons/DataMonthManager';
+
+import { budgetComponent } from '../components/bugetComponent';
+import { searchBarView } from '../components/searchBar';
+import { recordDeleter, datePicker } from '../components/buttons/recordDeleterAndMonthPicker';
 import { Constants } from '../common/Constants';
 import { resourceManager } from '@kit.LocalizationKit';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced';
@@ -256,9 +259,7 @@ struct Index {
 
                     //顶栏
                     Row() {
-
-
-                      MonthPickerComponent()
+                      datePicker()
                       //抽屉开关
                       Button({ type: ButtonType.Circle, stateEffect: true }) {
                         Image($r('app.media.moreMenu')).width(35).height(35).align(Alignment.Center)
@@ -288,8 +289,8 @@ struct Index {
                     MonthlySummaryPanel({ recordList: this.choosedData.items })
                     WeeklyChart({ data: this.weeklyData })
 
-                    RecordListView({ recordList: this.choosedData.items })
-
+                    // RecordListView({ recordList: this.choosedData.items })
+                    searchBarView({ recordList: this.choosedData.items })
                   }.padding(12)
                 }
               }
@@ -306,7 +307,7 @@ struct Index {
               List() {
                 ListItem() {
                   Column({ space: 2 }) {
-
+                    budgetComponent()
 
                     MultiCurrencyComposition({ recordList: this.recordsData.items })
                   }

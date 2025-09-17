@@ -26,7 +26,7 @@ export struct PieChartExample {
   }
 
   private calculateTotal(): void {
-    this.total = this.pieData.reduce((sum, item) => sum + item.amount / item.rate, 0);
+    this.total = this.pieData.reduce((sum, item) => sum + Math.abs(item.amount) / item.rate, 0);
   }
 
   private drawPieChart(): void {
@@ -46,8 +46,9 @@ export struct PieChartExample {
     }
 
     this.pieData.forEach((item, index) => {
-      let value = item.amount / item.rate;
+      let value = Math.abs(item.amount) / item.rate;
       let angle = (value / this.total) * 2 * Math.PI;
+
       let endAngle = startAngle + angle;
       this.context.fillStyle = findColor(item.unit);
 
@@ -95,10 +96,9 @@ export struct PieChartExample {
 
 
             Text(`${item.unit} (${(
-              //get percentage
-              (item.amount / item.rate / this.total) * 100
+              (Math.abs(item.amount) / item.rate / this.total) * 100
             ).toFixed(1)}%)`)
-              .fontSize(14)
+
           }
           .margin({ bottom: 4, right: 14 })
         })

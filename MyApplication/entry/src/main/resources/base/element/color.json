@@ -18,11 +18,15 @@
     },
     {
       "name": "Currency_Card_Main",
-      "value": "#e6f7ff"
+      "value": "#FFA7CCFF"
     },
     {
       "name": "Currency_Card_1",
-      "value": "#fafafa"
+      "value": "#e9e9e9"
+    },
+    {
+      "name": "button_color",
+      "value": "#FFE7E7E7"
     }
   ]
 }

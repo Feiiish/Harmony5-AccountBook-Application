@@ -1,4 +1,4 @@
-import { BudgetItem, RecordItem } from '../models/recordItemReference';
+import { RecordItem } from '../models/recordItemReference';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced'
 import { findFlag } from '../utils/FindCountryFlags';
 import { variousToPreferred } from '../utils/moneyCount';
@@ -28,102 +28,9 @@ function basicCard() {
 }
 
 
-@ComponentV2
-export struct MonthlySummaryPanel {
-  @Require @Param recordList: RecordItem[];
-
-  @Monitor('recordList')
-  onItemsChange(monitor: IMonitor) {
-    this.updateMonthlySummary()
-  }
-
-  @Local
-  userSetting: UserSetting = PersistenceV2.connect(
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
-  )!;
-
-  @Monitor('userSetting.preferredCurrency')
-  onCurrencyChange(monitor: IMonitor) {
-    console.log("From Monthly Panel: preferredCurrency changed");
-    this.updateMonthlySummary();
-  }
-
-  @Local
-  cachedRatesStorage: CachedRatesStatus = PersistenceV2.connect(
-    CachedRatesStatus,
-    "cachedRatesStatus",
-    () => new CachedRatesStatus()
-  )!;
-
-  @Monitor('cachedRatesStorage.lastUpdateTime')
-  onStatusChange(monitor: IMonitor) {
-    console.log("From Monthly Panel: lastUpdateTime changed");
-    this.updateMonthlySummary();
-  }
-
-  @Local monthlyInOut: number[] = [0, 0]
-
-  aboutToAppear(): void {
-    this.updateMonthlySummary()
-  }
-
-  private async updateMonthlySummary() {
-    try {
-      this.monthlyInOut = await variousToPreferred(this.recordList, this.userSetting.preferredCurrency);
-      console.log('月度统计已更新');
-    } catch (error) {
-      console.error('更新月度统计失败:', error);
-    }
-  }
-
-  build() {
-    Column({ space: 8 }) {
-      Row() {
-        Column() {
-          Text($r('app.string.monthlySummary'))
-          Text(formatLargeNumber(this.monthlyInOut[0] - this.monthlyInOut[1]) + " " +
-          this.userSetting.preferredCurrency)
-            .fontSize(24)
-            .fontWeight(FontWeight.Bold)
-        }.alignItems(HorizontalAlign.Start)
-
-        // 本月支出&收入
-        Column() {
-          Row() {
-            Text($r('app.string.monthlyExpense'))
-              .fontSize(16)
-            Text(formatLargeNumber(this.monthlyInOut[1]))
-              .fontColor('#FF3A3A')
-          }
-          .onClick(() => {
-            // 可以在这里添加点击事件处理
-          })
-
-          Row() {
-            Text($r('app.string.monthlyIncome'))
-              .fontSize(16)
-            Text(formatLargeNumber(this.monthlyInOut[0]))
-              .fontColor('#00B300')
-          }
-          .onClick(() => {
-            // 可以在这里添加点击事件处理
-          })
-        }.alignItems(HorizontalAlign.Start)
-
-      }.width("100%").justifyContent(FlexAlign.SpaceBetween)
-    }
-    .basicCard()
-    .justifyContent(FlexAlign.Start)
-    .alignItems(HorizontalAlign.Start)
-  }
-}
-
-
 //记账记录
 @ComponentV2
-export struct RecordItemView {
+export struct searchItemView {
   @Require @Param item: RecordItem
   @Local isShowSheet: boolean = false;
 
@@ -213,6 +120,7 @@ export struct RecordItemView {
 
   build() {
 
+
     Column() {
       Line()
         .width(2000)  // 线的长度
@@ -280,10 +188,10 @@ interface GroupedRecord {
 }
 
 @ComponentV2
-export struct RecordListView {
+export struct searchBarView {
   @Require @Param recordList: RecordItem[];
+  @Local searchKeyword: string = '';
 
-  // 计算属性 - 生成带友好日期的分组记录
   private get records(): GroupedRecord[] {
     const groups = new Map<string, RecordItem[]>();
 
@@ -322,35 +230,102 @@ export struct RecordListView {
     return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
-  build() {
-    Column() {
-      if (this.recordList.length === 0) {
-        Column() {
-          Text("暂无账单数据")
-            .fontSize(16)
-            .opacity(0.5)
-            .margin(20)
-        }.basicCard()
+  get filteredList(): RecordItem[] {
+    const keyword = this.searchKeyword.trim().toLowerCase();
+    if (!keyword) {
+      return this.recordList;
+    }
 
+    const result: RecordItem[] = [];
+
+    for (let item of this.recordList) {
+      const amountStr = item.amount?.toString() ?? '';
+      const categoryStr = item.tag?.toLowerCase() ?? '';
+      const noteStr = item.note?.toLowerCase() ?? '';
+
+      let matched = false;
+
+      if (amountStr.includes(keyword)) {
+        matched = true;
+      } else if (categoryStr.includes(keyword)) {
+        matched = true;
+      } else if (noteStr.includes(keyword)) {
+        matched = true;
       }
 
-      List() {
-        ForEach(this.records, (group: GroupedRecord) => {
-          ListItem() {
-            Column() {
-              // 显示友好日期
-              Text(group.shownDate)
-                .fontSize(15)
-                .margin({ top: 10, bottom: 6 })
-                .fontWeight(FontWeight.Bold)
-
-              ForEach(group.items, (item: RecordItem) => {
-                RecordItemView({ item })
-              })
-            }.basicCard().padding(2)
-          }
-        })
+      if (matched) {
+        result.push(item);
       }
     }
+
+    return result;
+  }
+
+  get groupedRecords(): Map<string, RecordItem[]> {
+    const map = new Map<string, RecordItem[]>();
+    for (const item of this.recordList) {
+      const dateKey = item.date?.slice(0, 10) ?? '未知日期';
+      if (!map.has(dateKey)) {
+        map.set(dateKey, []);
+      }
+      map.get(dateKey)!.push(item);
+    }
+    return map;
+  }
+
+  build() {
+    Stack() {
+      List() {
+        ListItem() {
+          Column() {
+
+            Row() {
+            }.width("95%").height(40).justifyContent(FlexAlign.SpaceBetween)
+
+            // 如果搜索栏没有内容， 则显示 searchItemView({ item }) 并且插入日期标签
+            if (this.searchKeyword.trim() === '') {
+              ForEach(this.records, (group: GroupedRecord) => {
+                Column() {
+                  Text(group.shownDate)
+                    .fontSize(15)
+                    .fontWeight(FontWeight.Bold)
+                    .margin({ bottom: 6 });
+
+                  ForEach(group.items, (item: RecordItem) => {
+                    searchItemView({ item });
+                  });
+                }
+                .width('100%')
+                .padding(8)
+                .borderRadius(15)
+                .margin({ bottom: 12 })
+                .backgroundColor($r("app.color.Basic_Card_background"))
+              });
+            } else {
+              ForEach(this.filteredList, (item: RecordItem) => {
+                searchItemView({ item });
+              });
+            }
+
+
+            //如果有内容则显示filteredList
+
+          }
+        }
+      }
+      .backgroundColor($r('app.color.Darker_window_background'))
+      .width('100%')
+      .padding(16)
+      .borderRadius(15)
+      .margin({ top: 4 })
+
+      TextInput({ placeholder: '搜索金额，标签' })
+        .width("100%")
+        .height(50)
+        .backgroundColor($r('app.color.Basic_Card_background'))
+        .onChange((value: string) => {
+          this.searchKeyword = value;
+        })
+    }.margin({ bottom: 8 }).alignContent(Alignment.Top)
   }
 }

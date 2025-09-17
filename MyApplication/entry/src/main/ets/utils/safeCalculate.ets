@@ -1,5 +1,10 @@
 // utils/mathCalculator.ts
 export function safeCalculate(input: string): number | null {
+
+  if (input === "") {
+    return 0
+  }
+  
   if (!input.trim()) {
     return null;
   }

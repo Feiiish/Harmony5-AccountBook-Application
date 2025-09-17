@@ -10,6 +10,15 @@ import { RecordItem, RecordsData } from '../models/recordItemReference';
 
 import { UserSetting } from "../models/userSetting"
 
+@Styles
+function basicCard() {
+  .width('100%')
+
+  .padding(16)
+  .borderRadius(15)
+  .margin({ bottom: 12 })
+  .backgroundColor($r("app.color.Basic_Card_background"))
+}
 
 //规定普通title样式
 @Extend(Text)
@@ -58,7 +67,7 @@ struct CurrencyPickerDialog {
 
 @Entry
 @ComponentV2
-struct AddRecordPage {
+struct currencySettingPage {
   @Local
   recordsData: RecordsData = PersistenceV2.connect(
     RecordsData,
@@ -85,64 +94,80 @@ struct AddRecordPage {
     List() {
       ListItem() {
         Column() {
-          Text(this.userSetting.preferredCurrency)
+          Text("货币设置")
+            .fontWeight(FontWeight.Bold)
+            .fontSize(30)
+            .padding(10)
 
-          Text("选择货币").secondTitle()
-          ForEach(this.userSetting.chosenCurrency, (currency: string, index: number) => {
-            ListItem() {
 
-              Row() {
+          Column() {
+            Text("当前货币")
+              .fontSize(20)
+              .padding(10).width("100%")
+            ForEach(this.userSetting.chosenCurrency, (currency: string, index: number) => {
+              ListItem() {
+
                 Row() {
-                  Text(currency)
-                    .fontSize(20)
-                    .padding(10)
-                  findFlag({ flagName: currency })
-                }
+                  Row() {
+                    Text(currency)
+                      .fontSize(20)
+                      .padding(10)
+                    findFlag({ flagName: currency })
+                  }
 
-                if (
-                  !this.recordsData.items.some((item: RecordItem) => item.unit === currency)
-                    && this.userSetting.preferredCurrency !== currency
-                ) {
-                  Image($r('app.media.bin')).height(30).width(30)
-                    .onClick(() => {
-                      this.userSetting.chosenCurrency = this.userSetting.chosenCurrency.filter(c => c !== currency);
-                    }).margin({ right: 4 })
+                  if (
+                    !this.recordsData.items.some((item: RecordItem) => item.unit === currency)
+                      && this.userSetting.preferredCurrency !== currency
+                  ) {
+                    Image($r('app.media.bin')).height(30).width(30)
+                      .onClick(() => {
+                        this.userSetting.chosenCurrency = this.userSetting.chosenCurrency.filter(c => c !== currency);
+                      }).margin({ right: 4 })
 
+                  }
                 }
+                .width("80%")
+                .padding(6)
+                .borderRadius(12)
+                .justifyContent(FlexAlign.SpaceBetween)
+                .backgroundColor(
+                  currency === this.userSetting.preferredCurrency ? $r('app.color.Currency_Card_Main') :
+                  $r('app.color.Currency_Card_1')
+                )
+                .margin({ bottom: 8 })
+                .onClick(() => {
+                  if (currency !== this.userSetting.preferredCurrency) {
+                    AlertDialog.show({
+                      title: `警告`,
+                      message: `是否将${currency} 设置为本位币`,
+                      buttons: [
+                        {
+                          value: '取消',
+                          action: () => {
+                          }
+                        },
+                        {
+                          value: '确认',
+                          action: () => {
+                            this.userSetting.preferredCurrency = currency
+                            //refresh data
+                          }
+                        },
+                      ]
+
+                    })
+                  }
+                })
               }
-              .width("80%")
-              .padding(6)
-              .borderRadius(12)
-              .justifyContent(FlexAlign.SpaceBetween)
-              .backgroundColor(
-                currency === this.userSetting.preferredCurrency ? "#007AFF" : $r('app.color.Basic_Card_background')
-              )
-              .margin({ bottom: 8 })
-              .onClick(() => {
-                if (currency !== this.userSetting.preferredCurrency) {
-                  AlertDialog.show({
-                    title: `警告`,
-                    message: `是否将${currency} 设置为本位币`,
-                    buttons: [
-                      {
-                        value: '取消',
-                        action: () => {
-                        }
-                      },
-                      {
-                        value: '确认',
-                        action: () => {
-                          this.userSetting.preferredCurrency = currency
-                          //refresh data
-                        }
-                      },
-                    ]
+            })
+          }
+          .backgroundColor($r("app.color.Basic_Card_background"))
+          .width("90%")
+          .borderRadius(12)
+          .margin({ top: 16 })
+          .padding(12)
 
-                  })
-                }
-              })
-            }
-          })
+
           Column() {
             Text("+ 添加货币")
               .fontSize(20)
@@ -178,11 +203,12 @@ struct AddRecordPage {
             .rowsGap(12)
 
           }
+          .basicCard()
           .width("90%")
           .borderRadius(12)
-          .backgroundColor($r('app.color.Darker_window_background'))
           .margin({ top: 16 })
           .padding(12)
+          .backgroundColor($r("app.color.Basic_Card_background"))
 
         }
       }
