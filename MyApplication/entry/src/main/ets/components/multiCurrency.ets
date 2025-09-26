@@ -154,38 +154,50 @@ export struct MultiCurrencyComposition {
       //build pie chart
       if (this.currencyAmounts.length !== 0) {
         PieChartExample({ pieData: this.currencyAmounts, colors: this.colors })
+
+      }
+
+      Column() {
+
         Row() {
-          Text(`净资产 ≈ ${this.totalAmount.toFixed(2)} ${this.userSetting.preferredCurrency}`).margin({ top: 4 })
+          Text(`净资产 ≈ ${this.totalAmount.toFixed(2)} ${this.userSetting.preferredCurrency}`)
+            .margin({ top: 4 })
+            .fontWeight(20)
         }
-      }
 
-
-      // 加载状态
-      if (this.isLoading) {
-        this.buildLoadingView();
-      }
-      // 错误状态
-      else if (this.errorMessage) {
-        this.buildErrorView();
-      }
-      // 空数据状态
-      else if (this.currencyAmounts.length === 0) {
-        this.buildEmptyView();
-      }
-      // 正常数据展示
-      else {
-
-        List({ space: 8, initialIndex: 0 }) {
-          this.buildCurrencyListView();
+        // 加载状态
+        if (this.isLoading) {
+          this.buildLoadingView();
         }
-        .lanes(2)
-        .contentStartOffset(20)
-        .contentEndOffset(20)
-        .width('100%')
-        .scrollBar(BarState.Off)
-        .friction(0.6)
-        .alignListItem(ListItemAlign.Center)
+        // 错误状态
+        else if (this.errorMessage) {
+          this.buildErrorView();
+        }
+        // 空数据状态
+        else if (this.currencyAmounts.length === 0) {
+          this.buildEmptyView();
+        }
+        // 正常数据展示
+        else {
+
+          List({ space: 8, initialIndex: 0 }) {
+            this.buildCurrencyListView();
+          }
+          .lanes(2)
+          .contentStartOffset(20)
+          .contentEndOffset(20)
+          .width('100%')
+          .scrollBar(BarState.Off)
+          .friction(0.6)
+          .alignListItem(ListItemAlign.Center)
+        }
+
+
       }
+      .basicCard()
+      .backgroundColor($r('app.color.Card_background_2'))
+      .margin({ top: 12 })
+
     }
     .padding(12)
     .basicCard()

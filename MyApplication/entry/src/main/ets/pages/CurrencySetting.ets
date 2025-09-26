@@ -10,6 +10,7 @@ import { RecordItem, RecordsData } from '../models/recordItemReference';
 
 import { UserSetting } from "../models/userSetting"
 
+
 @Styles
 function basicCard() {
   .width('100%')
@@ -75,12 +76,6 @@ struct currencySettingPage {
     () => new RecordsData()
   )!;
   @Local
-  choosedData: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    'choosedRecords',
-    () => new RecordsData()
-  )!;
-  @Local
   userSetting: UserSetting = PersistenceV2.connect(// 本地持久化用户设置
     UserSetting,
     "userSetting",
@@ -96,7 +91,7 @@ struct currencySettingPage {
         Column() {
           Text("货币设置")
             .fontWeight(FontWeight.Bold)
-            .fontSize(30)
+            .fontSize(24)
             .padding(10)
 
 
@@ -104,62 +99,82 @@ struct currencySettingPage {
             Text("当前货币")
               .fontSize(20)
               .padding(10).width("100%")
-            ForEach(this.userSetting.chosenCurrency, (currency: string, index: number) => {
-              ListItem() {
 
-                Row() {
+            Grid() {
+              ForEach(this.userSetting.chosenCurrency, (currency: string, index: number) => {
+                GridItem() {
+
                   Row() {
-                    Text(currency)
-                      .fontSize(20)
-                      .padding(10)
-                    findFlag({ flagName: currency })
-                  }
+                    Row() {
+                      Text(currency)
+                        .fontSize(20)
+                        .padding(10)
+                      findFlag({ flagName: currency })
+                    }
 
-                  if (
-                    !this.recordsData.items.some((item: RecordItem) => item.unit === currency)
-                      && this.userSetting.preferredCurrency !== currency
-                  ) {
-                    Image($r('app.media.bin')).height(30).width(30)
-                      .onClick(() => {
-                        this.userSetting.chosenCurrency = this.userSetting.chosenCurrency.filter(c => c !== currency);
-                      }).margin({ right: 4 })
+                    if (
+                      !this.recordsData.items.some((item: RecordItem) => item.unit === currency)
+                        && this.userSetting.preferredCurrency !== currency
+                    ) {
+                      Image($r('app.media.bin')).height(30).width(30)
+                        .onClick(() => {
+                          this.getUIContext()?.animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
+                            this.userSetting.chosenCurrency =
+                              this.userSetting.chosenCurrency.filter(c => c !== currency);
+                          });
+                        }).margin({ right: 4 })
 
+                    }
                   }
+                  .width("45%")
+                  .padding(6)
+                  .borderRadius(12)
+                  .justifyContent(FlexAlign.SpaceBetween)
+                  .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+                  .backgroundColor(
+                    currency === this.userSetting.preferredCurrency ? $r('app.color.Currency_Card_Main') :
+                    $r('app.color.Currency_Card_1')
+                  )
+                  .margin({ bottom: 8 })
+                  .transition(
+                    TransitionEffect.asymmetric(
+                      TransitionEffect.scale({ x: 0.9, y: 0.9 }),
+                      TransitionEffect.IDENTITY
+                    ).animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                  )
+
+
+                  .onClick(() => {
+                    if (currency !== this.userSetting.preferredCurrency) {
+                      AlertDialog.show({
+                        title: `提示`,
+                        message: `是否将${currency} 设置为本位币`,
+                        buttons: [
+                          {
+                            value: '取消',
+                            action: () => {
+                            }
+                          },
+                          {
+                            value: '确认',
+                            action: () => {
+                              this.userSetting.preferredCurrency = currency
+                              //refresh data
+                            }
+                          },
+                        ]
+
+                      })
+                    }
+                  })
                 }
-                .width("80%")
-                .padding(6)
-                .borderRadius(12)
-                .justifyContent(FlexAlign.SpaceBetween)
-                .backgroundColor(
-                  currency === this.userSetting.preferredCurrency ? $r('app.color.Currency_Card_Main') :
-                  $r('app.color.Currency_Card_1')
-                )
-                .margin({ bottom: 8 })
-                .onClick(() => {
-                  if (currency !== this.userSetting.preferredCurrency) {
-                    AlertDialog.show({
-                      title: `警告`,
-                      message: `是否将${currency} 设置为本位币`,
-                      buttons: [
-                        {
-                          value: '取消',
-                          action: () => {
-                          }
-                        },
-                        {
-                          value: '确认',
-                          action: () => {
-                            this.userSetting.preferredCurrency = currency
-                            //refresh data
-                          }
-                        },
-                      ]
+              })
+            }
+            .padding(12)
+            .maxCount(2)
+            .layoutDirection(GridDirection.Row)
+            .columnsGap(12)
 
-                    })
-                  }
-                })
-              }
-            })
           }
           .backgroundColor($r("app.color.Basic_Card_background"))
           .width("90%")
@@ -169,9 +184,8 @@ struct currencySettingPage {
 
 
           Column() {
-            Text("+ 添加货币")
+            Text("添加货币")
               .fontSize(20)
-              .fontColor("#007AFF")
               .padding(10).width("100%")
 
 
@@ -180,27 +194,40 @@ struct currencySettingPage {
               !this.userSetting.chosenCurrency.includes(currency)
               ), (currency: string) => {
                 GridItem() {
-                  Text(currency)
-                    .fontSize(16)
-                    .width("100%")
-                    .backgroundColor($r('app.color.Currency_Card_1'))
-                    .borderRadius(8)
-                    .padding(10)
-                    .onClick(() => {
-                      if (!this.userSetting.chosenCurrency.includes(currency)) {
+                  Row() {
+                    Row() {
+                      Text(currency)
+                        .fontSize(20)
+                        .padding(10)
+                      findFlag({ flagName: currency })
+                    }
+                  }
+                  .width("45%")
+                  .padding(6)
+                  .borderRadius(12)
+                  .justifyContent(FlexAlign.SpaceBetween)
+                  .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+                  .backgroundColor($r('app.color.Currency_Card_1'))
+                  .margin({ bottom: 8 })
+                  .onClick(() => {
+
+                    if (!this.userSetting.chosenCurrency.includes(currency)) {
+                      this.getUIContext()?.animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
                         this.userSetting.chosenCurrency = [
                           ...this.userSetting.chosenCurrency,
                           currency
                         ];
-                        promptAction.showToast({ message: `${currency} 已添加` });
-                      }
-                    })
+                      });
+                      promptAction.showToast({ message: `${currency} 已添加` });
+                    }
+                  })
                 }
               })
             }
-            .columnsTemplate("1fr 1fr 1fr 1fr")
+            .padding(12)
+            .maxCount(2)
+            .layoutDirection(GridDirection.Row)
             .columnsGap(12)
-            .rowsGap(12)
 
           }
           .basicCard()

@@ -5,7 +5,7 @@ import { variousToPreferred } from '../utils/moneyCount';
 import { CachedRatesStatus, UserSetting } from "../models/userSetting"
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { formatLargeNumber } from "../utils/formatLargeNumber"
-import { recordDeleter } from "./buttons/recordDeleterAndMonthPicker"
+import { recordDeleter } from "../utils/recordDeleter"
 import { systemDateTime } from '@kit.BasicServicesKit';
 
 //规定普通Row样式

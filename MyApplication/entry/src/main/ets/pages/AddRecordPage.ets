@@ -1,6 +1,6 @@
 import { formatDateAdvanced } from '../utils/formatDateAdvanced'
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
-import { RecordItem, RecordsData, BudgetItem } from "../models/recordItemReference"
+import { RecordItem, RecordsData, BudgetItem, LedgerManager } from "../models/recordItemReference"
 import type { BusinessError } from '@kit.BasicServicesKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 
@@ -144,11 +144,20 @@ struct IncomePage {
   @Local couldSave: boolean = false;
   @Local showSelect: boolean = false;
   @Local
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
+  )!;
+  @Local recordsData: RecordsData = this.ledgerManager.activeBook.data
+  /*
+  @Local
   recordsData: RecordsData = PersistenceV2.connect(
     RecordsData,
     RECORDS_DATA_KEY,
     () => new RecordsData()
   )!;
+  * */
   @Local
   userSetting: UserSetting = PersistenceV2.connect(
     UserSetting,
@@ -241,11 +250,11 @@ struct IncomePage {
           GridItem() {
             Button(item)
               .width("20%")
-              .height("8%")
+              .height("6%")
               .fontSize(20)
-              .backgroundColor(item === '⌫' ? Color.Red : $r('app.color.button_color'))
+              .backgroundColor(item === '⌫' ? Color.Red : $r('app.color.Basic_Card_background'))
               .fontColor($r('app.color.Font_Color'))
-              .borderRadius(6)
+              .borderRadius(15)
               .shadow(ShadowStyle.OUTER_DEFAULT_XS)
               .gesture(
                 LongPressGesture({ repeat: false })
@@ -268,8 +277,8 @@ struct IncomePage {
         })
       }
       .maxCount(4)
-      .columnsGap(10)
-      .rowsGap(10)
+      .columnsGap(14)
+      .rowsGap(14)
       .padding(10)
     }
     .backgroundColor($r('app.color.Basic_Card_background'))
@@ -316,6 +325,7 @@ struct IncomePage {
   @Builder
   buildContent(): void {
     Column() {
+      Text("创建标签").width("100%").padding(10).fontSize(24)
       Row() {
         TextInput({ text: "输入标签", placeholder: "" })
           .onChange((value: string) => {
@@ -703,7 +713,6 @@ struct planningPage {
 
   }
 
-  // button to add a tag #1
   @Builder
   progressDialogBuilder() {
     CustomContentDialog({
@@ -742,7 +751,9 @@ struct planningPage {
   @Builder
   buildContent(): void {
     Column() {
+      Text("创建标签").width("100%").padding(10).fontSize(24)
       Row() {
+
         TextInput({ text: "", placeholder: "输入标签" }).onChange((value: string) => {
           this.inputValue = value
         })
@@ -843,7 +854,7 @@ struct planningPage {
 
               Row() {
                 Text("结束时间").secondTitle()
-                CalendarPicker({ hintRadius: 10, selected: new Date() })
+                CalendarPicker({ hintRadius: 10, selected: new Date(this.tempEndDate) })
                   .margin({ bottom: 12 })
                   .edgeAlign(CalendarAlign.END)
                   .textStyle({ color: $r('app.color.Font_Color'), font: { size: 20, weight: FontWeight.Normal } })

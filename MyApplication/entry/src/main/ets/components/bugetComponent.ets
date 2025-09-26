@@ -2,9 +2,10 @@ import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { RecordItem, RecordsData, filterRecordItems, BudgetItem } from '../models/recordItemReference';
 import { UserSetting, CachedRatesStatus } from "../models/userSetting"
 import { variousToPreferred } from '../utils/moneyCount';
+import { recordDeleter } from '../utils/recordDeleter';
 import { text } from '@kit.ArkGraphics2D';
 import { updateExchangeRates } from "../utils/currencyExchange"
-
+import { formatDateAdvanced } from "../utils/formatDateAdvanced"
 
 // 将样式定义移动到组件外部
 @Styles
@@ -25,20 +26,22 @@ export struct budgetComponent {
     () => new RecordsData()
   )!;
 
-  @Monitor('recordList')
+  @Monitor('recordsData.items')
   onItemsChange(monitor: IMonitor) {
-    this.updateProgress()
+    this.calculateBudgetProgress(this.recordsData);
   }
 
-  @Local budgetProgressList: number[] = []
+  @Monitor('recordsData.budgets')
+  onBudgetsChange(monitor: IMonitor) {
+    this.calculateBudgetProgress(this.recordsData);
+  }
+
   @Local value: number = 0
   @Local isShowSheet: boolean = false
   @Local selectedBudget: BudgetItem = new BudgetItem()
 
-  calculateBudgetProgress(recordsData: RecordsData): Promise<number[]> {
-    const progressList: number[] = [];
-
-    const tasks = recordsData.budgets.map(async (budget) => {
+  calculateBudgetProgress(recordsData: RecordsData): Promise<void> {
+    const tasks = recordsData.budgets.map((budget) => {
       const filteredItems = filterRecordItems(
         recordsData.items,
         new Date(budget.startDate),
@@ -47,28 +50,23 @@ export struct budgetComponent {
         budget.tag !== "" ? budget.tag : undefined
       );
 
-      try {
-        const result = await variousToPreferred(filteredItems, budget.unit);
-
-        const value = budget.targetAmount > 0 ? result[0] : Math.abs(result[1]);
-        progressList.push(parseFloat(value.toFixed(2)));
-      } catch (e) {
-        console.error("预算进度计算失败", e);
-        progressList.push(0);
-      }
+      return variousToPreferred(filteredItems, budget.unit)
+        .then((result) => {
+          const value = budget.targetAmount > 0 ? result[0] : Math.abs(result[1]);
+          budget.currentAmount = parseFloat(value.toFixed(2)); // ✅ 直接赋值
+        })
+        .catch((e: Error) => {
+          console.error("预算进度计算失败", e);
+          budget.currentAmount = 0;
+        });
     });
 
-    return Promise.all(tasks).then(() => progressList);
-  }
-
-  private updateProgress() {
-    this.calculateBudgetProgress(this.recordsData).then((result) => {
-      this.budgetProgressList = result;
+    return Promise.all(tasks).then(() => {
     });
   }
 
   aboutToAppear(): void {
-    this.updateProgress()
+    this.calculateBudgetProgress(this.recordsData)
   }
 
   @Builder
@@ -86,12 +84,12 @@ export struct budgetComponent {
 
       // 时间范围
       Row() {
-        Text(`起始：${new Date(budget.startDate).toLocaleDateString()}`)
+        Text(`起始：${formatDateAdvanced(budget.startDate, "YYYY-MM-DD")}`)
           .fontSize(14)
           .fontColor('#666')
           .margin({ right: 12 })
 
-        Text(`结束：${new Date(budget.endDate).toLocaleDateString()}`)
+        Text(`结束：${formatDateAdvanced(budget.endDate, "YYYY-MM-DD")}`)
           .fontSize(14)
           .fontColor('#666')
       }
@@ -101,17 +99,31 @@ export struct budgetComponent {
 
       // 详细信息容器
       Column() {
+
+        // 目标金额
+        Row() {
+          Text('目标金额：')
+            .fontSize(16)
+            .fontColor('#666')
+            .width(80)
+
+          Text(`${budget.targetAmount.toFixed(2)} ${budget.unit}`)
+            .fontSize(16)
+        }
+        .margin({ bottom: 12 })
+
         // 标签
         if (budget.tag !== "") {
           Row() {
-            Text('分类：')
+            Text('限制标签：')
               .fontSize(16)
               .fontColor('#666')
-              .width(80)
 
-            Text(`#${budget.tag}`)
+
+            Text(`${budget.tag}`)
               .fontSize(16)
           }
+
           .margin({ bottom: 12 })
         }
 
@@ -141,43 +153,40 @@ export struct budgetComponent {
           .margin({ bottom: 12 })
         }
 
-        // 目标金额
-        Row() {
-          Text('目标金额：')
-            .fontSize(16)
-            .fontColor('#666')
-            .width(80)
-
-          Text(`${budget.targetAmount.toFixed(2)} ${budget.unit}`)
-            .fontSize(16)
-        }
-        .margin({ bottom: 12 })
-
-        // 进度条 + 是否完成
-        /*
-        let progress = budget.currentAmount / budget.targetAmount;
-        let isFinished = progress >= 1;
-
-        Row() {
-          Progress({
-            value: Math.min(progress * 100, 100),
-            total: 100,
-            type: ProgressType.Linear
-          })
-            .style({ strokeWidth: 8, enableSmoothEffect: true })
-            .width('70%')
-            .color(isFinished ? 0xFF4CAF50 : 0xFF2196F3)
-            .margin({ right: 12 })
-
-          Text(isFinished ? "已完成" : `${(progress * 100).toFixed(1)}%`)
-            .fontSize(14)
-            .fontColor(isFinished ? '#4CAF50' : '#2196F3')
-        }
-        .margin({ bottom: 12 })
-        * */
-
       }
+      .height("30%")
       .padding({ left: 24, right: 24 })
+      .alignItems(HorizontalAlign.Center)
+
+      Row() {
+        Progress({
+          value: Math.min(budget.currentAmount / Math.abs(budget.targetAmount) * 100),
+          total: 100,
+          type: ProgressType.Linear
+        })
+          .style({ strokeWidth: 8, enableSmoothEffect: true })
+          .width('70%')
+          .color(budget.isExpired ? "#FFC107" : (budget.targetAmount >= 0 ?
+            (budget.isCompleted ? 0xFF4CAF50 : 0xFF2196F3) :
+            0xFFFF3A3A
+          ))
+
+          .margin({ right: 12 })
+
+        Text(budget.isCompleted ? "已达到" : `${(budget.currentAmount / budget.targetAmount * 100).toFixed(1)}%`)
+          .fontSize(14)
+          .fontColor(budget.isExpired ? "#FFC107" : (budget.targetAmount >= 0 ?
+            (budget.isCompleted ? 0xFF4CAF50 : 0xFF2196F3) :
+            0xFFFF3A3A
+          ))
+      }
+      .margin({ bottom: 12 })
+
+      Image($r('app.media.bin')).height(45).width(45).margin({ top: 8 }).onClick(() => {
+        new recordDeleter().deleteBudgetFromAll(budget)
+      })
+
+
     }
     .width('100%')
     .alignItems(HorizontalAlign.Center)
@@ -189,6 +198,9 @@ export struct budgetComponent {
 
       Column() {
         Text("预算和计划").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 14, top: 4 })
+          .onClick(() => {
+            this.recordsData.budgets = []
+          })
 
         ForEach(this.recordsData.budgets, (budget: BudgetItem, index: number) => {
 
@@ -233,20 +245,40 @@ export struct budgetComponent {
 
               // 判断是否有名称
 
-            }.margin({ bottom: 8 }).width('95%')
+            }.margin({ bottom: 8 }).width('94%')
+
+            Row() {
+              // 进度条
+              Progress({
+                value: budget.currentAmount / Math.abs(budget.targetAmount) * 100,
+                total: 100,
+                type: ProgressType.Linear
+              })
+                .style({ strokeWidth: 10, enableSmoothEffect: true })
+                .width('80%')
+                .color(budget.isExpired ? "#FFC107" : (budget.targetAmount >= 0 ?
+                  (budget.isCompleted ? 0xFF4CAF50 : 0xFF2196F3) :
+                  0xFFFF3A3A
+                ))
+
+              if (budget.isCompleted) {
+                Text("已达到").fontSize(14)
+                  .fontColor(budget.isCompleted ? '#4CAF50' : '#2196F3')
+              } else if (budget.isExpired) {
+                Text("已过期")
+                  .fontSize(14)
+                  .fontColor("#FFC107")
+              } else {
+                Text(`${(budget.currentAmount / budget.targetAmount * 100).toFixed(1)}%`)
+                  .fontSize(14)
+                  .fontColor(budget.isExpired ? "#FFC107" : (budget.targetAmount >= 0 ?
+                    (budget.isCompleted ? 0xFF4CAF50 : 0xFF2196F3) :
+                    0xFFFF3A3A
+                  ))
+              }
 
 
-            // 进度条
-            Progress({
-              value: this.budgetProgressList[index] / Math.abs(budget.targetAmount) * 100,
-              total: 100,
-              type: ProgressType.Linear
-            })
-              .style({ strokeWidth: 10, enableSmoothEffect: true })
-              .width('100%')
-              .color(budget.targetAmount > 0 ? 0xFF4CAF50 : 0xFFF44336)
-              .margin({ bottom: 4 })
-
+            }.justifyContent(FlexAlign.SpaceEvenly).width('100%')
 
           }
           .padding(12)

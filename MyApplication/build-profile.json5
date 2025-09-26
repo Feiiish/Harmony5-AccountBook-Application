@@ -5,13 +5,13 @@
         "name": "feiiish",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer",
+          "storeFile": "C:/Users/24070/.ohos/config/feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
+          "storePassword": "0000001B8F7915D078DB769527052ADEC734FBF0FEC9A96B19F750331906A4C26E7E2453141BF4022AAC2C",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B3BF4FB4DA9BE70EBB807E8C12BC5E3F09452B2402A3C24653A18F3BAC09A86EE5AAC903AFF64FB",
-          "profile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
+          "keyPassword": "0000001B1DA3F63A4D77C2522F4F3384E0519D6982A281B3D535CC341A56B3CD271BAEF23F63FF7C13A482",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
-          "storePassword": "0000001BF17B6F326723F07C87402BDF4532D3928A4DA3FE9293FA68F66A7A9979EAAB70BC1B6F53FC0A5A"
+          "profile": "C:/Users/24070/.ohos/config/feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
+          "certpath": "C:/Users/24070/.ohos/config/feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer"
         }
       }
     ],

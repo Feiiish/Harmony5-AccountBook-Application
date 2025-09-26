@@ -3,6 +3,13 @@ import { Type } from '@kit.ArkUI';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import image from '@ohos.multimedia.image';
 
+
+export interface singleCurrency {
+  amount: number;
+  unit: string
+  rate: number
+}
+
 @ObservedV2
 export class RecordItem {
   @Trace id: string = Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
@@ -23,11 +30,6 @@ export class RecordItem {
   }
 }
 
-export interface singleCurrency {
-  amount: number;
-  unit: string
-  rate: number
-}
 
 @ObservedV2
 export class BudgetItem {
@@ -39,20 +41,19 @@ export class BudgetItem {
   @Trace startDate: string = new Date().toDateString();
   @Trace endDate: string = '';
   @Trace countAll: boolean = false
+  @Trace currentAmount: number = 0
+
+  get isCompleted(): boolean {
+    return this.currentAmount / this.targetAmount >= 1
+  }
+
+  get isExpired(): boolean {
+    return (new Date() > new Date(this.endDate) && !this.isCompleted)
+  }
 }
 
-// RecordsData.ets
-@ObservedV2
-export class RecordsData {
-  @Type(RecordItem)
-  @Trace
-  items: RecordItem[] = [];
-  @Type(BudgetItem)
-  @Trace
-  budgets: BudgetItem[] = [];
-}
 
-
+//choose records from time to time
 export function filterRecordItems(
   records: RecordItem[],
   startDate: Date,
@@ -71,4 +72,74 @@ export function filterRecordItems(
 
     return isWithinDateRange && matchesUnit && matchesTag;
   });
+}
+
+
+// RecordsData.ets
+@ObservedV2
+export class RecordsData {
+  @Type(RecordItem)
+  @Trace
+  items: RecordItem[] = [];
+
+  toMonthItems(date: Date): RecordItem[] {
+    const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+    return filterRecordItems(this.items, startDate, endDate);
+
+  }
+
+  @Type(BudgetItem)
+  @Trace
+  budgets: BudgetItem[] = [];
+}
+
+//different account book
+@ObservedV2
+export class LedgerBook {
+  @Trace id: string = Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+  @Trace name: string = '';
+  @Trace createdAt: string = new Date().toISOString();
+  @Type(RecordsData)
+  @Trace data: RecordsData = new RecordsData();
+}
+
+
+// The class of LederManager
+@ObservedV2
+export class LedgerManager {
+  @Type(LedgerBook)
+  @Trace books: LedgerBook[] = [];
+  @Trace activeBookId: string = '';
+
+  get activeBook(): LedgerBook {
+    let book = this.books.find(book => book.id === this.activeBookId);
+    if (!book) {
+      // 创建一个默认账本
+      book = new LedgerBook();
+      book.name = '默认账本';
+      this.books.push(book);
+      this.activeBookId = book.id;
+    }
+    return book;
+  }
+
+  switchBook(bookId: string) {
+    this.activeBookId = bookId;
+  }
+
+  addBook(name: string) {
+    const newBook = new LedgerBook();
+    newBook.name = name;
+    this.books.push(newBook);
+    this.activeBookId = newBook.id;
+  }
+
+  deleteBook(bookId: string) {
+    this.books = this.books.filter(book => book.id !== bookId);
+    if (this.activeBookId === bookId) {
+      this.activeBookId = this.books.length > 0 ? this.books[0].id : '';
+    }
+  }
 }

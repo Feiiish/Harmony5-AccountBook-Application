@@ -191,11 +191,11 @@ export struct WeeklyChart {
 
       // 数据统计摘要
       Row() {
-        Text(`总计: ${this.getTotal().toFixed(2)}`)
+        Text(`周收入: ${this.getTotal().toFixed(2)}`)
           .fontSize(15)
 
 
-        Text(`平均: ${this.getAverage()}`)
+        Text(`日均: ${this.getAverage()}`)
           .fontSize(15)
           .margin({ left: 16 })
       }

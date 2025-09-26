@@ -1,49 +1,7 @@
-import { RecordItem, RecordsData, filterRecordItems } from "../../models/recordItemReference"
+import { RecordItem, RecordsData, filterRecordItems, LedgerManager } from "../../models/recordItemReference"
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { TipsDialog } from '@kit.ArkUI'
 import { emitter, Callback } from '@kit.BasicServicesKit';
-
-
-@ComponentV2
-export struct recordDeleter {
-  @Local
-  recordsData: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    'incomeExpenseRecords',
-    () => new RecordsData()
-  )!;
-  @Local
-  choosedData: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    'choosedRecords',
-    () => new RecordsData()
-  )!;
-
-  public deleteDataFromAll(item: RecordItem) {
-
-    if (!this.recordsData) {
-      promptAction.showToast({ message: '数据连接失败，无法删除记录' });
-      return;
-    }
-
-    const index = this.recordsData.items.findIndex(record =>
-    record.id === item.id
-    );
-
-    if (index !== -1) {
-      if (this.recordsData) {
-        this.recordsData.items = this.recordsData.items.filter((item, i) => i !== index);
-      }
-      // filter
-    } else {
-      promptAction.showToast({ message: '未找到指定记录，无法删除' });
-    }
-  }
-
-  build() {
-
-  }
-}
 
 @Entry
 @ComponentV2
@@ -63,14 +21,17 @@ export struct datePicker {
     ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
   ];
   @Local selectedDate: Date = new Date();
-  @Local recordsData: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    'incomeExpenseRecords',
-    () => new RecordsData()
+  @Local
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
   )!;
-  @Local choosedData: RecordsData = PersistenceV2.connect(
+  @Local recordsData: RecordsData = this.ledgerManager.activeBook.data
+
+  @Local tomonthRecords: RecordsData = PersistenceV2.connect(
     RecordsData,
-    'choosedRecords',
+    'tomonthRecords',
     () => new RecordsData()
   )!;
   @Local now: Date = new Date();
@@ -78,6 +39,12 @@ export struct datePicker {
   @Monitor('recordsData.items')
   onItemsChange(monitor: IMonitor) {
     console.log("DataFilteredByMonth");
+    this.filterRecords();
+  }
+
+  @Monitor('ledgerManager.activeBookId')
+  onBookChange(monitor: IMonitor) {
+    console.log("bookChanged");
     this.filterRecords();
   }
 
@@ -95,7 +62,7 @@ export struct datePicker {
     const result: Date[] = this.getMonthRange(this.selectedDate);
     const startDate: Date = result[0]
     const endDate: Date = result[1]
-    this.choosedData.items = filterRecordItems(this.recordsData.items, startDate, endDate);
+    this.tomonthRecords.items = filterRecordItems(this.recordsData.items, startDate, endDate);
   }
 
   private formatDate(date: Date): string {

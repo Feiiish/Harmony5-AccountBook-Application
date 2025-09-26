@@ -3,6 +3,8 @@
     "pages/Index",
     "pages/AddRecordPage",
     "pages/AboutThisApp",
-    "pages/CurrencySetting"
+    "pages/CurrencySetting",
+    "pages/HuaweiLogin",
+    "pages/AddLegerBookPage"
   ]
 }
