@@ -5,13 +5,13 @@
         "name": "feiiish",
         "type": "HarmonyOS",
         "material": {
-          "storeFile": "C:/Users/24070/.ohos/config/feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
-          "storePassword": "0000001B8F7915D078DB769527052ADEC734FBF0FEC9A96B19F750331906A4C26E7E2453141BF4022AAC2C",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B1DA3F63A4D77C2522F4F3384E0519D6982A281B3D535CC341A56B3CD271BAEF23F63FF7C13A482",
+          "storeFile": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/debug/debugKeyStore.p12",
+          "storePassword": "00000019C75AFDEB547572732BB7B5E68E2ADB949A16E5127B6BC112AA4FCFBAB8F8ED9DEF84B832D8",
+          "keyAlias": "app_debug",
+          "keyPassword": "00000019ECD4558A221D60DEE8B76B06653EDEB3311FAACF994D436C3EAA8D2437AEBBC08CD7B02C52",
           "signAlg": "SHA256withECDSA",
-          "profile": "C:/Users/24070/.ohos/config/feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
-          "certpath": "C:/Users/24070/.ohos/config/feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer"
+          "profile": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/debug/debugProfileDebug.p7b",
+          "certpath": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/debug/app_debug.cer"
         }
       }
     ],
@@ -32,7 +32,7 @@
     ],
     "buildModeSet": [
       {
-        "name": "debug",
+        "name": "debug"
       },
       {
         "name": "release"
@@ -51,6 +51,14 @@
           ]
         }
       ]
+    },
+    {
+      "name": "module_login",
+      "srcPath": "./ohos_agcit/agcit_huawei_home_decoration_module_login/components/module_login"
+    },
+    {
+      "name": "login_info",
+      "srcPath": "./ohos_agcit/agcit_huawei_exam_login_info/login_info"
     }
   ]
 }

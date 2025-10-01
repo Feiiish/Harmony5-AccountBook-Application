@@ -1,11 +1,22 @@
 import { LoginWithHuaweiIDButton, loginComponentManager } from '@kit.AccountKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { authentication } from '@kit.AccountKit';
+import { UserSetting } from "../models/userSetting"
+import { util } from '@kit.ArkTS';
+import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
+import { cloudCommon } from '@kit.CloudFoundationKit';
+import { request } from '@kit.BasicServicesKit';
+import auth from '@hw-agconnect/auth';
 
 @Entry
 @Component
 struct PreviewLoginButtonPage {
-  // 构造LoginWithHuaweiIDButton组件的控制器
+  userSetting: UserSetting = PersistenceV2.connect(
+    UserSetting,
+    'userSetting',
+    () => new UserSetting()
+  )!;
   controller: loginComponentManager.LoginWithHuaweiIDButtonController =
     new loginComponentManager.LoginWithHuaweiIDButtonController()
       .onClickLoginWithHuaweiIDButton((error: BusinessError, response: loginComponentManager.HuaweiIDCredential) => {
@@ -13,36 +24,62 @@ struct PreviewLoginButtonPage {
           this.dealAllError(error);
           return;
         }
-
         if (response) {
-          console.log("success");
-          hilog.info(0x0000, 'testTag', 'Succeeded in getting response.');
+          console.log("登录成功");
+
+          hilog.info(0x0000, 'testTag', '成功获取响应。');
+          this.getProfile()
           const authCode = response.authorizationCode;
           // 开发者处理authCode
         }
+
       });
+
+  public getProfile() {
+    const authRequest = new authentication.HuaweiIDProvider().createAuthorizationWithHuaweiIDRequest();
+    authRequest.scopes = ['profile']; // 获取头像和昵称
+    authRequest.permissions = ['serviceauthcode']; // 获取 authorizationCode（服务端用）
+    authRequest.forceAuthorization = true;
+    authRequest.state = util.generateRandomUUID();
+
+    const controller = new authentication.AuthenticationController(this.getUIContext().getHostContext());
+    controller.executeRequest(authRequest).then((data) => {
+      const response = data as authentication.AuthorizationWithHuaweiIDResponse;
+      const avatarUri = response?.data?.avatarUri;
+      const nickName = response?.data?.nickName;
+      const authorizationCode = response?.data?.authorizationCode;
+
+      console.log("头像:", avatarUri);
+      console.log("昵称:", nickName);
+      console.log("authCode:", authorizationCode);
+      this.userSetting.profile = avatarUri;
+      this.userSetting.nickName = nickName;
+
+    }).catch((error: BusinessError) => {
+      this.dealAllError(error);
+    });
+  }
 
   // 错误处理
   dealAllError(error: BusinessError): void {
     hilog.error(0x0000, 'testTag',
-      `Failed to login, errorCode is ${error.code}, errorMessage is ${error.message}`);
-    // 在应用登录涉及UI交互场景下，建议按照如下错误码指导提示用户
+      `登录失败，错误码: ${error.code}, 错误信息: ${error.message}`);
     if (error.code === ErrorCode.ERROR_CODE_LOGIN_OUT) {
-      // 用户未登录华为账号，请登录华为账号并重试或者尝试使用其他方式登录
+      // 用户未登录华为账号，请登录华为账号并重试
     } else if (error.code === ErrorCode.ERROR_CODE_NETWORK_ERROR) {
-      // 网络异常，请检查当前网络状态并重试或者尝试使用其他方式登录
+      // 网络异常，请检查网络状态并重试
     } else if (error.code === ErrorCode.ERROR_CODE_INTERNAL_ERROR) {
-      // 登录失败，请尝试使用其他方式登录
+      // 登录失败，请尝试其他登录方式
     } else if (error.code === ErrorCode.ERROR_CODE_USER_CANCEL) {
       // 用户取消授权
     } else if (error.code === ErrorCode.ERROR_CODE_SYSTEM_SERVICE) {
-      // 系统服务异常，请稍后重试或者尝试使用其他方式登录
+      // 系统服务异常，请稍后重试
     } else if (error.code === ErrorCode.ERROR_CODE_REQUEST_REFUSE) {
       // 重复请求，应用无需处理
     } else if (error.code === ErrorCode.ERROR_CODE_AGREEMENT_STATUS_NOT_ACCEPTED) {
       // 用户未同意协议
     } else {
-      // 应用登录失败，请尝试使用其他方式登录
+      // 登录失败，请尝试其他登录方式
     }
   }
 
@@ -50,21 +87,17 @@ struct PreviewLoginButtonPage {
     Column() {
       Column() {
         Column() {
+
           LoginWithHuaweiIDButton({
             params: {
-              // LoginWithHuaweiIDButton支持的样式
               style: loginComponentManager.Style.BUTTON_RED,
-              // 账号登录按钮在登录过程中展示加载态
               extraStyle: {
                 buttonStyle: new loginComponentManager.ButtonStyle().loadingStyle({
                   show: true
                 })
               },
-              // LoginWithHuaweiIDButton的边框圆角半径
               borderRadius: 24,
-              // LoginWithHuaweiIDButton支持的登录类型
               loginType: loginComponentManager.LoginType.ID,
-              // LoginWithHuaweiIDButton支持按钮的样式跟随系统深浅色模式切换
               supportDarkMode: true
             },
             controller: this.controller

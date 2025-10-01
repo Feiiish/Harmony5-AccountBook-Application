@@ -1,4 +1,4 @@
-import { BudgetItem, RecordItem } from '../models/recordItemReference';
+import { BudgetItem, RecordItem, LedgerManager } from '../models/recordItemReference';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced'
 import { findFlag } from '../utils/FindCountryFlags';
 import { variousToPreferred } from '../utils/moneyCount';
@@ -8,7 +8,7 @@ import { formatLargeNumber } from "../utils/formatLargeNumber"
 import { recordDeleter } from "../utils/recordDeleter"
 import { systemDateTime } from '@kit.BasicServicesKit';
 
-//规定普通Row样式
+
 @Extend(Row)
 function currencyCard() {
   .justifyContent(FlexAlign.Start)
@@ -38,10 +38,10 @@ export struct MonthlySummaryPanel {
   }
 
   @Local
-  userSetting: UserSetting = PersistenceV2.connect(
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
   )!;
 
   @Monitor('userSetting.preferredCurrency')
@@ -71,7 +71,7 @@ export struct MonthlySummaryPanel {
 
   private async updateMonthlySummary() {
     try {
-      this.monthlyInOut = await variousToPreferred(this.recordList, this.userSetting.preferredCurrency);
+      this.monthlyInOut = await variousToPreferred(this.recordList, this.ledgerManager.activeBook.preferredCurrency);
       console.log('月度统计已更新');
     } catch (error) {
       console.error('更新月度统计失败:', error);
@@ -84,9 +84,11 @@ export struct MonthlySummaryPanel {
         Column() {
           Text($r('app.string.monthlySummary'))
           Text(formatLargeNumber(this.monthlyInOut[0] - this.monthlyInOut[1]) + " " +
-          this.userSetting.preferredCurrency)
+          this.ledgerManager.activeBook.preferredCurrency)
             .fontSize(24)
             .fontWeight(FontWeight.Bold)
+
+
         }.alignItems(HorizontalAlign.Start)
 
         // 本月支出&收入

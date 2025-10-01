@@ -1,7 +1,7 @@
 import { UserSetting, CachedRatesStatus } from "../models/userSetting"
 import { displayExchangeRates } from "../utils/currencyExchange"
 import { App, PersistenceV2, promptAction, router } from '@kit.ArkUI';
-import { RecordItem, RecordsData, singleCurrency } from '../models/recordItemReference';
+import { RecordItem, RecordsData, singleCurrency, LedgerManager } from '../models/recordItemReference';
 import { calculateEachCurrencyAmount } from '../utils/moneyCount';
 import { findFlag, findColor } from '../utils/FindCountryFlags';
 import { formatLargeNumber } from "../utils/formatLargeNumber"
@@ -55,10 +55,10 @@ export struct MultiCurrencyComposition {
   }
 
   @Local
-  userSetting: UserSetting = PersistenceV2.connect(// 本地持久化用户设置
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
   )!;
 
   @Monitor('userSetting.preferredCurrency')
@@ -101,10 +101,10 @@ export struct MultiCurrencyComposition {
   // 初始化货币设置（去重+确保包含首选货币）
   private initializeCurrencies() {
     const currencies = new Set([
-      ...this.userSetting.chosenCurrency,
-      this.userSetting.preferredCurrency
+      ...this.ledgerManager.activeBook.chosenCurrency,
+      this.ledgerManager.activeBook.preferredCurrency
     ]);
-    this.userSetting.chosenCurrency = Array.from(currencies);
+    this.ledgerManager.activeBook.chosenCurrency = Array.from(currencies);
   }
 
   // 异步计算各货币金额
@@ -113,17 +113,18 @@ export struct MultiCurrencyComposition {
     this.errorMessage = "";
 
     try {
-      const amounts = await calculateEachCurrencyAmount(this.recordList, this.userSetting.preferredCurrency);
+      const amounts =
+        await calculateEachCurrencyAmount(this.recordList, this.ledgerManager.activeBook.preferredCurrency);
 
       // 过滤并排序货币数据
       this.currencyAmounts = amounts
-        .filter(item => this.userSetting.chosenCurrency.includes(item.unit))
+        .filter(item => this.ledgerManager.activeBook.chosenCurrency.includes(item.unit))
         .sort((a, b) => {
           // 将首选货币排在最前面
-          if (a.unit === this.userSetting.preferredCurrency) {
+          if (a.unit === this.ledgerManager.activeBook.preferredCurrency) {
             return -1;
           }
-          if (b.unit === this.userSetting.preferredCurrency) {
+          if (b.unit === this.ledgerManager.activeBook.preferredCurrency) {
             return 1;
           }
           return a.unit.localeCompare(b.unit); // 其他按字母排序
@@ -160,7 +161,7 @@ export struct MultiCurrencyComposition {
       Column() {
 
         Row() {
-          Text(`净资产 ≈ ${this.totalAmount.toFixed(2)} ${this.userSetting.preferredCurrency}`)
+          Text(`净资产 ≈ ${this.totalAmount.toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`)
             .margin({ top: 4 })
             .fontWeight(20)
         }
@@ -275,10 +276,10 @@ export struct currencyItemView {
   @Local isShowSheet: boolean = false;
   @Local forCalcu: number = 0;
   @Local
-  userSetting: UserSetting = PersistenceV2.connect(
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
   )!;
 
   @Builder
@@ -306,7 +307,7 @@ export struct currencyItemView {
               this.forCalcu = Number(val)
             })
           // enter prefered currency
-          Text(this.userSetting.preferredCurrency).margin({ left: 4 })
+          Text(this.ledgerManager.activeBook.preferredCurrency).margin({ left: 4 })
         }
 
         Text(`${"≈" + (this.currency.rate * this.forCalcu).toFixed(2) + " " + this.currency.unit}`)
@@ -331,7 +332,7 @@ export struct currencyItemView {
             .fontColor(this.currency.amount >= 0 ? '#00B300' : '#FF3A3A')
         }.margin({ bottom: 12 })
 
-        if (this.currency.unit !== this.userSetting.preferredCurrency) {
+        if (this.currency.unit !== this.ledgerManager.activeBook.preferredCurrency) {
           Row() {
             Text("汇率：")
             Text(`${(1 / this.currency.rate).toFixed(4)}`)
@@ -340,7 +341,8 @@ export struct currencyItemView {
 
           Row() {
             Text("大约为：")
-            Text(`${(this.currency.amount / this.currency.rate).toFixed(2) + " " + this.userSetting.preferredCurrency}`)
+            Text(`${(this.currency.amount / this.currency.rate).toFixed(2) + " " +
+            this.ledgerManager.activeBook.preferredCurrency}`)
           }.margin({ bottom: 12 })
 
         }
@@ -379,7 +381,7 @@ export struct currencyItemView {
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
         .flexGrow(1)
-      if (this.currency.unit == this.userSetting.preferredCurrency) {
+      if (this.currency.unit == this.ledgerManager.activeBook.preferredCurrency) {
         Text(" 本位币")
       } else {
         Text(`汇率：${parseFloat((1 / this.currency.rate).toFixed(4))}`)
@@ -392,7 +394,7 @@ export struct currencyItemView {
     .padding(12)
     .borderRadius(12)
     .backgroundColor(
-      this.userSetting.preferredCurrency === this.currency.unit
+      this.ledgerManager.activeBook.preferredCurrency === this.currency.unit
         ? $r("app.color.Currency_Card_Main")
         : $r("app.color.Currency_Card_1")
     )

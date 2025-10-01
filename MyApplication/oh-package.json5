@@ -2,6 +2,9 @@
   "modelVersion": "5.1.1",
   "description": "Please describe the basic information.",
   "dependencies": {
+    "@hw-agconnect/auth": "^1.0.5",
+    "module_login": "file:./ohos_agcit/agcit_huawei_home_decoration_module_login/components/module_login",
+    "login_info": "file:./ohos_agcit/agcit_huawei_exam_login_info/login_info"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.21",

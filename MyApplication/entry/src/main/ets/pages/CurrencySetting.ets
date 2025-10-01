@@ -6,7 +6,7 @@ import { PromptAction } from '@kit.ArkUI'
 //from myself
 import { calculateTotalAssets, } from "../utils/moneyCount"
 import { findFlag, } from "../utils/FindCountryFlags"
-import { RecordItem, RecordsData } from '../models/recordItemReference';
+import { RecordItem, RecordsData, LedgerManager } from '../models/recordItemReference';
 
 import { UserSetting } from "../models/userSetting"
 
@@ -70,16 +70,10 @@ struct CurrencyPickerDialog {
 @ComponentV2
 struct currencySettingPage {
   @Local
-  recordsData: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    'incomeExpenseRecords',
-    () => new RecordsData()
-  )!;
-  @Local
-  userSetting: UserSetting = PersistenceV2.connect(// 本地持久化用户设置
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
   )!;
   availableCurrencies: string[] = [
     "USD", "CAD", "EUR", "GBP", "AUD", "JPY", "CNY", "INR", "KRW", "CHF",
@@ -101,7 +95,7 @@ struct currencySettingPage {
               .padding(10).width("100%")
 
             Grid() {
-              ForEach(this.userSetting.chosenCurrency, (currency: string, index: number) => {
+              ForEach(this.ledgerManager.activeBook.chosenCurrency, (currency: string, index: number) => {
                 GridItem() {
 
                   Row() {
@@ -113,14 +107,14 @@ struct currencySettingPage {
                     }
 
                     if (
-                      !this.recordsData.items.some((item: RecordItem) => item.unit === currency)
-                        && this.userSetting.preferredCurrency !== currency
+                      !this.ledgerManager.activeBook.data.items.some((item: RecordItem) => item.unit === currency)
+                        && this.ledgerManager.activeBook.preferredCurrency !== currency
                     ) {
                       Image($r('app.media.bin')).height(30).width(30)
                         .onClick(() => {
                           this.getUIContext()?.animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
-                            this.userSetting.chosenCurrency =
-                              this.userSetting.chosenCurrency.filter(c => c !== currency);
+                            this.ledgerManager.activeBook.chosenCurrency =
+                              this.ledgerManager.activeBook.chosenCurrency.filter(c => c !== currency);
                           });
                         }).margin({ right: 4 })
 
@@ -132,7 +126,7 @@ struct currencySettingPage {
                   .justifyContent(FlexAlign.SpaceBetween)
                   .shadow(ShadowStyle.OUTER_DEFAULT_XS)
                   .backgroundColor(
-                    currency === this.userSetting.preferredCurrency ? $r('app.color.Currency_Card_Main') :
+                    currency === this.ledgerManager.activeBook.preferredCurrency ? $r('app.color.Currency_Card_Main') :
                     $r('app.color.Currency_Card_1')
                   )
                   .margin({ bottom: 8 })
@@ -145,7 +139,7 @@ struct currencySettingPage {
 
 
                   .onClick(() => {
-                    if (currency !== this.userSetting.preferredCurrency) {
+                    if (currency !== this.ledgerManager.activeBook.preferredCurrency) {
                       AlertDialog.show({
                         title: `提示`,
                         message: `是否将${currency} 设置为本位币`,
@@ -158,7 +152,7 @@ struct currencySettingPage {
                           {
                             value: '确认',
                             action: () => {
-                              this.userSetting.preferredCurrency = currency
+                              this.ledgerManager.activeBook.preferredCurrency = currency
                               //refresh data
                             }
                           },
@@ -191,7 +185,7 @@ struct currencySettingPage {
 
             Grid(new Scroller()) {
               ForEach(this.availableCurrencies.filter(currency =>
-              !this.userSetting.chosenCurrency.includes(currency)
+              !this.ledgerManager.activeBook.chosenCurrency.includes(currency)
               ), (currency: string) => {
                 GridItem() {
                   Row() {
@@ -211,10 +205,10 @@ struct currencySettingPage {
                   .margin({ bottom: 8 })
                   .onClick(() => {
 
-                    if (!this.userSetting.chosenCurrency.includes(currency)) {
+                    if (!this.ledgerManager.activeBook.chosenCurrency.includes(currency)) {
                       this.getUIContext()?.animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
-                        this.userSetting.chosenCurrency = [
-                          ...this.userSetting.chosenCurrency,
+                        this.ledgerManager.activeBook.chosenCurrency = [
+                          ...this.ledgerManager.activeBook.chosenCurrency,
                           currency
                         ];
                       });

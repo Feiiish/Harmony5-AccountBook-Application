@@ -1,9 +1,8 @@
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
-import { RecordItem, RecordsData } from '../models/recordItemReference';
+import { RecordItem, RecordsData, LedgerManager } from '../models/recordItemReference';
 import { UserSetting, CachedRatesStatus } from "../models/userSetting"
 import { text } from '@kit.ArkGraphics2D';
 import { updateExchangeRates } from "../utils/currencyExchange"
-
 
 // 将样式定义移动到组件外部
 @Styles
@@ -17,14 +16,14 @@ function basicCard() {
 
 @ComponentV2
 export struct ratesStatus {
+  @Local
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
+  )!;
   @Local currentTime: number = Date.now()
   @Local timerId: number = 0 // 存储定时器ID
-  @Local
-  userSetting: UserSetting = PersistenceV2.connect(
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
-  )!;
   @Local
   cachedRatesStorage: CachedRatesStatus = PersistenceV2.connect(// 本地持久化用户设置
     CachedRatesStatus,
@@ -34,7 +33,7 @@ export struct ratesStatus {
 
   // 组件挂载时启动定时器
   aboutToAppear() {
-    updateExchangeRates(this.userSetting.preferredCurrency)
+    updateExchangeRates(this.ledgerManager.activeBook.preferredCurrency)
     this.timerId = setInterval(() => {
       this.currentTime = Date.now() // 更新当前时间
     }, 60000) // 每分钟更新一次
@@ -56,7 +55,7 @@ export struct ratesStatus {
     const lastUpdate = new Date(this.cachedRatesStorage.lastUpdateTime).getTime();
     const diffMinutes = Math.floor((this.currentTime - lastUpdate) / 60000);
     if (diffMinutes >= 20) {
-      updateExchangeRates(this.userSetting.preferredCurrency);
+      updateExchangeRates(this.ledgerManager.activeBook.preferredCurrency);
       this.currentTime = Date.now();
     }
     return diffMinutes;

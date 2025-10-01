@@ -1,5 +1,5 @@
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
-import { RecordItem, RecordsData, filterRecordItems, BudgetItem } from '../models/recordItemReference';
+import { RecordItem, RecordsData, filterRecordItems, BudgetItem, LedgerManager } from '../models/recordItemReference';
 import { UserSetting, CachedRatesStatus } from "../models/userSetting"
 import { variousToPreferred } from '../utils/moneyCount';
 import { recordDeleter } from '../utils/recordDeleter';
@@ -20,20 +20,16 @@ function basicCard() {
 @Preview
 @ComponentV2
 export struct budgetComponent {
-  @Local recordsData: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    'incomeExpenseRecords',
-    () => new RecordsData()
+  @Local
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
   )!;
 
-  @Monitor('recordsData.items')
+  @Monitor('ledgerManager.activeBook.data.items')
   onItemsChange(monitor: IMonitor) {
-    this.calculateBudgetProgress(this.recordsData);
-  }
-
-  @Monitor('recordsData.budgets')
-  onBudgetsChange(monitor: IMonitor) {
-    this.calculateBudgetProgress(this.recordsData);
+    this.calculateBudgetProgress(this.ledgerManager.activeBook.data);
   }
 
   @Local value: number = 0
@@ -66,7 +62,7 @@ export struct budgetComponent {
   }
 
   aboutToAppear(): void {
-    this.calculateBudgetProgress(this.recordsData)
+    this.calculateBudgetProgress(this.ledgerManager.activeBook.data)
   }
 
   @Builder
@@ -194,15 +190,15 @@ export struct budgetComponent {
 
   build() {
 
-    if (this.recordsData.budgets.length > 0) {
+    if (this.ledgerManager.activeBook.data.budgets.length > 0) {
 
       Column() {
         Text("预算和计划").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 14, top: 4 })
           .onClick(() => {
-            this.recordsData.budgets = []
+            this.ledgerManager.activeBook.data.budgets = []
           })
 
-        ForEach(this.recordsData.budgets, (budget: BudgetItem, index: number) => {
+        ForEach(this.ledgerManager.activeBook.data.budgets, (budget: BudgetItem, index: number) => {
 
           Column() {
             // 预算标题和金额

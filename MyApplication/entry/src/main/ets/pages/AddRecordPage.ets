@@ -5,7 +5,7 @@ import type { BusinessError } from '@kit.BasicServicesKit';
 import { photoAccessHelper } from '@kit.MediaLibraryKit';
 
 import { safeCalculate } from '../utils/safeCalculate';
-import { UserSetting } from "../models/userSetting"
+
 import { findFlag } from '../utils/FindCountryFlags';
 import { CustomContentDialog } from '@kit.ArkUI';
 import { displayExchangeRates } from '../utils/currencyExchange'
@@ -60,11 +60,11 @@ struct CurrencyPickerDialog {
   @State selected: string = ''
   onAccept: (value: string) => void = (_) => {
   }
-  userSetting: UserSetting = PersistenceV2.connect(
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
-  )!
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
+  )!;
 
   build() {
     Stack() {
@@ -73,7 +73,7 @@ struct CurrencyPickerDialog {
       Column({ space: 20 }) {
 
         TextPicker({
-          range: this.userSetting.chosenCurrency
+          range: this.ledgerManager.activeBook.chosenCurrency
         })
           .selectedIndex(1)
           .onChange((value, index) => {
@@ -158,13 +158,7 @@ struct IncomePage {
     () => new RecordsData()
   )!;
   * */
-  @Local
-  userSetting: UserSetting = PersistenceV2.connect(
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
-  )!;
-  @Local tempUnit: string = this.userSetting.preferredCurrency;
+  @Local tempUnit: string = this.ledgerManager.activeBook.preferredCurrency;
   @Local tempDate: string = new Date().toDateString();
   @Local tempTag: string = ""
   @Local tempNote: string = ""
@@ -195,7 +189,7 @@ struct IncomePage {
     this.recordsData.items = [...this.recordsData.items, newRecord];
     // 重置表单
     this.tempAmount = 0;
-    this.tempUnit = this.userSetting.preferredCurrency
+    this.tempUnit = this.ledgerManager.activeBook.preferredCurrency
     this.tempDate = '';
     this.tempTag = ""
     this.tempNote = '';
@@ -208,7 +202,7 @@ struct IncomePage {
   }
 
   private async cacuRate() {
-    this.rate = await displayExchangeRates(this.userSetting.preferredCurrency, this.tempUnit)
+    this.rate = await displayExchangeRates(this.ledgerManager.activeBook.preferredCurrency, this.tempUnit)
   }
 
   private dialogController: CustomDialogController | undefined = new CustomDialogController({
@@ -310,13 +304,13 @@ struct IncomePage {
 
   tagButtonOnAccept() {
 
-    for (const str of this.userSetting.tags) {
+    for (const str of this.ledgerManager.activeBook.tags) {
       if (this.inputTagValue === str) {
         this.tempTag = this.inputTagValue;
         return;
       }
     }
-    this.userSetting.tags = [...this.userSetting.tags, this.inputTagValue.trim()]
+    this.ledgerManager.activeBook.tags = [...this.ledgerManager.activeBook.tags, this.inputTagValue.trim()]
     this.tempTag = this.inputTagValue
     console.info('Callback when the second button is clicked');
   }
@@ -380,14 +374,15 @@ struct IncomePage {
                     this.message = "请输入正确表达式"
                     this.couldSave = false;
                   } else if (this.tempAmount < 0) {
-                    if (this.tempUnit === this.userSetting.preferredCurrency) {
+                    if (this.tempUnit === this.ledgerManager.activeBook.preferredCurrency) {
                       this.message =
-                        "支出: " + JSON.stringify(this.tempAmount) + " " + this.userSetting.preferredCurrency
+                        "支出: " + JSON.stringify(this.tempAmount) + " " +
+                        this.ledgerManager.activeBook.preferredCurrency
                     } else {
                       this.cacuRate()
                       this.message =
                         "支出: " + JSON.stringify(this.tempAmount) + this.tempUnit +
-                          ` 约为${(this.rate).toFixed(2)} ${this.userSetting.preferredCurrency}`
+                          ` 约为${(this.rate).toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`
                     }
 
                     this.couldSave = true;
@@ -438,9 +433,9 @@ struct IncomePage {
                     primaryButton: {
                       value: '删除',
                       action: () => {
-                        console.log("123" + this.userSetting.tags.toString());
-                        this.userSetting.tags =
-                          this.userSetting.tags.filter((item: string) => item !== this.tempTag);
+                        console.log("123" + this.ledgerManager.activeBook.tags.toString());
+                        this.ledgerManager.activeBook.tags =
+                          this.ledgerManager.activeBook.tags.filter((item: string) => item !== this.tempTag);
 
                       }
                     },
@@ -455,7 +450,7 @@ struct IncomePage {
 
 
               Flex({ wrap: FlexWrap.Wrap }) {
-                ForEach(this.userSetting.tags, (item: string) => {
+                ForEach(this.ledgerManager.activeBook.tags, (item: string) => {
                   Text(item)
                     .fontSize(16)
                     .fontColor(this.tempTag === item ? "#000000" : $r('app.color.Font_Color'))// 选中时白色文字
@@ -541,7 +536,7 @@ struct IncomePage {
               .height(50)
               .margin(20)
               .onClick(() => {
-                if (!this.userSetting.chosenCurrency.includes(this.tempUnit)) {
+                if (!this.ledgerManager.activeBook.chosenCurrency.includes(this.tempUnit)) {
                   this.couldSave = false
                   promptAction.showToast({ message: '单位不存在' });
                   return
@@ -582,18 +577,12 @@ struct planningPage {
   @Local couldSave: boolean = false;
   @Local showSelect: boolean = false;
   @Local
-  recordsData: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    RECORDS_DATA_KEY,
-    () => new RecordsData()
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
   )!;
-  @Local
-  userSetting: UserSetting = PersistenceV2.connect(
-    UserSetting,
-    "userSetting",
-    () => new UserSetting()
-  )!;
-  @Local tempUnit: string = this.userSetting.preferredCurrency;
+  @Local tempUnit: string = this.ledgerManager.activeBook.preferredCurrency;
   @Local tempStartDate: string = new Date().toDateString();
   @Local tempEndDate: string = (() => {
     const date = new Date();
@@ -625,10 +614,10 @@ struct planningPage {
     newBuget.name = this.bugetName;
 
 
-    this.recordsData.budgets = [...this.recordsData.budgets, newBuget];
+    this.ledgerManager.activeBook.data.budgets = [...this.ledgerManager.activeBook.data.budgets, newBuget];
     // 重置表单
     this.tempAmount = 0;
-    this.tempUnit = this.userSetting.preferredCurrency
+    this.tempUnit = this.ledgerManager.activeBook.preferredCurrency
     this.tempTag = ""
     this.bugetName = "";
 
@@ -677,11 +666,11 @@ struct planningPage {
           GridItem() {
             Button(item)
               .width("20%")
-              .height("8%")
+              .height("6%")
               .fontSize(20)
-              .backgroundColor(item === '⌫' ? Color.Red : $r('app.color.button_color'))
+              .backgroundColor(item === '⌫' ? Color.Red : $r('app.color.Basic_Card_background'))
               .fontColor($r('app.color.Font_Color'))
-              .borderRadius(6)
+              .borderRadius(15)
               .shadow(ShadowStyle.OUTER_DEFAULT_XS)
               .gesture(
                 LongPressGesture({ repeat: false })
@@ -736,13 +725,13 @@ struct planningPage {
 
   tagButtonOnAccept() {
 
-    for (const str of this.userSetting.tags) {
+    for (const str of this.ledgerManager.activeBook.tags) {
       if (this.inputValue === str) {
         this.tempTag = this.inputValue;
         return;
       }
     }
-    this.userSetting.tags = [...this.userSetting.tags, this.inputValue.trim()]
+    this.ledgerManager.activeBook.tags = [...this.ledgerManager.activeBook.tags, this.inputValue.trim()]
     this.tempTag = this.inputValue
     console.info('Callback when the second button is clicked');
   }
@@ -881,7 +870,7 @@ struct planningPage {
 
               if (this.isLimitedToTag) {
                 Flex({ wrap: FlexWrap.Wrap }) {
-                  ForEach(this.userSetting.tags, (item: string) => {
+                  ForEach(this.ledgerManager.activeBook.tags, (item: string) => {
                     Text(item)
                       .fontSize(16)
                       .fontColor(this.tempTag === item ? "#000000" : $r('app.color.Font_Color'))// 选中时白色文字
@@ -936,7 +925,7 @@ struct planningPage {
               .height(50)
               .margin(20)
               .onClick(() => {
-                if (!this.userSetting.chosenCurrency.includes(this.tempUnit)) {
+                if (!this.ledgerManager.activeBook.chosenCurrency.includes(this.tempUnit)) {
                   this.couldSave = false
                   promptAction.showToast({ message: '单位不存在' });
                   return

@@ -1,6 +1,9 @@
 import { CustomContentDialog, TipsDialog } from '@kit.ArkUI';
-import { RecordItem, RecordsData, LedgerManager } from '../models/recordItemReference';
+import { RecordItem, RecordsData, LedgerManager, LedgerBook } from '../models/recordItemReference';
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
+import { formatDateAdvanced } from '../utils/formatDateAdvanced';
+import { sendableColorSpaceManager } from '@kit.ArkGraphics2D';
+import { manager } from '@kit.NearLinkKit';
 
 @Entry
 @ComponentV2
@@ -37,6 +40,9 @@ export struct CustomDialogComponent {
       },
       buttons: [{
         value: '取消',
+        action: () => {
+          this.dialogController?.close();
+        }
       }, {
         value: '确认',
         action: () => {
@@ -66,14 +72,100 @@ export struct CustomDialogComponent {
 
   build() {
     Column() {
-      Button('创建新账本')
-        .buttonStyle(ButtonStyleMode.NORMAL)
-        .fontWeight(FontWeight.Medium)
-        .fontSize($r('sys.float.Body_L'))
-        .fontColor($r('sys.color.font_emphasize'))
-        .onClick(() => {
-          this.dialogController?.open();
+      Column() {
+
+        Text('我的账本 ' + this.ledgerManager.books.length + "/3")
+          .fontWeight(FontWeight.Bold)
+          .fontSize(24)
+          .padding(10)
+
+
+        ForEach(this.ledgerManager.books, (book: LedgerBook) => {
+          Column({ space: 10 }) {
+            // 账本名称
+            Row() {
+              Row() {
+                Image($r('app.media.agenda')).width(30).margin({ right: 12 })
+                Text(book.name)
+                  .fontSize(20)
+                  .fontWeight(FontWeight.Bold)
+                  .lineHeight(24)
+              }
+
+              Image($r('app.media.bin')).width(30)
+                .onClick(() => {
+
+                  AlertDialog.show({
+                    title: `要删除账本吗`,
+                    message: `此操作不可退回`,
+                    buttons: [
+                      {
+                        value: '取消',
+                        action: () => {
+                        }
+                      },
+                      {
+                        value: '确认',
+                        action: () => {
+                          this.ledgerManager.deleteBook(book.id)
+                          console.log('执行删除操作');
+                        }
+                      },
+                    ]
+                  })
+
+                })
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+
+
+            Row() {
+              Text(`账单数量: ${book.data.items.length}`)
+                .fontSize(14)
+                .margin({ top: 4, right: 6 })
+              Text(`计划数量: ${book.data.budgets.length}`)
+                .fontSize(14)
+                .margin({ top: 4 })
+            }
+
+            // 创建日期
+            Text(`创建日期: ${formatDateAdvanced(book.createdAt, "YYYY-MM-DD")}`)
+              .fontSize(14)
+              .margin({ top: 4 })
+
+          }
+          .alignItems(HorizontalAlign.Start)
+          .width('80%')
+          .padding(12)
+          .backgroundColor(book.id === this.ledgerManager.activeBookId ? $r('app.color.Currency_Card_Main') :
+          $r('app.color.Currency_Card_1'))
+          .borderRadius(12)
+          .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+          .margin({ bottom: 12 })
+          .onClick(() => {
+            this.ledgerManager.switchBook(book.id);
+          })
         })
+
+
+        Button('创建新账本')
+          .buttonStyle(ButtonStyleMode.NORMAL)
+          .margin({ bottom: 6 })
+          .fontWeight(FontWeight.Medium)
+          .fontSize($r('sys.float.Body_L'))
+          .fontColor($r('sys.color.font_emphasize'))
+          .opacity(this.ledgerManager.books.length < 3 ? 1 : 0.4)
+          .onClick(() => {
+            if (this.ledgerManager.books.length < 3) {
+              this.dialogController?.open();
+            }
+
+          })
+
+      }.backgroundColor($r('app.color.Basic_Card_background'))
+      .borderRadius(15)
+      .width('90%')
+      .padding(12)
+
     }
     .width('100%')
   }

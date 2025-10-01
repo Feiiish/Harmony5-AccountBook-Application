@@ -82,18 +82,18 @@ export class RecordsData {
   @Trace
   items: RecordItem[] = [];
 
-  toMonthItems(date: Date): RecordItem[] {
+  public toMonthItems(date: Date): RecordItem[] {
     const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
     const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
     return filterRecordItems(this.items, startDate, endDate);
-
   }
 
   @Type(BudgetItem)
   @Trace
   budgets: BudgetItem[] = [];
 }
+
 
 //different account book
 @ObservedV2
@@ -103,6 +103,14 @@ export class LedgerBook {
   @Trace createdAt: string = new Date().toISOString();
   @Type(RecordsData)
   @Trace data: RecordsData = new RecordsData();
+  @Trace preferredCurrency: string = "CNY";
+  @Trace chosenCurrency: string[] = ["CNY", "CAD", "USD", "JPY"];
+  @Trace tags: string[] = ['餐饮', '购物', '交通', '娱乐', '住房', '工资', '奖金', '投资'];
+  @Trace chosenDate: Date = new Date;
+
+  clearBook() {
+    this.data.items = []
+  }
 }
 
 

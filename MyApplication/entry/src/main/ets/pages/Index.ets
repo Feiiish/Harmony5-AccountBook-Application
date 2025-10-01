@@ -39,38 +39,26 @@ struct Index {
     'multiLedgerStorage',
     () => new LedgerManager()
   )!;
-  @Local recordsData: RecordsData = this.ledgerManager.activeBook.data
-
-
-  @Local
-  tomonthRecords: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    'tomonthRecords',
-    () => new RecordsData()
-  )!;
-
-  @Monitor('tomonthRecords.items')
-  onItemsChange(monitor: IMonitor) {
-    console.log("Items changed");
-    this.UpdateThings()
-  }
-
-  private async UpdateThings() {
-    this.weeklyData = await calculateWeeklyData(this.recordsData.items, this.userSetting.preferredCurrency)
-  }
-
-  @Local
-  userSetting: UserSetting = PersistenceV2.connect(// 本地持久化用户设置
+  userSetting: UserSetting = PersistenceV2.connect(
     UserSetting,
-    "userSetting",
+    'userSetting',
     () => new UserSetting()
   )!;
 
-  aboutToAppear(): void {
-    this.UpdateThings()
-    console.log(new Date().toDateString());
-    console.log(formatDateAdvanced(new Date(), "DD"));
+  private async UpdateThings() {
+    this.weeklyData =
+      await calculateWeeklyData(this.ledgerManager.activeBook.data.items,
+        this.ledgerManager.activeBook.preferredCurrency)
+  }
 
+  @Monitor('ledgerManager.activeBookId')
+  onBookChange(monitor: IMonitor) {
+    this.UpdateThings()
+  }
+
+  @Monitor('ledgerManager.activeBook.data.items')
+  onItemChange(monitor: IMonitor) {
+    this.UpdateThings()
   }
 
   onPageShow(): void {
@@ -118,11 +106,10 @@ struct Index {
 
               //login component
               Column() {
-                Column()
-                  .width(120)
-                  .height(120)
+                Image(this.userSetting.profile)
+                  .width(100)
+                  .height(100)
                   .backgroundColor(Color.Gray)
-
                   .borderRadius(150)
                   .onClick(() => {
                     router.pushUrl({
@@ -133,10 +120,15 @@ struct Index {
                       }
                     })
                   })
-                Text('未登录').padding({ top: 15 })
+
+                if (!this.userSetting.nickName) {
+                  Text('未登录').padding({ top: 15 })
+                } else {
+                  Text(this.userSetting.nickName).padding({ top: 15 })
+                }
               }
               .justifyContent(FlexAlign.Center)
-              .height(180)
+              .height(150)
               .width("100%")
 
               menuButtons()
@@ -200,25 +192,29 @@ struct Index {
                     .height(40)
 
                     //########
-                    MonthlySummaryPanel({ recordList: this.tomonthRecords.items })
+                    MonthlySummaryPanel({
+                      recordList: this.ledgerManager.activeBook.data.toMonthItems(this.ledgerManager.activeBook.chosenDate)
+                    })
                       .transition(
                         TransitionEffect.OPACITY
                           .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-                          .animation({ duration: 500, curve: Curve.FastOutSlowIn })
+                          .animation({ duration: 400, curve: Curve.FastOutSlowIn })
                       );
                     WeeklyChart({ data: this.weeklyData })
                       .transition(
                         TransitionEffect.OPACITY
                           .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-                          .animation({ duration: 500, curve: Curve.FastOutSlowIn })
+                          .animation({ duration: 400, curve: Curve.FastOutSlowIn })
                       );
 
                     // RecordListView({ recordList: this.choosedData.items })
-                    searchBarView({ recordList: this.tomonthRecords.items })
+                    searchBarView({
+                      recordList: this.ledgerManager.activeBook.data.toMonthItems(this.ledgerManager.activeBook.chosenDate)
+                    })
                       .transition(
                         TransitionEffect.OPACITY
                           .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-                          .animation({ duration: 500, curve: Curve.FastOutSlowIn })
+                          .animation({ duration: 400, curve: Curve.FastOutSlowIn })
                       );
                   }.padding(12)
                 }
@@ -238,7 +234,7 @@ struct Index {
                   Column({ space: 2 }) {
                     budgetComponent()
 
-                    MultiCurrencyComposition({ recordList: this.recordsData.items })
+                    MultiCurrencyComposition({ recordList: this.ledgerManager.activeBook.data.items })
                   }
                 }.padding(10)
               }
