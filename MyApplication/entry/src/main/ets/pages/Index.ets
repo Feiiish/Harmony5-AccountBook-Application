@@ -4,22 +4,23 @@ import i18n from '@ohos.i18n'
 
 //from myself
 import { calculateTotalAssets, } from "../utils/moneyCount"
-import { RecordItem, RecordsData, LedgerManager } from '../models/recordItemReference';
+import { RecordItem, RecordsData, LedgerManager, filterRecordItems } from '../models/recordItemReference';
 import { MultiCurrencyComposition } from '../components/multiCurrency';
 import { UserSetting } from "../models/userSetting"
-import { WeeklyChart, calculateWeeklyData } from "../components/charts/weeklyChart"
+import { WeeklyChart } from "../components/charts/weeklyChart"
 
 //components
 import { BottomNavigation } from "../components/bottomNavi"
 import { RecordListView, MonthlySummaryPanel } from '../components/mainPageComponents';
 import { menuButtons } from '../components/menuButtons';
 import { budgetComponent } from '../components/bugetComponent';
-
+import { calendar } from '../components/charts/calendar';
 import { searchBarView } from '../components/searchBar';
 import { datePicker } from '../components/buttons/MonthPicker';
 import { Constants } from '../common/Constants';
 import { resourceManager } from '@kit.LocalizationKit';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced';
+import { text } from '@kit.ArkGraphics2D';
 
 // 接受序列化失败的回调
 PersistenceV2.notifyOnError((key: string, reason: string, msg: string) => {
@@ -30,7 +31,7 @@ PersistenceV2.notifyOnError((key: string, reason: string, msg: string) => {
 @Entry
 @Preview
 @ComponentV2
-struct Index {
+export struct Index {
   @Local weeklyData: number[] = [];
   @Local currentTabIndex: number = 0
   @Local
@@ -44,27 +45,6 @@ struct Index {
     'userSetting',
     () => new UserSetting()
   )!;
-
-  private async UpdateThings() {
-    this.weeklyData =
-      await calculateWeeklyData(this.ledgerManager.activeBook.data.items,
-        this.ledgerManager.activeBook.preferredCurrency)
-  }
-
-  @Monitor('ledgerManager.activeBookId')
-  onBookChange(monitor: IMonitor) {
-    this.UpdateThings()
-  }
-
-  @Monitor('ledgerManager.activeBook.data.items')
-  onItemChange(monitor: IMonitor) {
-    this.UpdateThings()
-  }
-
-  onPageShow(): void {
-    this.UpdateThings()
-  }
-
   @Local
   tempMessage: string = ""
   /*
@@ -133,7 +113,6 @@ struct Index {
 
               menuButtons()
 
-
             }
             .borderRadius(8)
             .clip(true)
@@ -193,14 +172,22 @@ struct Index {
 
                     //########
                     MonthlySummaryPanel({
-                      recordList: this.ledgerManager.activeBook.data.toMonthItems(this.ledgerManager.activeBook.chosenDate)
+                      recordList: filterRecordItems(this.ledgerManager.activeBook.data.items,
+                        new Date(this.ledgerManager.activeBook.startDate),
+                        new Date(this.ledgerManager.activeBook.endDate)
+                      )
                     })
                       .transition(
                         TransitionEffect.OPACITY
                           .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
                           .animation({ duration: 400, curve: Curve.FastOutSlowIn })
                       );
-                    WeeklyChart({ data: this.weeklyData })
+                    budgetComponent()
+
+                    WeeklyChart({
+                      recordList: this.ledgerManager.activeBook.data.items,
+                      unit: this.ledgerManager.activeBook.preferredCurrency
+                    })
                       .transition(
                         TransitionEffect.OPACITY
                           .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
@@ -209,7 +196,9 @@ struct Index {
 
                     // RecordListView({ recordList: this.choosedData.items })
                     searchBarView({
-                      recordList: this.ledgerManager.activeBook.data.toMonthItems(this.ledgerManager.activeBook.chosenDate)
+                      recordList: filterRecordItems(this.ledgerManager.activeBook.data.items,
+                        new Date(this.ledgerManager.activeBook.startDate),
+                        new Date(this.ledgerManager.activeBook.endDate))
                     })
                       .transition(
                         TransitionEffect.OPACITY
@@ -227,14 +216,20 @@ struct Index {
 
             }.tabBar('首页')
 
-
             TabContent() {
               List() {
                 ListItem() {
                   Column({ space: 2 }) {
-                    budgetComponent()
-
                     MultiCurrencyComposition({ recordList: this.ledgerManager.activeBook.data.items })
+                    Column() {
+                      calendar()
+                    }
+
+                    .backgroundColor($r('app.color.Basic_Card_background'))
+                    .padding(12)
+                    .borderRadius(24)
+                    .margin({ bottom: 12 })
+
                   }
                 }.padding(10)
               }

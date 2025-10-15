@@ -107,6 +107,9 @@ export class LedgerBook {
   @Trace chosenCurrency: string[] = ["CNY", "CAD", "USD", "JPY"];
   @Trace tags: string[] = ['餐饮', '购物', '交通', '娱乐', '住房', '工资', '奖金', '投资'];
   @Trace chosenDate: Date = new Date;
+  @Trace startDate: Date = new Date;
+  @Trace endDate: Date = new Date;
+  @Trace cloudTrashBin: string[] = []
 
   clearBook() {
     this.data.items = []

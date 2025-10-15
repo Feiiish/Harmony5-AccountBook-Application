@@ -1,8 +1,8 @@
 import { cloudDatabase } from '@kit.CloudFoundationKit';
 
-class record extends cloudDatabase.DatabaseObject {
+class CloudRecord extends cloudDatabase.DatabaseObject {
   public naturalbase_ClassName(): string {
-    return "record";
+    return "CloudRecord";
   }
 
   public id: string | undefined;
@@ -12,6 +12,8 @@ class record extends cloudDatabase.DatabaseObject {
   public note: string | undefined;
   public date: string | undefined;
   public selectimageUriedImage: ResourceStr | undefined;
+  public fromAccount: string | undefined;
+  public fromBookID: string | undefined;
 }
 
-export { record };
+export { CloudRecord };

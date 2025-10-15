@@ -36,7 +36,7 @@ export struct PieChartExample {
     let startAngle = 0;
 
     if (this.total === 0 || this.pieData.length === 0) {
-      // 绘制灰色圆形
+      // 绘制空白占位圆
       this.context.fillStyle = '#CCCCCC';
       this.context.beginPath();
       this.context.arc(centerX, centerY, radius, 0, 2 * Math.PI);
@@ -65,7 +65,7 @@ export struct PieChartExample {
 
       this.context.globalCompositeOperation = 'destination-out';
       this.context.beginPath();
-      this.context.arc(centerX, centerY, radius * 0.5, 0, 2 * Math.PI);
+      this.context.arc(centerX, centerY, radius * 0.6, 0, 2 * Math.PI);
       this.context.fill();
       this.context.globalCompositeOperation = 'source-over';
 

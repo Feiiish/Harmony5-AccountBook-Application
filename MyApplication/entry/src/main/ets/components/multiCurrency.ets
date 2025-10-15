@@ -196,6 +196,8 @@ export struct MultiCurrencyComposition {
 
       }
       .basicCard()
+      .shadow(ShadowStyle.OUTER_FLOATING_SM)
+      .borderRadius(24)
       .backgroundColor($r('app.color.Card_background_2'))
       .margin({ top: 12 })
 
@@ -299,19 +301,19 @@ export struct currencyItemView {
 
       Column() {
         //text Input 可以用指定货币换算成目标货币
+        Text('计算汇率').width('90%').fontSize(18).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
         Row() {
           TextInput({ text: "1" })
             .type(InputType.NUMBER_DECIMAL)
-            .width(160)
+            .width(100)
             .onChange((val: string) => {
               this.forCalcu = Number(val)
             })
           // enter prefered currency
-          Text(this.ledgerManager.activeBook.preferredCurrency).margin({ left: 4 })
-        }
+          Text(" " + this.ledgerManager.activeBook.preferredCurrency + " ")
 
-        Text(`${"≈" + (this.currency.rate * this.forCalcu).toFixed(2) + " " + this.currency.unit}`)
-          .margin({ top: 12 })
+          Text(`${"≈" + " " + (this.currency.rate * this.forCalcu).toFixed(2) + " " + this.currency.unit}`)
+        }.width('90%')
 
       }
       .shadow(ShadowStyle.OUTER_DEFAULT_SM)
@@ -325,18 +327,19 @@ export struct currencyItemView {
 
       Column() {
 
-        Row() {
-          Text("货币总额：")
-          Text(`${this.currency.amount}`)
-
-            .fontColor(this.currency.amount >= 0 ? '#00B300' : '#FF3A3A')
-        }.margin({ bottom: 12 })
 
         if (this.currency.unit !== this.ledgerManager.activeBook.preferredCurrency) {
           Row() {
             Text("汇率：")
             Text(`${(1 / this.currency.rate).toFixed(4)}`)
 
+          }.margin({ bottom: 12 })
+
+          Row() {
+            Text("货币总额：")
+            Text(`${this.currency.amount}`)
+
+              .fontColor(this.currency.amount >= 0 ? '#00B300' : '#FF3A3A')
           }.margin({ bottom: 12 })
 
           Row() {

@@ -4,10 +4,13 @@
   "dependencies": {
     "@hw-agconnect/auth": "^1.0.5",
     "module_login": "file:./ohos_agcit/agcit_huawei_home_decoration_module_login/components/module_login",
-    "login_info": "file:./ohos_agcit/agcit_huawei_exam_login_info/login_info"
+    "login_info": "file:./ohos_agcit/agcit_huawei_exam_login_info/login_info",
+    "cjcalendar": "2.3.3",
+    "@mcui/mccharts": "2.8.8"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.21",
     "@ohos/hamock": "1.0.0"
-  }
+  },
+  "dynamicDependencies": {}
 }

@@ -9,6 +9,7 @@ import { cloudCommon } from '@kit.CloudFoundationKit';
 import { request } from '@kit.BasicServicesKit';
 import auth from '@hw-agconnect/auth';
 
+
 @Entry
 @Component
 struct PreviewLoginButtonPage {
@@ -30,6 +31,8 @@ struct PreviewLoginButtonPage {
           hilog.info(0x0000, 'testTag', '成功获取响应。');
           this.getProfile()
           const authCode = response.authorizationCode;
+          const openID = response.openID
+          //Open ID, Union ID, authCode
           // 开发者处理authCode
         }
 
@@ -58,6 +61,21 @@ struct PreviewLoginButtonPage {
     }).catch((error: BusinessError) => {
       this.dealAllError(error);
     });
+  }
+
+  aboutToAppear(): void {
+    auth.signIn({
+      autoCreateUser: true,
+      "credentialInfo": {
+        "kind": 'hwid'
+      }
+    }).then(signInResult => {
+      hilog.info(0x0000, 'testTag', '%{public}s', `signInHwid success. result: ${signInResult.getUser().getUid()}`);
+    })
+      .catch((error: BusinessError) => {
+        hilog.error(0x0000, 'testTag', '%{public}s',
+          `signInHwid error, Code: ${error.code}, message: ${error.message}`);
+      })
   }
 
   // 错误处理

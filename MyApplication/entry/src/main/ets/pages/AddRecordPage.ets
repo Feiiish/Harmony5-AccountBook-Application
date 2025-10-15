@@ -202,7 +202,41 @@ struct IncomePage {
   }
 
   private async cacuRate() {
-    this.rate = await displayExchangeRates(this.ledgerManager.activeBook.preferredCurrency, this.tempUnit)
+    this.rate = await displayExchangeRates(this.ledgerManager.activeBook.preferredCurrency, this.tempUnit);
+    this.updateMessage(); // 确保 rate 有值后再更新 message
+  }
+
+  private updateMessage() {
+    if (this.tempAmount == null) {
+      this.message = "请输入正确表达式"
+      this.couldSave = false;
+    } else if (this.tempUnit === this.ledgerManager.activeBook.preferredCurrency) {
+      if (this.tempAmount! >= 0) {
+        this.message =
+          "收入 " + JSON.stringify(this.tempAmount) + " " +
+          this.ledgerManager.activeBook.preferredCurrency
+      } else {
+        this.message =
+          "支出: " + JSON.stringify(this.tempAmount) + " " +
+          this.ledgerManager.activeBook.preferredCurrency
+      }
+      this.couldSave = true
+    } else {
+
+      if (this.tempAmount! >= 0) {
+        this.message =
+          "收入: " + JSON.stringify(this.tempAmount) + " " + this.tempUnit +
+            ` 约为${(this.tempAmount! / this.rate
+            ).toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`
+      } else {
+        this.message =
+          "支出: " + JSON.stringify(this.tempAmount) + " " + this.tempUnit +
+            ` 约为${(this.tempAmount! / this.rate
+            ).toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`
+      }
+      this.couldSave = true
+    }
+
   }
 
   private dialogController: CustomDialogController | undefined = new CustomDialogController({
@@ -343,6 +377,7 @@ struct IncomePage {
     builder: CurrencyPickerDialog({
       onAccept: (value: string) => {
         this.tempUnit = value
+        this.cacuRate()
         console.log('用户选择了货币:', value)
       }
     })
@@ -369,29 +404,7 @@ struct IncomePage {
                 .onChange((value: string) => {
 
                   this.tempAmount = safeCalculate(value);
-
-                  if (this.tempAmount == null) {
-                    this.message = "请输入正确表达式"
-                    this.couldSave = false;
-                  } else if (this.tempAmount < 0) {
-                    if (this.tempUnit === this.ledgerManager.activeBook.preferredCurrency) {
-                      this.message =
-                        "支出: " + JSON.stringify(this.tempAmount) + " " +
-                        this.ledgerManager.activeBook.preferredCurrency
-                    } else {
-                      this.cacuRate()
-                      this.message =
-                        "支出: " + JSON.stringify(this.tempAmount) + this.tempUnit +
-                          ` 约为${(this.rate).toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`
-                    }
-
-                    this.couldSave = true;
-                  } else {
-
-                    this.message = "收入： " + JSON.stringify(this.tempAmount)
-                    this.couldSave = true;
-                  }
-
+                  this.cacuRate()
                 })
 
               //currency Sign
@@ -763,6 +776,7 @@ struct planningPage {
     builder: CurrencyPickerDialog({
       onAccept: (value: string) => {
         this.tempUnit = value
+
         console.log('用户选择了货币:', value)
       }
     })
@@ -794,11 +808,11 @@ struct planningPage {
                     this.message = "请输入正确表达式"
                     this.couldSave = false;
                   } else if (this.tempAmount < 0) {
-                    this.message = "支出预算: " + JSON.stringify(this.tempAmount)
+                    this.message = "支出预算: " + JSON.stringify(this.tempAmount) + " " + this.tempUnit
                     this.couldSave = true;
                   } else {
 
-                    this.message = "存钱计划： " + JSON.stringify(this.tempAmount)
+                    this.message = "存钱计划： " + JSON.stringify(this.tempAmount) + " " + this.tempUnit
                     this.couldSave = true;
                   }
                 })

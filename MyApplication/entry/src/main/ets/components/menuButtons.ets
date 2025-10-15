@@ -6,10 +6,10 @@ import i18n from '@ohos.i18n'
 import { calculateTotalAssets, } from "../utils/moneyCount"
 import { RecordItem, RecordsData, LedgerManager, LedgerBook } from '../models/recordItemReference';
 import { UserSetting } from "../models/userSetting"
-import { WeeklyChart, calculateWeeklyData } from "../components/charts/weeklyChart"
 import { ratesStatus } from "../components/RatesStatus"
-import { exporter } from "../utils/csvExporter"
-import { cloudData } from "../utils/cloud"
+import { exporter } from "../utils/cloudAndFiles/csvExporter"
+import { cloudData } from "../utils/cloudAndFiles/cloud"
+
 //components
 import { BottomNavigation } from "../components/bottomNavi"
 import { RecordListView, MonthlySummaryPanel } from '../components/mainPageComponents';
@@ -20,6 +20,7 @@ import { datePicker } from '../components/buttons/MonthPicker';
 import { Constants } from '../common/Constants';
 import { resourceManager } from '@kit.LocalizationKit';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced';
+import { filePicker } from "../utils/cloudAndFiles/importFromLocal"
 
 @Styles
 function buttonList() {
@@ -50,7 +51,6 @@ export struct menuButtons {
       functionButtons1()
       functionButtons2()
       ratesStatus().margin({ bottom: 16 })
-      cloudData()
     }
 
   }
@@ -172,7 +172,8 @@ export struct functionButtons2 {
   @Local menuItems: string[] = [
     '导入记录',
     '导出账本',
-    '备份设置',
+    '上传到云端',
+    '从云端下载',
   ];
 
   handleMenuItemClick(item: string) {
@@ -192,6 +193,19 @@ export struct functionButtons2 {
         ex.exportAndShare()
         break;
 
+      case "上传到云端":
+        const cloud = new cloudData
+        cloud.askToUpsert()
+        break;
+      case "导入记录":
+        //
+        const picker = new filePicker
+        picker.importCsv()
+        break;
+      case "从云端下载":
+        const cloud2 = new cloudData
+        cloud2.askToDownload()
+        break;
       case "隐私政策":
         router.pushUrl({
           url: "pages/AboutThisApp"
@@ -201,25 +215,27 @@ export struct functionButtons2 {
           }
         })
         break;
+
+
       // 其他case...
     }
   }
 
   private getMenuItemIcon(item: string): string {
     const iconMap: Record<string, string> = {
-      '导出账本': '🢁',
-      '导入记录': '🡻',
-      '备份设置': '📥',
-      '隐私政策': '🔒',
-      '设置': '⚙️',
-      '帮助': '❓',
-      '关于应用': 'ℹ️'
+      '导出账本': '📤',
+      '导入记录': '📥',
+      '从云端下载': '☁️ ⬇',
+      '上传到云端': '☁️ ⬆',
+
+
     };
     return iconMap[item] || '▪️'; // 默认符号
   }
 
   build() {
     Column() {
+
       ForEach(this.menuItems, (item: string, index: number) => {
         Column() {
           Row() {
@@ -232,12 +248,7 @@ export struct functionButtons2 {
             Text(item)
               .fontSize(16)
               .layoutWeight(1)
-            // 箭头（Unicode符号）
-            if (index < this.menuItems.length - 1) {
-              Text('❯')
-                .fontSize(14)
-                .fontColor('#999999')
-            }
+
           }
           .height(48)
           .width('100%')
@@ -262,6 +273,7 @@ export struct functionButtons2 {
           }
         }
       })
+
     }
     .buttonList()
 

@@ -1,0 +1,33 @@
+{
+	"app": {
+		"bundleName": "com.feiiish.globalAccount",
+		"debug": true,
+		"versionCode": 41,
+		"versionName": "1.1.5",
+		"minAPIVersion": 50000012,
+		"targetAPIVersion": 50101019,
+		"apiReleaseType": "Release",
+		"compileSdkVersion": "5.1.1.212",
+		"compileSdkType": "HarmonyOS",
+		"appEnvironments": [],
+		"bundleType": "app",
+		"buildMode": "debug"
+	},
+	"module": {
+		"name": "login_info",
+		"type": "har",
+		"deviceTypes": [
+			"phone"
+		],
+		"requestPermissions": [
+			{
+				"name": "ohos.permission.GET_NETWORK_INFO"
+			},
+			{
+				"name": "ohos.permission.INTERNET"
+			}
+		],
+		"packageName": "login_info",
+		"installationFree": false
+	}
+}

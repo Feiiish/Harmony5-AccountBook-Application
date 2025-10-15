@@ -25,16 +25,16 @@
       "value": "清除记录"
     },
     {
-      "name": "monthlySummary",
-      "value": "本月结余"
+      "name": "Summary",
+      "value": "结余"
     },
     {
-      "name": "monthlyIncome",
-      "value": "本月收入"
+      "name": "Income",
+      "value": "收入"
     },
     {
-      "name": "monthlyExpense",
-      "value": "本月支出"
+      "name": "totalExpense",
+      "value": "收支"
     },
     {
       "name": "normal_exchange_rate",

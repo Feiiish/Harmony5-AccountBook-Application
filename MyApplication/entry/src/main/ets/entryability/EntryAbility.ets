@@ -1,6 +1,8 @@
 import { AbilityConstant, Configuration, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
+import auth from '@hw-agconnect/auth';
+import { buffer } from '@kit.ArkTS';
 
 const DOMAIN = 0x0000;
 
@@ -8,6 +10,11 @@ export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+
+    let file = this.context.resourceManager.getRawFileContentSync('agconnect-services.json');
+    let json: string = buffer.from(file.buffer).toString();
+    auth.init(this.context, json);
+
   }
 
   onDestroy(): void {

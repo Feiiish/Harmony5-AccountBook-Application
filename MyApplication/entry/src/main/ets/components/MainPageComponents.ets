@@ -82,7 +82,7 @@ export struct MonthlySummaryPanel {
     Column({ space: 8 }) {
       Row() {
         Column() {
-          Text($r('app.string.monthlySummary'))
+          Text($r('app.string.totalExpense'))
           Text(formatLargeNumber(this.monthlyInOut[0] - this.monthlyInOut[1]) + " " +
           this.ledgerManager.activeBook.preferredCurrency)
             .fontSize(24)
@@ -94,7 +94,7 @@ export struct MonthlySummaryPanel {
         // 本月支出&收入
         Column() {
           Row() {
-            Text($r('app.string.monthlyExpense'))
+            Text($r('app.string.Summary'))
               .fontSize(16)
             Text(formatLargeNumber(this.monthlyInOut[1]))
               .fontColor('#FF3A3A')
@@ -104,7 +104,7 @@ export struct MonthlySummaryPanel {
           })
 
           Row() {
-            Text($r('app.string.monthlyIncome'))
+            Text($r('app.string.Income'))
               .fontSize(16)
             Text(formatLargeNumber(this.monthlyInOut[0]))
               .fontColor('#00B300')
@@ -128,6 +128,12 @@ export struct MonthlySummaryPanel {
 export struct RecordItemView {
   @Require @Param item: RecordItem
   @Local isShowSheet: boolean = false;
+  @Local
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
+  )!;
 
   handleDelete(item: RecordItem) {
     new recordDeleter().deleteDataFromAll(item);
@@ -206,6 +212,7 @@ export struct RecordItemView {
 
       Image($r('app.media.bin')).height(45).width(45).margin({ top: 8 }).onClick(() => {
         this.handleDelete(this.item)
+        this.ledgerManager.activeBook.cloudTrashBin.push(this.item.id)
       })
 
     }

@@ -190,13 +190,9 @@ export struct budgetComponent {
 
   build() {
 
-    if (this.ledgerManager.activeBook.data.budgets.length > 0) {
 
-      Column() {
-        Text("预算和计划").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 14, top: 4 })
-          .onClick(() => {
-            this.ledgerManager.activeBook.data.budgets = []
-          })
+    Column({ space: 12 }) {
+      if (this.ledgerManager.activeBook.data.budgets.length > 0) {
 
         ForEach(this.ledgerManager.activeBook.data.budgets, (budget: BudgetItem, index: number) => {
 
@@ -280,7 +276,6 @@ export struct budgetComponent {
           .padding(12)
           .borderRadius(20)
           .backgroundColor($r("app.color.button_color"))
-          .margin({ bottom: 12 })
           .onClick(() => {
             this.selectedBudget = budget
             this.isShowSheet = !this.isShowSheet
@@ -292,10 +287,11 @@ export struct budgetComponent {
             }
           })
         })
-      }.basicCard()
+      } else {
+        Text("暂无预算数据").fontColor(Color.Gray)
+      }
 
-    }
-
+    }.basicCard()
 
   }
 }
