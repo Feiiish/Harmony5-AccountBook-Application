@@ -6,7 +6,6 @@ import { PersistenceV2, promptAction, router, CapsuleSegmentButtonV2 } from '@ki
 import { displayExchangeRates } from '../../utils/currencyExchange';
 import { SegmentButtonV2Items, TabSegmentButtonV2 } from '@kit.ArkUI';
 import { McLineChart, Options } from '@mcui/mccharts'
-import mediaQuery from '@ohos.mediaquery'
 
 @Styles
 function basicChart() {
@@ -71,6 +70,7 @@ export async function calculateWeeklyTables(recordList: RecordItem[],
       } else {
         expense[dayIndex] += amount; // 保持为负值，便于后续 surplus = income + expense
       }
+
     } catch (error) {
       console.warn('跳过无效记录:', item, error);
     }
@@ -78,6 +78,11 @@ export async function calculateWeeklyTables(recordList: RecordItem[],
 
   for (let i = 0; i < 7; i++) {
     surplus[i] = income[i] + expense[i];
+  }
+  for (let i = 0; i < 7; i++) {
+    income[i] = parseFloat(income[i].toFixed(1));
+    expense[i] = parseFloat(expense[i].toFixed(1));
+    surplus[i] = parseFloat(surplus[i].toFixed(1));
   }
 
   return { income, expense, surplus };
@@ -97,34 +102,6 @@ export struct WeeklyChart {
       this.tempIncome = result.income
       this.tempExpense = result.expense
       this.tempSurplus = result.surplus;
-      const positiveExpense = result.expense.map(val => Math.abs(val));
-
-
-      this.seriesOption.setVal({
-        series: [
-          {
-            name: '收入',
-            data: result.income,
-            smooth: true,
-            color: "#6bcd5c",
-            lineStyle: {
-              width: 4,
-              type: 'solid',
-            },
-          },
-          {
-            name: '支出',
-            data: positiveExpense,
-            color: "#CD5C5C",
-            smooth: true,
-            lineStyle: {
-              width: 4,
-              type: 'solid',
-            },
-          }
-        ]
-      })
-
     })
   }
 
@@ -217,13 +194,6 @@ export struct WeeklyChart {
     return maxAbs > 0 ? maxAbs * 1.1 : 100;
   }
 
-  // 获取Y轴刻度值
-  private getYAxisValues(): number[] {
-    const maxValue = this.getMaxAbsValue(this.tempSurplus);
-    return [0, Math.floor(maxValue * 0.25), Math.floor(maxValue * 0.5), Math.floor(maxValue * 0.75),
-      Math.floor(maxValue)];
-  }
-
   // 格式化数值显示
   private formatValue(value: number): string {
     const absValue = Math.abs(value);
@@ -248,41 +218,12 @@ export struct WeeklyChart {
   }
 
   aboutToAppear() {
-
-
     calculateWeeklyTables(this.recordList, this.unit).then((result) => {
       //设定为目标数字
       this.tempIncome = result.income
-      this.tempExpense = result.expense
+      this.tempExpense = result.expense.map(val => Math.abs(val));
       this.tempSurplus = result.surplus;
-      const positiveExpense = result.expense.map(val => Math.abs(val));
 
-
-      this.seriesOption.setVal({
-
-        series: [
-          {
-            name: '收入',
-            data: result.income,
-            smooth: true,
-            color: "#6bcd5c",
-            lineStyle: {
-              width: 4,
-              type: 'solid',
-            },
-          },
-          {
-            name: '支出',
-            data: positiveExpense,
-            color: "#CD5C5C",
-            smooth: true,
-            lineStyle: {
-              width: 4,
-              type: 'solid',
-            },
-          }
-        ]
-      })
 
     })
 
@@ -325,6 +266,7 @@ export struct WeeklyChart {
                         .textAlign(TextAlign.Center)
                     } else {
                       // 空占位，保持高度一致
+
                       Text('')
                         .fontSize(11)
                         .margin({ bottom: 4 })
@@ -381,9 +323,7 @@ export struct WeeklyChart {
 
         } else {
           Row() {
-            McLineChart({
-              options: this.seriesOption
-            })
+            Index({ list: this.recordList, unit: this.unit })
           }
           .height(220)
 
@@ -408,6 +348,142 @@ export struct WeeklyChart {
       offsetX: 0,
       offsetY: 2
     })
+
+  }
+}
+
+
+@Entry
+@Component
+struct Index {
+  // 初始化数据
+  @Prop @Watch('onListChange') list: RecordItem[]
+
+  onListChange(propName: string): void {
+    this.setData()
+  }
+
+  @Prop @Watch('onUnitChange') unit: string
+
+  onUnitChange(propName: string): void {
+    this.setData()
+  }
+
+  @State result: chartResult = {
+    income: [],
+    expense: [],
+    surplus: []
+  }
+  // 通过watch 监听recordItem变化, 然后请求table赋值
+
+  @State seriesOption: Options = new Options({
+    xAxis: {
+      axisLabel: {
+
+        fontWeight: '400',
+        fontSize: 25,
+      },
+
+      data: ['一', '二', '三', '四', '五', '六', '日']
+    },
+    yAxis: {
+      axisLabel: {
+
+        fontWeight: '600',
+        fontSize: 35,
+      },
+      name: this.unit,
+      nameTextStyle: {
+
+        fontWeight: 'normal',
+        fontFamily: 'sans-serif',
+        fontSize: 35,
+      },
+    },
+
+    series: [
+      {
+        name: '收入',
+        data: new Array(7).fill(0),
+        smooth: true,
+        color: '#4CAF50',
+        label: {
+          fontWeight: '500',
+          fontSize: 35,
+        },
+        lineStyle: {
+          // 折线样式配置
+          width: 3,
+          type: 'solid'
+        },
+      },
+
+
+      {
+        name: '支出',
+        data: new Array(7).fill(0),
+        smooth: true,
+        color: '#F44336',
+
+        label: {
+          // 文本标签样式
+          fontWeight: '600',
+          fontSize: 35,
+        },
+        lineStyle: {
+          // 折线样式配置
+          width: 3,
+          type: 'solid'
+        },
+      },
+
+    ],
+    legend: {
+      show: true,
+      itemGap: 30,
+      textStyle: {
+        fontSize: 40,
+        color: "#808080"
+      }
+
+    },
+  })
+
+  setData() {
+    calculateWeeklyTables(this.list, this.unit).then((res) => {
+      this.result = res
+      console.log(this.result.income.length.toString() + " " + this.result.expense.length);
+      this.seriesOption.setVal({
+        series: [
+          {
+            name: '收入',
+            data: this.result.income,
+          },
+
+
+          {
+            name: '支出',
+            data: this.result.expense,
+          },
+
+        ],
+      })
+    })
+
+  }
+
+  aboutToAppear(): void {
+    this.setData()
+  }
+
+  build() {
+
+    Column() {
+      McLineChart({
+        options: this.seriesOption
+      })
+
+    }
 
   }
 }

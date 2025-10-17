@@ -5,6 +5,7 @@
     "pages/AboutThisApp",
     "pages/CurrencySetting",
     "pages/HuaweiLogin",
-    "pages/AddLegerBookPage"
+    "pages/AddLegerBookPage",
+    "pages/testPage"
   ]
 }

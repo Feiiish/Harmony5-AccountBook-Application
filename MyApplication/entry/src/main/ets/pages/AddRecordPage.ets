@@ -202,8 +202,11 @@ struct IncomePage {
   }
 
   private async cacuRate() {
-    this.rate = await displayExchangeRates(this.ledgerManager.activeBook.preferredCurrency, this.tempUnit);
-    this.updateMessage(); // 确保 rate 有值后再更新 message
+    await displayExchangeRates(this.ledgerManager.activeBook.preferredCurrency, this.tempUnit).then((result) => {
+      this.rate = result
+      this.updateMessage();
+    })
+    // 确保 rate 有值后再更新 message
   }
 
   private updateMessage() {
@@ -376,8 +379,10 @@ struct IncomePage {
   currencyDialogController: CustomDialogController = new CustomDialogController({
     builder: CurrencyPickerDialog({
       onAccept: (value: string) => {
-        this.tempUnit = value
-        this.cacuRate()
+        this.cacuRate().then(() => {
+          this.tempUnit = value
+          this.updateMessage()
+        })
         console.log('用户选择了货币:', value)
       }
     })

@@ -142,7 +142,6 @@ export struct Index {
                 ListItem() {
 
                   Column({ space: 2 }) {
-
                     //顶栏
                     Row() {
                       datePicker()

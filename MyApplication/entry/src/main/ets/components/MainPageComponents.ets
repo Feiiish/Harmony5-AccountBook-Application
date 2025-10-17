@@ -212,7 +212,6 @@ export struct RecordItemView {
 
       Image($r('app.media.bin')).height(45).width(45).margin({ top: 8 }).onClick(() => {
         this.handleDelete(this.item)
-        this.ledgerManager.activeBook.cloudTrashBin.push(this.item.id)
       })
 
     }

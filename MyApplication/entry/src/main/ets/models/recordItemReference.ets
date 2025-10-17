@@ -109,7 +109,6 @@ export class LedgerBook {
   @Trace chosenDate: Date = new Date;
   @Trace startDate: Date = new Date;
   @Trace endDate: Date = new Date;
-  @Trace cloudTrashBin: string[] = []
 
   clearBook() {
     this.data.items = []
@@ -123,6 +122,7 @@ export class LedgerManager {
   @Type(LedgerBook)
   @Trace books: LedgerBook[] = [];
   @Trace activeBookId: string = '';
+  @Trace cloudTrashBin: string[] = []
 
   get activeBook(): LedgerBook {
     let book = this.books.find(book => book.id === this.activeBookId);
@@ -149,6 +149,10 @@ export class LedgerManager {
 
   deleteBook(bookId: string) {
     this.books = this.books.filter(book => book.id !== bookId);
+    if (!this.cloudTrashBin.includes(bookId)) {
+      this.cloudTrashBin.push(bookId);
+    }
+
     if (this.activeBookId === bookId) {
       this.activeBookId = this.books.length > 0 ? this.books[0].id : '';
     }

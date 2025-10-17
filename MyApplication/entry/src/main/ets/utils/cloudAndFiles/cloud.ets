@@ -128,8 +128,27 @@ export struct cloudData {
 
   async upsertWholeBook() {
     try {
-      const items = this.ledgerManager.activeBook.data.items;
+      //云端同步删除Trashbin
+      for (const id of this.ledgerManager.cloudTrashBin) {
+        const query = new cloudDatabase.DatabaseQuery(CloudRecord);
+        query.equalTo('id', id);
+        const resultSet = await databaseZone.query(query)
+        for (const record of resultSet) {
+          await databaseZone.delete(record);
+        }
+      }
+      for (const id of this.ledgerManager.cloudTrashBin) {
+        const query = new cloudDatabase.DatabaseQuery(CloudRecord);
+        query.equalTo('fromBookID', id);
+        const resultSet = await databaseZone.query(query)
+        for (const record of resultSet) {
+          await databaseZone.delete(record);
+        }
+      }
 
+
+      //上传本地的新账单
+      const items = this.ledgerManager.activeBook.data.items;
       for (const record of items) {
         // 构造查询条件：按主键 ID 查找是否已存在
         const condition = new cloudDatabase.DatabaseQuery(CloudRecord);

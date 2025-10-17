@@ -41,6 +41,7 @@ export struct calendar {
   @Local test: string = "xx"
   @Local dateList: number[] = []
   @Local YYYYMMtime: string = ""
+  @Local isActive: boolean = true
 
   updateDateList() {
     const cjDate = new Date(this.cjDataItem.fullYear, this.cjDataItem.month, 1)
@@ -53,10 +54,19 @@ export struct calendar {
         console.log("new item pushed " + result);
       }
     }
+
   }
 
   build() {
     Column() {
+      Button("异步刷新")
+        .onClick(() => {
+          this.test = "11"
+          // 模拟异步请求
+          setTimeout(() => {
+            this.controller.refresh()
+          }, 3000)
+        })
       CJCalendar({
         logSwitch: true,
         controller: this.controller,
@@ -161,7 +171,7 @@ export struct calendar {
           // 1、强制刷新所有
           this.controller.refresh(false)
 
-          // this.controller.setFoldStatue(true)
+          //this.controller.setFoldStatue(false)
           this.updateDateList()
 
         },

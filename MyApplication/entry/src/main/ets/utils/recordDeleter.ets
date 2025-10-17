@@ -25,10 +25,15 @@ export struct recordDeleter {
     record.id === item.id
     );
 
+
     if (index !== -1) {
       if (this.ledgerManager.activeBook.data) {
         this.ledgerManager.activeBook.data.items =
           this.ledgerManager.activeBook.data.items.filter((item, i) => i !== index);
+      }
+
+      if (!this.ledgerManager.cloudTrashBin.includes(item.id)) {
+        this.ledgerManager.cloudTrashBin.push(item.id);
       }
       // filter
     } else {
