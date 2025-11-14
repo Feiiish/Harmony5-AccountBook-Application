@@ -353,7 +353,6 @@ export struct WeeklyChart {
 }
 
 
-@Entry
 @Component
 struct Index {
   // 初始化数据
@@ -463,7 +462,7 @@ struct Index {
 
           {
             name: '支出',
-            data: this.result.expense,
+            data: this.result.expense.map(val => Math.abs(val))
           },
 
         ],

@@ -9,7 +9,6 @@ import { findColor } from "../../utils/FindCountryFlags";
 @ComponentV2
 export struct PieChartExample {
   @Require @Param pieData: singleCurrency[];
-  @Require @Param colors: string[];
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
   private context: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings);
   private total: number = 0;

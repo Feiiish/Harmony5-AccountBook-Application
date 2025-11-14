@@ -5,13 +5,13 @@
         "name": "feiiish",
         "type": "HarmonyOS",
         "material": {
-          "storeFile": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/debug/debugKeyStore.p12",
-          "storePassword": "00000019C75AFDEB547572732BB7B5E68E2ADB949A16E5127B6BC112AA4FCFBAB8F8ED9DEF84B832D8",
-          "keyAlias": "app_debug",
-          "keyPassword": "00000019ECD4558A221D60DEE8B76B06653EDEB3311FAACF994D436C3EAA8D2437AEBBC08CD7B02C52",
+          "certpath": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B5FAE3E74C2FB2FF5EABC0EF99F9103E57BA83840B04A13AF04BB2BD197F2325F9A8C25080CDA33",
+          "profile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
           "signAlg": "SHA256withECDSA",
-          "profile": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/debug/debugProfileDebug.p7b",
-          "certpath": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/debug/app_debug.cer"
+          "storeFile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
+          "storePassword": "0000001B96630BFFB4FB2AEF6D1F74C3AC088F0101E586F4AF81081CF3C4E7C99FF45065F7233C4EC02FFF"
         }
       }
     ],

@@ -30,7 +30,7 @@ export struct UserAgreement {
           alignment: DialogAlignment.Center,
           autoCancel: false,
           confirm: {
-            value: $r('app.string.hwid_text_button_known'),
+            value: ('know'),
             action: () => {
             }
           }
@@ -92,7 +92,7 @@ export struct UserAgreement {
               } else if (item?.type === loginComponentManager.TextType.RICH_TEXT && item?.text) {
                 Span(item?.text)
                   .fontColor(this.enableStatus ? $r('sys.color.ohos_id_color_text_primary') :
-                  $r('sys.color.ohos_id_color_text_tertiary'))
+                    $r('sys.color.ohos_id_color_text_tertiary'))
                   .fontFamily($r('sys.string.ohos_id_text_font_family_medium'))
                   .fontWeight(FontWeight.Medium)
                   .fontSize($r('sys.float.ohos_id_text_size_body3'))

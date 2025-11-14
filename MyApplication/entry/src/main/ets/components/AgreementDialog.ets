@@ -38,7 +38,7 @@ export struct AgreementDialog {
           alignment: DialogAlignment.Center,
           autoCancel: false,
           confirm: {
-            value: $r('app.string.hwid_text_button_known'),
+            value: "确认",
             action: () => {
             }
           }

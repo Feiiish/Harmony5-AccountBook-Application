@@ -6,6 +6,8 @@
     "pages/CurrencySetting",
     "pages/HuaweiLogin",
     "pages/AddLegerBookPage",
-    "pages/testPage"
+    "pages/testPage",
+    "pages/cloudDownload",
+    "pages/appSetting"
   ]
 }

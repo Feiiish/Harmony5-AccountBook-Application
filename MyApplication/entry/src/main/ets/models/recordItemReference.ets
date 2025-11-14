@@ -38,8 +38,8 @@ export class BudgetItem {
   @Trace tag: string = '';
   @Trace targetAmount: number = 0;
   @Trace unit: string = 'CNY';
-  @Trace startDate: string = new Date().toDateString();
-  @Trace endDate: string = '';
+  @Trace startDate: string = new Date(new Date().getFullYear(), 0, 1).toDateString(); // 今年年初
+  @Trace endDate: string = new Date(new Date().getFullYear() + 1, 0, 1).toDateString(); // 明年年初
   @Trace countAll: boolean = false
   @Trace currentAmount: number = 0
 
@@ -51,7 +51,6 @@ export class BudgetItem {
     return (new Date() > new Date(this.endDate) && !this.isCompleted)
   }
 }
-
 
 //choose records from time to time
 export function filterRecordItems(
@@ -74,7 +73,6 @@ export function filterRecordItems(
   });
 }
 
-
 // RecordsData.ets
 @ObservedV2
 export class RecordsData {
@@ -94,7 +92,6 @@ export class RecordsData {
   budgets: BudgetItem[] = [];
 }
 
-
 //different account book
 @ObservedV2
 export class LedgerBook {
@@ -107,8 +104,8 @@ export class LedgerBook {
   @Trace chosenCurrency: string[] = ["CNY", "CAD", "USD", "JPY"];
   @Trace tags: string[] = ['餐饮', '购物', '交通', '娱乐', '住房', '工资', '奖金', '投资'];
   @Trace chosenDate: Date = new Date;
-  @Trace startDate: Date = new Date;
-  @Trace endDate: Date = new Date;
+  @Trace startDate: Date = new Date(new Date().getFullYear(), 0, 1);
+  @Trace endDate: Date = new Date(new Date().getFullYear(), 11, 31);
 
   clearBook() {
     this.data.items = []
@@ -146,6 +143,12 @@ export class LedgerManager {
     this.books.push(newBook);
     this.activeBookId = newBook.id;
   }
+
+  getBookName(bookId: string): string {
+    const book = this.books.find(b => b.id === bookId)
+    return book ? book.name : ''
+  }
+
 
   deleteBook(bookId: string) {
     this.books = this.books.filter(book => book.id !== bookId);

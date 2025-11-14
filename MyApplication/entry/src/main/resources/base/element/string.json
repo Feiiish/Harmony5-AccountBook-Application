@@ -2,15 +2,15 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "模块描述"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "描述"
     },
     {
       "name": "EntryAbility_label",
-      "value": "S全球货币助手"
+      "value": "全球账本"
     },
     {
       "name": "privatePolicy",
@@ -25,6 +25,42 @@
       "value": "清除记录"
     },
     {
+      "name": "recordDetail",
+      "value": "记录详情"
+    },
+    {
+      "name": "tag",
+      "value": "标签"
+    },
+    {
+      "name": "date",
+      "value": "日期"
+    },
+    {
+      "name": "notSet",
+      "value": "未设定"
+    },
+    {
+      "name": "note",
+      "value": "备注"
+    },
+    {
+      "name": "today",
+      "value": "今天"
+    },
+    {
+      "name": "tmr",
+      "value": "每天"
+    },
+    {
+      "name": "ystd",
+      "value": "昨天"
+    },
+    {
+      "name": "noRecord",
+      "value": "暂无数据"
+    },
+    {
       "name": "Summary",
       "value": "结余"
     },
@@ -34,7 +70,7 @@
     },
     {
       "name": "totalExpense",
-      "value": "收支"
+      "value": "支出"
     },
     {
       "name": "normal_exchange_rate",
@@ -43,10 +79,6 @@
     {
       "name": "delayed_exchange_rate",
       "value": "汇率滞后"
-    },
-    {
-      "name": "today",
-      "value": "今天"
     },
     {
       "name": "mainPage",
@@ -71,6 +103,246 @@
     {
       "name": "currentAmount",
       "value": "货币总额"
+    },
+    {
+      "name": "login",
+      "value": "登录 / 注册"
+    },
+    {
+      "name": "personalInfo",
+      "value": "个人信息"
+    },
+    {
+      "name": "avatar",
+      "value": "头像"
+    },
+    {
+      "name": "nickname",
+      "value": "昵称"
+    },
+    {
+      "name": "phone",
+      "value": "手机号"
+    },
+    {
+      "name": "hwid_no_internet_connect",
+      "value": "网络未连接，请检查网络设置。"
+    },
+    {
+      "name": "agree",
+      "value": "已阅读并同意"
+    },
+    {
+      "name": "and",
+      "value": "和"
+    },
+    {
+      "name": "cancel",
+      "value": "取消"
+    },
+    {
+      "name": "close",
+      "value": "关闭"
+    },
+    {
+      "name": "other_login_models",
+      "value": "其他方式登录"
+    },
+    {
+      "name": "next_step",
+      "value": "下一步"
+    },
+    {
+      "name": "pwd_login",
+      "value": "密码登录"
+    },
+    {
+      "name": "huaweiId_user_authentication_protocol",
+      "value": "《华为账号用户认证协议》"
+    },
+    {
+      "name": "user_agreement_and_privacy_policy",
+      "value": "用户协议与隐私条款"
+    },
+    {
+      "name": "service_error",
+      "value": "服务或网络异常，请稍后重试"
+    },
+    {
+      "name": "agree_and_sign_in",
+      "value": "同意并登录"
+    },
+    {
+      "name": "not_login_in",
+      "value": "华为账号未登录，请重试"
+    },
+    {
+      "name": "scope_not_supported",
+      "value": "该scopes或permissions不支持"
+    },
+    {
+      "name": "use_hwid_silently_login",
+      "value": "使用华为账号静默登录"
+    },
+    {
+      "name": "logout",
+      "value": "退出登录"
+    },
+    {
+      "name": "get_network_info_reason",
+      "value": "点击隐私协议前查询设置网络状态。"
+    },
+    {
+      "name": "get_network_info_permission_reason",
+      "value": "用于跳转华为账号用户认证协议页面前判断当前设备是否连接网络。"
+    },
+    {
+      "name": "CNY",
+      "value": "人民币"
+    },
+    {
+      "name": "USD",
+      "value": "美元"
+    },
+    {
+      "name": "CAD",
+      "value": "加元"
+    },
+    {
+      "name": "EUR",
+      "value": "欧元"
+    },
+    {
+      "name": "GBP",
+      "value": "英镑"
+    },
+    {
+      "name": "AUD",
+      "value": "澳元"
+    },
+    {
+      "name": "JPY",
+      "value": "日元"
+    },
+    {
+      "name": "INR",
+      "value": "印度卢比"
+    },
+    {
+      "name": "KRW",
+      "value": "韩元"
+    },
+    {
+      "name": "CHF",
+      "value": "瑞士法郎"
+    },
+    {
+      "name": "BRL",
+      "value": "巴西雷亚尔"
+    },
+    {
+      "name": "RUB",
+      "value": "俄罗斯卢布"
+    },
+    {
+      "name": "MXN",
+      "value": "墨西哥比索"
+    },
+    {
+      "name": "ZAR",
+      "value": "南非兰特"
+    },
+    {
+      "name": "NGN",
+      "value": "尼日利亚奈拉"
+    },
+    {
+      "name": "SAR",
+      "value": "沙特里亚尔"
+    },
+    {
+      "name": "AED",
+      "value": "阿联酋迪拉姆"
+    },
+    {
+      "name": "SGD",
+      "value": "新加坡元"
+    },
+    {
+      "name": "NZD",
+      "value": "新西兰元"
+    },
+    {
+      "name": "SEK",
+      "value": "瑞典克朗"
+    },
+    {
+      "name": "NOK",
+      "value": "挪威克朗"
+    },
+    {
+      "name": "DKK",
+      "value": "丹麦克朗"
+    },
+    {
+      "name": "THB",
+      "value": "泰铢"
+    },
+    {
+      "name": "MYR",
+      "value": "马来西亚林吉特"
+    },
+    {
+      "name": "IDR",
+      "value": "印尼盾"
+    },
+    {
+      "name": "PHP",
+      "value": "菲律宾比索"
+    },
+    {
+      "name": "PLN",
+      "value": "波兰兹罗提"
+    },
+    {
+      "name": "TRY",
+      "value": "土耳其里拉"
+    },
+    {
+      "name": "ILS",
+      "value": "以色列新谢克尔"
+    },
+    {
+      "name": "EGP",
+      "value": "埃及镑"
+    },
+    {
+      "name": "VND",
+      "value": "越南盾"
+    },
+    {
+      "name": "UAH",
+      "value": "乌克兰格里夫纳"
+    },
+    {
+      "name": "ARS",
+      "value": "阿根廷比索"
+    },
+    {
+      "name": "CLP",
+      "value": "智利比索"
+    },
+    {
+      "name": "COP",
+      "value": "哥伦比亚比索"
+    },
+    {
+      "name": "HKD",
+      "value": "港币"
+    },
+    {
+      "name": "TWD",
+      "value": "新台币"
     }
   ]
 }

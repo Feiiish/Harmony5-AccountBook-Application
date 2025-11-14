@@ -26,9 +26,10 @@ struct AddRecordPage {
       ListItem() {
         Column() {
           Row() {
-            Text("隐私政策").fontWeight(FontWeight.Bold).fontSize(30)
+            Text("隐私政策").fontWeight(FontWeight.Bold).fontSize(20)
+
             Button({ type: ButtonType.Circle }) {
-              Image($r('app.media.right_arrow')).width(24).height(24)
+              Image($r('app.media.right_arrow')).width(24).height(24).margin({ left: 2 })
             }
             .width(40)
             .height(40)
@@ -40,7 +41,7 @@ struct AddRecordPage {
           .width("100%")
           .margin({ bottom: 12 })
 
-          Text("S全球货币助手 是由 林心愉 （以下简称“我们”）为您提供的，用于国际账单记录的应用。本隐私声明由我们为处理您的个人信息而制定。\n" +
+          Text("全球账本 是由 林心愉 （以下简称“我们”）为您提供的，用于国际账单记录的应用。本隐私声明由我们为处理您的个人信息而制定。\n" +
             "\n" +
             "我们非常重视您的个人信息和隐私保护，将会按照法律要求和业界成熟的安全标准，为您的个人信息提供相应的安全保护措施。\n" +
             "\n" +

@@ -3,8 +3,18 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import auth from '@hw-agconnect/auth';
 import { buffer } from '@kit.ArkTS';
+import { LoginWithHuaweiIDButton, loginComponentManager } from '@kit.AccountKit';
+import { BusinessError } from '@kit.BasicServicesKit';
+
+import { authentication } from '@kit.AccountKit';
+import { UserSetting } from "../models/userSetting"
+import { util } from '@kit.ArkTS';
+import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
+import { cloudCommon } from '@kit.CloudFoundationKit';
+import { request } from '@kit.BasicServicesKit';
 
 const DOMAIN = 0x0000;
+
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -14,6 +24,7 @@ export default class EntryAbility extends UIAbility {
     let file = this.context.resourceManager.getRawFileContentSync('agconnect-services.json');
     let json: string = buffer.from(file.buffer).toString();
     auth.init(this.context, json);
+    
 
   }
 

@@ -32,11 +32,17 @@ export struct budgetComponent {
     this.calculateBudgetProgress(this.ledgerManager.activeBook.data);
   }
 
+  @Monitor('ledgerManager.activeBook.data.budgets')
+  onCreate(monitor: IMonitor) {
+    this.calculateBudgetProgress(this.ledgerManager.activeBook.data);
+  }
+
   @Local value: number = 0
   @Local isShowSheet: boolean = false
   @Local selectedBudget: BudgetItem = new BudgetItem()
 
   calculateBudgetProgress(recordsData: RecordsData): Promise<void> {
+
     const tasks = recordsData.budgets.map((budget) => {
       const filteredItems = filterRecordItems(
         recordsData.items,
@@ -103,8 +109,14 @@ export struct budgetComponent {
             .fontColor('#666')
             .width(80)
 
-          Text(`${budget.targetAmount.toFixed(2)} ${budget.unit}`)
-            .fontSize(16)
+          Row() {
+            Text(`${budget.targetAmount.toFixed(2)} `)
+              .fontSize(16)
+
+            Text($r(`app.string.${budget.unit}`))
+              .fontSize(16)
+          }
+
         }
         .margin({ bottom: 12 })
 
@@ -142,8 +154,7 @@ export struct budgetComponent {
               .fontSize(16)
               .fontColor('#666')
               .width(80)
-
-            Text(`${budget.unit}`)
+            Text($r(`app.string.${budget.unit}`))
               .fontSize(16)
           }
           .margin({ bottom: 12 })
@@ -213,10 +224,18 @@ export struct budgetComponent {
                   .fontWeight(FontWeight.Medium)
                   .margin({ right: 4 })
 
-                Text(`${budget.targetAmount} ${budget.unit}`)
-                  .fontSize(14)
-                  .fontColor($r('app.color.Font_Color'))
-                  .fontColor(Color.Gray)
+                Row() {
+                  Text(`${budget.targetAmount}`)
+                    .fontSize(14)
+                    .fontColor($r('app.color.Font_Color'))
+                    .fontColor(Color.Gray)
+
+                  Text($r(`app.string.${budget.unit}`))
+                    .fontSize(14)
+                    .fontColor($r('app.color.Font_Color'))
+                    .fontColor(Color.Gray)
+                }
+
               }
 
               // 标签和单位限制信息
@@ -261,7 +280,7 @@ export struct budgetComponent {
                   .fontSize(14)
                   .fontColor("#FFC107")
               } else {
-                Text(`${(budget.currentAmount / budget.targetAmount * 100).toFixed(1)}%`)
+                Text(`${Math.abs(budget.currentAmount / budget.targetAmount * 100).toFixed(1)}%`)
                   .fontSize(14)
                   .fontColor(budget.isExpired ? "#FFC107" : (budget.targetAmount >= 0 ?
                     (budget.isCompleted ? 0xFF4CAF50 : 0xFF2196F3) :

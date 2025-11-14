@@ -40,6 +40,15 @@ function buttonItemStyle() {
   .margin({ bottom: 12 })
 }
 
+@Styles
+function basicCard() {
+  .width('100%')
+  .padding(16)
+  .borderRadius(15)
+  .margin({ bottom: 12 })
+  .backgroundColor($r("app.color.Basic_Card_background"))
+}
+
 
 @Entry
 @ComponentV2
@@ -56,9 +65,8 @@ export struct menuButtons {
   }
 }
 
-
 @ComponentV2
-export struct functionButtons1 {
+export struct menuList {
   @Local
   ledgerManager: LedgerManager = PersistenceV2.connect(
     LedgerManager,
@@ -67,6 +75,14 @@ export struct functionButtons1 {
   )!;
   @Local recordsData: RecordsData = this.ledgerManager.activeBook.data
   @Local menuItems: string[] = [
+    '货币设置',
+    '隐私政策',
+    '货币设置',
+    '隐私政策',
+    '货币设置',
+    '隐私政策',
+    '货币设置',
+    '隐私政策',
     '货币设置',
     '隐私政策',
   ];
@@ -112,9 +128,115 @@ export struct functionButtons1 {
 
   build() {
     Column() {
+      List() {
+        ListItemGroup() {
+
+          ForEach(this.menuItems, (item: string, index: number) => {
+            ListItem() {
+              Column() {
+                // 图标（使用Unicode符号）
+                Text(this.getMenuItemIcon(item))
+                  .fontSize(20)
+                  .fontColor('#007AFF')
+                // 文字
+                Text(item)
+                  .fontSize(12)
+                  .margin({ top: 4 })
+              }
+              .width('20%')
+              .padding({ left: 12, right: 12 })
+              .onClick(() => {
+                this.handleMenuItemClick(item);
+
+                this.getUIContext().animateTo({
+                  duration: Constants.ANIMATION_DURATION,
+                  curve: Curve.EaseOut,
+                  playMode: PlayMode.Normal,
+                }, () => {
+                  // 动画完成后的回调
+                })
+              })
+            }
+          })
+        }
+      }
+      .sticky(StickyStyle.Header)
+      .scrollBar(BarState.Off)
+      .listDirection(Axis.Horizontal)
+      .edgeEffect(EdgeEffect.Spring)
+
+    }.basicCard()
+  }
+}
+
+@ComponentV2
+export struct functionButtons1 {
+  @Local
+  ledgerManager: LedgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
+  )!;
+  @Local recordsData: RecordsData = this.ledgerManager.activeBook.data
+  @Local menuItems: string[] = [
+    '货币设置',
+    '应用设置',
+    '隐私政策',
+  ];
+
+  handleMenuItemClick(item: string) {
+    switch (item) {
+      case "货币设置":
+        router.pushUrl({
+          url: "pages/CurrencySetting"
+        }, router.RouterMode.Standard, (err) => {
+          if (err) {
+            console.log("跳转失败:", err)
+          }
+        })
+        console.log('执行货币设置');
+        break;
+
+      case "隐私政策":
+        router.pushUrl({
+          url: "pages/AboutThisApp"
+        }, router.RouterMode.Standard, (err) => {
+          if (err) {
+            console.log("跳转失败:", err)
+          }
+        })
+        break;
+      case "应用设置":
+        router.pushUrl({
+          url: "pages/appSetting"
+        }, router.RouterMode.Standard, (err) => {
+          if (err) {
+            console.log("跳转失败:", err)
+          }
+        })
+        break;
+
+      // 其他case...
+    }
+  }
+
+  private getMenuItemIcon(item: string): string {
+    const iconMap: Record<string, string> = {
+      '货币设置': '️💴',
+      '隐私政策': 'ℹ️',
+      '应用设置': '⚙️',
+      '帮助': '❓',
+      '关于应用': 'ℹ️'
+    };
+    return iconMap[item] || '▪️'; // 默认符号
+  }
+
+  build() {
+    Column() {
       ForEach(this.menuItems, (item: string, index: number) => {
         Column() {
           Row() {
+
             // 图标（使用Unicode符号）
             Text(this.getMenuItemIcon(item))
               .fontSize(20)
@@ -124,12 +246,6 @@ export struct functionButtons1 {
             Text(item)
               .fontSize(16)
               .layoutWeight(1)
-            // 箭头（Unicode符号）
-            if (index < this.menuItems.length - 1) {
-              Text('❯')
-                .fontSize(14)
-                .fontColor('#999999')
-            }
           }
           .height(48)
           .width('100%')
@@ -178,16 +294,7 @@ export struct functionButtons2 {
 
   handleMenuItemClick(item: string) {
     switch (item) {
-      case "货币设置":
-        router.pushUrl({
-          url: "pages/CurrencySetting"
-        }, router.RouterMode.Standard, (err) => {
-          if (err) {
-            console.log("跳转失败:", err)
-          }
-        })
-        console.log('执行货币设置');
-        break;
+
       case "导出账本":
         const ex = new exporter
         ex.exportAndShare()
@@ -203,8 +310,13 @@ export struct functionButtons2 {
         picker.importCsv()
         break;
       case "从云端下载":
-        const cloud2 = new cloudData
-        cloud2.askToDownload()
+        router.pushUrl({
+          url: "pages/cloudDownload"
+        }, router.RouterMode.Standard, (err) => {
+          if (err) {
+            console.log("跳转失败:", err)
+          }
+        })
         break;
       case "隐私政策":
         router.pushUrl({
@@ -280,7 +392,7 @@ export struct functionButtons2 {
   }
 }
 
-// LedgerUI.ets
+// ChooseLedgerBooks UI.ets
 @ComponentV2
 export struct LedgerUI {
   @Local
@@ -318,7 +430,7 @@ export struct LedgerUI {
             this.recordsData = this.ledgerManager.activeBook.data;
           })
           .backgroundColor(book.id === this.ledgerManager.activeBookId ? $r('app.color.Currency_Card_Main') :
-          $r('app.color.Currency_Card_1'))
+            $r('app.color.Currency_Card_1'))
           .width("90%")
           .textAlign(TextAlign.Center)
           .padding(8)

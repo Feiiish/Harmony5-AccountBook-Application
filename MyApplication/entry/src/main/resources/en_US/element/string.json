@@ -2,23 +2,111 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "Module description"
+      "value": "Module Description"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "Description"
     },
     {
       "name": "EntryAbility_label",
-      "value": "HuaweiIDSample"
+      "value": "Global Ledger"
+    },
+    {
+      "name": "privatePolicy",
+      "value": "Privacy Policy"
+    },
+    {
+      "name": "currencySetting",
+      "value": "Currency Settings"
+    },
+    {
+      "name": "tag",
+      "value": "tag"
+    },
+    {
+      "name": "date",
+      "value": "date"
+    },
+    {
+      "name": "notSet",
+      "value": "not set"
+    },
+    {
+      "name": "note",
+      "value": "note"
+    },
+    {
+      "name": "today",
+      "value": "today"
+    },
+    {
+      "name": "tmr",
+      "value": "tmr"
+    },
+    {
+      "name": "ystd",
+      "value": "昨天"
+    },
+    {
+      "name": "noRecord",
+      "value": "暂无数据"
+    },
+    {
+      "name": "Summary",
+      "value": "结余"
+    },
+    {
+      "name": "Income",
+      "value": "收入"
+    },
+    {
+      "name": "deleteALLRecord",
+      "value": "Clear Records"
+    },
+    {
+      "name": "totalExpense",
+      "value": "Expense Summary"
+    },
+    {
+      "name": "normal_exchange_rate",
+      "value": "Exchange Rate Normal"
+    },
+    {
+      "name": "delayed_exchange_rate",
+      "value": "Exchange Rate Delayed"
+    },
+    {
+      "name": "mainPage",
+      "value": "Home"
+    },
+    {
+      "name": "mine",
+      "value": "Mine"
+    },
+    {
+      "name": "weeklySummary",
+      "value": "Weekly Summary"
+    },
+    {
+      "name": "total",
+      "value": "Total"
+    },
+    {
+      "name": "average",
+      "value": "Average"
+    },
+    {
+      "name": "currentAmount",
+      "value": "Total Currency Amount"
     },
     {
       "name": "login",
-      "value": "Sign in/Sign up"
+      "value": "Login / Register"
     },
     {
       "name": "personalInfo",
-      "value": "Personal info"
+      "value": "Personal Information"
     },
     {
       "name": "avatar",
@@ -30,59 +118,19 @@
     },
     {
       "name": "phone",
-      "value": "Mobile number"
-    },
-    {
-      "name": "dearUser",
-      "value": "Dear user"
+      "value": "Phone Number"
     },
     {
       "name": "hwid_no_internet_connect",
-      "value": "No Internet connection. Check your network settings. "
-    },
-    {
-      "name": "hwid_text_button_known",
-      "value": "OK"
+      "value": "Network not connected, please check settings."
     },
     {
       "name": "agree",
-      "value": "I have read and agree to "
+      "value": "Read and Agreed"
     },
     {
       "name": "and",
-      "value": " and "
-    },
-    {
-      "name": "end",
-      "value": ". "
-    },
-    {
-      "name": "shippingAddress",
-      "value": "Shipping address"
-    },
-    {
-      "name": "addAddress",
-      "value": "Add from HUAWEI ID"
-    },
-    {
-      "name": "invoiceTitle",
-      "value": "Invoice title"
-    },
-    {
-      "name": "addInvoiceTitle",
-      "value": "Add from HUAWEI ID"
-    },
-    {
-      "name": "minorProtection",
-      "value": "Youth mode"
-    },
-    {
-      "name": "availableTime",
-      "value": "Screen time limit"
-    },
-    {
-      "name": "closeMinorsTitle",
-      "value": "Youth mode has been enabled for the current app. If you turn it off, the age-appropriate content and available duration will not be displayed based on your age."
+      "value": "and"
     },
     {
       "name": "cancel",
@@ -90,103 +138,207 @@
     },
     {
       "name": "close",
-      "value": "Continue"
+      "value": "Close"
     },
     {
       "name": "other_login_models",
-      "value": "Other ways to sign in"
-    },
-    {
-      "name": "login_for_enjoy_service",
-      "value": "Enjoy more services after signing in"
-    },
-    {
-      "name": "dear_user_good_morning",
-      "value": "Dear user, good morning"
+      "value": "Other Login Methods"
     },
     {
       "name": "next_step",
-      "value": "Next"
+      "value": "Next Step"
     },
     {
       "name": "pwd_login",
-      "value": "Sign in with password"
-    },
-    {
-      "name": "shopping_user_agreement",
-      "value": "Shopping User Agreement"
-    },
-    {
-      "name": "shopping_privacy_policy",
-      "value": "Shopping Privacy Policy"
+      "value": "Password Login"
     },
     {
       "name": "huaweiId_user_authentication_protocol",
-      "value": "HUAWEI ID User Authentication Agreement"
+      "value": "Huawei Account Authentication Agreement"
     },
     {
       "name": "user_agreement_and_privacy_policy",
       "value": "User Agreement and Privacy Policy"
     },
     {
-      "name": "protocol_separator",
-      "value": ", "
-    },
-    {
-      "name": "bind_huaweiId_number",
-      "value": "Mobile number associated with HUAWEI ID"
-    },
-    {
       "name": "service_error",
-      "value": "Service or network exception. Try again later."
+      "value": "Service or network error, please try again later"
     },
     {
       "name": "agree_and_sign_in",
-      "value": "Accept & sign in"
+      "value": "Agree and Sign In"
     },
     {
       "name": "not_login_in",
-      "value": "HUAWEI ID not signed in. Sign in first and try this operation again."
+      "value": "Huawei account not logged in, please retry"
     },
     {
       "name": "scope_not_supported",
-      "value": "Unsupported scopes or permissions."
+      "value": "This scope or permission is not supported"
     },
     {
       "name": "use_hwid_silently_login",
-      "value": "Silently sign in with HUAWEI ID"
+      "value": "Silent Login with Huawei Account"
     },
     {
       "name": "logout",
-      "value": "Sign out"
+      "value": "Logout"
     },
     {
       "name": "get_network_info_reason",
-      "value": "Query and set the network status before clicking the privacy agreement."
-    },
-    {
-      "name": "internet_reason",
-      "value": "Access to external links"
-    },
-    {
-      "name": "app_name",
-      "value": "Shopping"
-    },
-    {
-      "name": "internet_permission_reason",
-      "value": "Used to invoke the one-click login component."
+      "value": "Check network status before clicking privacy agreement."
     },
     {
       "name": "get_network_info_permission_reason",
-      "value": "Used to determine whether the current device is connected to the network before redirecting to the Huawei ID user authentication agreement page."
+      "value": "Used to check network connection before navigating to Huawei authentication agreement page."
     },
     {
-      "name": "ageAppropriateContent",
-      "value": "Age-appropriate content"
+      "name": "NGN",
+      "value": "Nigerian Naira"
     },
     {
-      "name": "age",
-      "value": "%1$d ~ %2$d years old"
+      "name": "SAR",
+      "value": "Saudi Riyal"
+    },
+    {
+      "name": "AED",
+      "value": "UAE Dirham"
+    },
+    {
+      "name": "ZAR",
+      "value": "South African Rand"
+    },
+    {
+      "name": "MXN",
+      "value": "Mexican Peso"
+    },
+    {
+      "name": "RUB",
+      "value": "Russian Ruble"
+    },
+    {
+      "name": "BRL",
+      "value": "Brazilian Real"
+    },
+    {
+      "name": "CHF",
+      "value": "Swiss Franc"
+    },
+    {
+      "name": "KRW",
+      "value": "South Korean Won"
+    },
+    {
+      "name": "INR",
+      "value": "Indian Rupee"
+    },
+    {
+      "name": "JPY",
+      "value": "Japanese Yen"
+    },
+    {
+      "name": "AUD",
+      "value": "Australian Dollar"
+    },
+    {
+      "name": "GBP",
+      "value": "British Pound"
+    },
+    {
+      "name": "EUR",
+      "value": "Euro"
+    },
+    {
+      "name": "CAD",
+      "value": "Canadian Dollar"
+    },
+    {
+      "name": "USD",
+      "value": "US Dollar"
+    },
+    {
+      "name": "CNY",
+      "value": "Chinese Yuan"
+    },
+    {
+      "name": "SGD",
+      "value": "Singapore Dollar"
+    },
+    {
+      "name": "NZD",
+      "value": "New Zealand Dollar"
+    },
+    {
+      "name": "SEK",
+      "value": "Swedish Krona"
+    },
+    {
+      "name": "NOK",
+      "value": "Norwegian Krone"
+    },
+    {
+      "name": "DKK",
+      "value": "Danish Krone"
+    },
+    {
+      "name": "THB",
+      "value": "Thai Baht"
+    },
+    {
+      "name": "MYR",
+      "value": "Malaysian Ringgit"
+    },
+    {
+      "name": "IDR",
+      "value": "Indonesian Rupiah"
+    },
+    {
+      "name": "PHP",
+      "value": "Philippine Peso"
+    },
+    {
+      "name": "PLN",
+      "value": "Polish Zloty"
+    },
+    {
+      "name": "TRY",
+      "value": "Turkish Lira"
+    },
+    {
+      "name": "ILS",
+      "value": "Israeli New Shekel"
+    },
+    {
+      "name": "EGP",
+      "value": "Egyptian Pound"
+    },
+    {
+      "name": "VND",
+      "value": "Vietnamese Dong"
+    },
+    {
+      "name": "UAH",
+      "value": "Ukrainian Hryvnia"
+    },
+    {
+      "name": "ARS",
+      "value": "Argentine Peso"
+    },
+    {
+      "name": "CLP",
+      "value": "Chilean Peso"
+    },
+    {
+      "name": "COP",
+      "value": "Colombian Peso"
+    },
+    {
+      "name": "HKD",
+      "value": "Hong Kong Dollar"
+    },
+    {
+      "name": "TWD",
+      "value": "New Taiwan Dollar"
     }
   ]
 }

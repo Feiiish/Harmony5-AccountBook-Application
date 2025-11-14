@@ -12,8 +12,9 @@ import { WeeklyChart } from "../components/charts/weeklyChart"
 //components
 import { BottomNavigation } from "../components/bottomNavi"
 import { RecordListView, MonthlySummaryPanel } from '../components/mainPageComponents';
-import { menuButtons } from '../components/menuButtons';
+import { menuButtons, menuList } from '../components/menuButtons';
 import { budgetComponent } from '../components/bugetComponent';
+import { rateChart } from '../components/rateChart';
 import { calendar } from '../components/charts/calendar';
 import { searchBarView } from '../components/searchBar';
 import { datePicker } from '../components/buttons/MonthPicker';
@@ -21,6 +22,7 @@ import { Constants } from '../common/Constants';
 import { resourceManager } from '@kit.LocalizationKit';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced';
 import { text } from '@kit.ArkGraphics2D';
+import { avatarControl } from '../components/buttons/avatarControl';
 
 // 接受序列化失败的回调
 PersistenceV2.notifyOnError((key: string, reason: string, msg: string) => {
@@ -29,7 +31,6 @@ PersistenceV2.notifyOnError((key: string, reason: string, msg: string) => {
 
 
 @Entry
-@Preview
 @ComponentV2
 export struct Index {
   @Local weeklyData: number[] = [];
@@ -40,6 +41,7 @@ export struct Index {
     'multiLedgerStorage',
     () => new LedgerManager()
   )!;
+  @Local
   userSetting: UserSetting = PersistenceV2.connect(
     UserSetting,
     'userSetting',
@@ -82,35 +84,10 @@ export struct Index {
                     }, () => {
                     })
                   })
-              }.width("90%").margin({ bottom: 14 }).justifyContent(FlexAlign.Start)
+              }.width("90%").margin({ bottom: 4 }).justifyContent(FlexAlign.Start)
 
               //login component
-              Column() {
-                Image(this.userSetting.profile)
-                  .width(100)
-                  .height(100)
-                  .backgroundColor(Color.Gray)
-                  .borderRadius(150)
-                  .onClick(() => {
-                    router.pushUrl({
-                      url: "pages/HuaweiLogin"
-                    }, router.RouterMode.Standard, (err) => {
-                      if (err) {
-                        console.log("跳转失败:", err)
-                      }
-                    })
-                  })
-
-                if (!this.userSetting.nickName) {
-                  Text('未登录').padding({ top: 15 })
-                } else {
-                  Text(this.userSetting.nickName).padding({ top: 15 })
-                }
-              }
-              .justifyContent(FlexAlign.Center)
-              .height(150)
-              .width("100%")
-
+              avatarControl()
               menuButtons()
 
             }
@@ -170,40 +147,70 @@ export struct Index {
                     .height(40)
 
                     //########
-                    MonthlySummaryPanel({
-                      recordList: filterRecordItems(this.ledgerManager.activeBook.data.items,
-                        new Date(this.ledgerManager.activeBook.startDate),
-                        new Date(this.ledgerManager.activeBook.endDate)
-                      )
-                    })
-                      .transition(
-                        TransitionEffect.OPACITY
-                          .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-                          .animation({ duration: 400, curve: Curve.FastOutSlowIn })
-                      );
-                    budgetComponent()
+                    if (this.userSetting.indexCompo.MonthlySummaryPanel) {
+                      MonthlySummaryPanel({
+                        recordList: filterRecordItems(this.ledgerManager.activeBook.data.items,
+                          new Date(this.ledgerManager.activeBook.startDate),
+                          new Date(this.ledgerManager.activeBook.endDate)
+                        )
+                      })
+                        .transition(
+                          TransitionEffect.OPACITY
+                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                        );
+                    }
 
-                    WeeklyChart({
-                      recordList: this.ledgerManager.activeBook.data.items,
-                      unit: this.ledgerManager.activeBook.preferredCurrency
-                    })
-                      .transition(
-                        TransitionEffect.OPACITY
-                          .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-                          .animation({ duration: 400, curve: Curve.FastOutSlowIn })
-                      );
+                    if (this.userSetting.indexCompo.budgetComponent) {
+                      budgetComponent()
+                        .transition(
+                          TransitionEffect.OPACITY
+                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                        );
+                    }
+                    if (this.userSetting.indexCompo.budgetComponent) {
+                      rateChart()
+                        .transition(
+                          TransitionEffect.OPACITY
+                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                        );
+                    }
 
+                    if (this.userSetting.indexCompo.menuList) {
+                      menuList()
+                        .transition(
+                          TransitionEffect.OPACITY
+                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                        );
+                    }
+                    if (this.userSetting.indexCompo.WeeklyChart) {
+                      WeeklyChart({
+                        recordList: this.ledgerManager.activeBook.data.items,
+                        unit: this.ledgerManager.activeBook.preferredCurrency
+                      })
+                        .transition(
+                          TransitionEffect.OPACITY
+                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                        );
+                    }
+                    if (this.userSetting.indexCompo.searchBarView)
                     // RecordListView({ recordList: this.choosedData.items })
-                    searchBarView({
-                      recordList: filterRecordItems(this.ledgerManager.activeBook.data.items,
-                        new Date(this.ledgerManager.activeBook.startDate),
-                        new Date(this.ledgerManager.activeBook.endDate))
-                    })
-                      .transition(
-                        TransitionEffect.OPACITY
-                          .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-                          .animation({ duration: 400, curve: Curve.FastOutSlowIn })
-                      );
+                    {
+                      searchBarView({
+                        recordList: filterRecordItems(this.ledgerManager.activeBook.data.items,
+                          new Date(this.ledgerManager.activeBook.startDate),
+                          new Date(this.ledgerManager.activeBook.endDate))
+                      })
+                        .transition(
+                          TransitionEffect.OPACITY
+                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                        );
+                    }
                   }.padding(12)
                 }
               }
@@ -219,15 +226,23 @@ export struct Index {
               List() {
                 ListItem() {
                   Column({ space: 2 }) {
-                    MultiCurrencyComposition({ recordList: this.ledgerManager.activeBook.data.items })
-                    Column() {
-                      calendar()
+                    if (this.userSetting.secondCompo.MultiCurrencyComposition) {
+                      MultiCurrencyComposition({ recordList: this.ledgerManager.activeBook.data.items })
+                    }
+                    if (this.userSetting.secondCompo.calendar) {
+                      Column() {
+                        Column() {
+                          calendar()
+                        }
+
+                      }
+                      .backgroundColor($r('app.color.Basic_Card_background'))
+                      .width('100%')
+                      .padding(12)
+                      .borderRadius(24)
+                      .margin({ bottom: 12 })
                     }
 
-                    .backgroundColor($r('app.color.Basic_Card_background'))
-                    .padding(12)
-                    .borderRadius(24)
-                    .margin({ bottom: 12 })
 
                   }
                 }.padding(10)

@@ -14,6 +14,7 @@ export struct CustomDialogComponent {
     'multiLedgerStorage',
     () => new LedgerManager()
   )!;
+  @Local maxBook: number = 6
   @Local recordsData: RecordsData = this.ledgerManager.activeBook.data
   @Local inputNameValue: string = ''
   @Local isChecked: boolean = true;
@@ -71,102 +72,159 @@ export struct CustomDialogComponent {
   }
 
   build() {
-    Column() {
-      Column() {
+    List() {
+      ListItem() {
+        Column() {
+          Row() {
+            Text('本地账本 ' + this.ledgerManager.books.length + "/6").fontWeight(FontWeight.Bold).fontSize(20)
 
-        Text('我的账本 ' + this.ledgerManager.books.length + "/3")
-          .fontWeight(FontWeight.Bold)
-          .fontSize(24)
-          .padding(10)
+            Button({ type: ButtonType.Circle }) {
+              Image($r('app.media.right_arrow')).width(24).height(24).margin({ left: 2 })
+            }
+            .width(40)
+            .height(40)
+            .backgroundColor($r('app.color.Basic_Card_background'))
+            .onClick((event: ClickEvent) => {
+              router.back()
+            })
+          }
+          .justifyContent(FlexAlign.SpaceBetween)
+          .width("100%")
+          .margin({ bottom: 12 })
 
 
-        ForEach(this.ledgerManager.books, (book: LedgerBook) => {
-          Column({ space: 10 }) {
-            // 账本名称
-            Row() {
-              Row() {
-                Image($r('app.media.agenda')).width(30).margin({ right: 12 })
-                Text(book.name)
-                  .fontSize(20)
-                  .fontWeight(FontWeight.Bold)
-                  .lineHeight(24)
-              }
+          ForEach(this.ledgerManager.books, (book: LedgerBook) => {
+            Column() {
+              Stack() {
+                Column() {
+                  Column() {
+                  }.height(6)
 
-              Image($r('app.media.bin')).width(30)
+                  Row() {
+                    Text(`账单数量: ${book.data.items.length}`)
+                      .fontSize(14)
+                      .margin({ top: 4, right: 6 })
+                    Text(`计划数量: ${book.data.budgets.length}`)
+                      .fontSize(14)
+                      .margin({ top: 4 })
+                  }
+
+                  // 创建日期
+                  Text(`创建日期: ${formatDateAdvanced(book.createdAt, "YYYY-MM-DD")}`)
+                    .fontSize(14)
+                    .margin({ top: 4 })
+
+                }
+                .justifyContent(FlexAlign.Center)
+                .width('95%')
+                .padding(12)
+                .borderRadius(12)
+                .backgroundColor(book.id === this.ledgerManager.activeBookId ? $r('app.color.Currency_Card_Main') :
+                  $r('app.color.Currency_Card_1'))
+                .opacity(0.5)
+                .margin({ top: 44 })
+
+                Column({ space: 10 }) {
+                  // 账本名称
+                  Row() {
+                    Row() {
+                      Image($r('app.media.agenda')).width(30).margin({ right: 12 })
+                      Text(book.name)
+                        .fontSize(20)
+                        .fontWeight(FontWeight.Bold)
+                        .lineHeight(24)
+                    }
+
+                    Image($r('app.media.bin')).width(30)
+                      .onClick(() => {
+
+                        AlertDialog.show({
+                          title: `删除账本 ${book.name}`,
+                          message: `此操作不可退回`,
+                          buttons: [
+                            {
+                              value: '取消',
+                              action: () => {
+                              }
+                            },
+                            {
+                              value: '确认',
+                              action: () => {
+                                this.ledgerManager.deleteBook(book.id)
+                                console.log('执行删除操作');
+                              }
+                            },
+                          ]
+                        })
+
+                      })
+                  }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+
+                }
+                .alignItems(HorizontalAlign.Start)
+                .width('95%')
+                .padding(12)
+                .backgroundColor(book.id === this.ledgerManager.activeBookId ? $r('app.color.Currency_Card_Main') :
+                  $r('app.color.Currency_Card_1'))
+                .borderRadius(12)
+                .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+
                 .onClick(() => {
-
-                  AlertDialog.show({
-                    title: `要删除账本吗`,
-                    message: `此操作不可退回`,
-                    buttons: [
-                      {
+                  if (book.id !== this.ledgerManager.activeBookId) {
+                    AlertDialog.show({
+                      title: '更换账本',
+                      message: `是否将当前账本更换为 ${book.name}`,
+                      primaryButton: {
                         value: '取消',
                         action: () => {
+
                         }
                       },
-                      {
+                      secondaryButton: {
                         value: '确认',
                         action: () => {
-                          this.ledgerManager.deleteBook(book.id)
-                          console.log('执行删除操作');
+                          this.ledgerManager.switchBook(book.id);
                         }
-                      },
-                    ]
-                  })
+                      }
+                    });
+                  }
+
 
                 })
-            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
 
-
-            Row() {
-              Text(`账单数量: ${book.data.items.length}`)
-                .fontSize(14)
-                .margin({ top: 4, right: 6 })
-              Text(`计划数量: ${book.data.budgets.length}`)
-                .fontSize(14)
-                .margin({ top: 4 })
-            }
-
-            // 创建日期
-            Text(`创建日期: ${formatDateAdvanced(book.createdAt, "YYYY-MM-DD")}`)
-              .fontSize(14)
-              .margin({ top: 4 })
-
-          }
-          .alignItems(HorizontalAlign.Start)
-          .width('80%')
-          .padding(12)
-          .backgroundColor(book.id === this.ledgerManager.activeBookId ? $r('app.color.Currency_Card_Main') :
-          $r('app.color.Currency_Card_1'))
-          .borderRadius(12)
-          .shadow(ShadowStyle.OUTER_DEFAULT_XS)
-          .margin({ bottom: 12 })
-          .onClick(() => {
-            this.ledgerManager.switchBook(book.id);
-          })
-        })
-
-
-        Button('创建新账本')
-          .buttonStyle(ButtonStyleMode.NORMAL)
-          .margin({ bottom: 6 })
-          .fontWeight(FontWeight.Medium)
-          .fontSize($r('sys.float.Body_L'))
-          .fontColor($r('sys.color.font_emphasize'))
-          .opacity(this.ledgerManager.books.length < 3 ? 1 : 0.4)
-          .onClick(() => {
-            if (this.ledgerManager.books.length < 3) {
-              this.dialogController?.open();
-            }
+              }.alignContent(Alignment.Top)
+            }.margin({ bottom: 30 }).width('90%').height('20%')
 
           })
 
-      }.backgroundColor($r('app.color.Basic_Card_background'))
-      .borderRadius(15)
-      .width('90%')
-      .padding(12)
 
+          Button('添加账本')
+            .buttonStyle(ButtonStyleMode.NORMAL)
+            .margin({ bottom: 6 })
+            .fontWeight(FontWeight.Medium)
+            .fontSize($r('sys.float.Body_L'))
+            .fontColor($r('sys.color.font_emphasize'))
+            .opacity(this.ledgerManager.books.length < 6 ? 1 : 0.4)
+            .onClick(() => {
+              if (this.ledgerManager.books.length < 6) {
+                this.dialogController?.open();
+              } else {
+                promptAction.showToast({ message: "本地账本已达到上限" });
+              }
+
+            })
+
+
+        }.width("90%")
+      }
     }
-    .width('100%')
+    .sticky(StickyStyle.Header)
+    .scrollBar(BarState.Off)
+    .listDirection(Axis.Vertical)
+    .edgeEffect(EdgeEffect.Spring)
+    .width("100%")
+    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+    .alignListItem(ListItemAlign.Center)
+
   }
 }

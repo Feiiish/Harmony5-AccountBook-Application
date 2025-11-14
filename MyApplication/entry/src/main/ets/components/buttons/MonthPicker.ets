@@ -18,7 +18,7 @@ export struct datePicker {
     () => new LedgerManager()
   )!;
   @Local textItems: SegmentButtonV2Items = new SegmentButtonV2Items([
-    { text: '周总结' },
+    { text: '按年' },
     { text: '按月' },
     { text: '所有' },
   ]);
@@ -126,7 +126,8 @@ export struct datePicker {
               .onClick(() => this.showDatePicker(true))
               .buttonStyle(ButtonStyleMode.TEXTUAL)
               .fontSize(24)
-
+            Text("-")
+              .fontSize(24)
             Button(formatDateAdvanced(this.ledgerManager.activeBook.endDate,
               this.selectedIndex === 0 ? "YYYY年" : "YYYY-MM"))
               .onClick(() => this.showDatePicker(false))
@@ -176,6 +177,7 @@ export struct datePicker {
   }
 
   build() {
+
     Column() {
       Row() {
         Text(this.selectedIndex === 0

@@ -10,6 +10,12 @@ import { UserSetting } from "../../models/userSetting"
 import { util } from '@kit.ArkTS';
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { RecordItem, RecordsData, LedgerManager } from '../../models/recordItemReference';
+import { avatarControl } from "../../components/buttons/avatarControl"
+import {
+  PreviewLoginButtonPage
+} from '../../pages/HuaweiLogin'
+import { ifaa } from '@kit.OnlineAuthenticationKit';
+import auth from '@hw-agconnect/auth';
 
 let databaseZone = cloudDatabase.zone('QuickStartDemo');
 let condition = new cloudDatabase.DatabaseQuery(CloudRecord);
@@ -18,6 +24,9 @@ let condition = new cloudDatabase.DatabaseQuery(CloudRecord);
 export struct cloudData {
   @Local newFound: number = 0;
   @Local recFound: number = 0
+  @Local unionID: string = ""
+  @Local avatar: avatarControl = new avatarControl
+  @Local
   userSetting: UserSetting = PersistenceV2.connect(
     UserSetting,
     'userSetting',
@@ -31,131 +40,38 @@ export struct cloudData {
   )!;
 
   public askToUpsert() {
-    this.getUIContext().showAlertDialog({
-      title: '上传到云端 ☁️',
-      message: `是否将账本 ${this.ledgerManager.activeBook.name} 上传到云端？ \n图片会保存在本地`,
-      primaryButton: {
-        value: '取消',
-        action: () => {
-          console.info('用户取消');
-        }
-      },
-      secondaryButton: {
-        value: '确定',
-        action: () => {
-          this.upsertWholeBook()
-        }
+
+    this.avatar.checkLoginStatus().then((res) => {
+      if (res) {
+        this.unionID = this.avatar.UnionID
+        promptAction.showToast({ message: "查询记录中, 请稍后" });
+        this.upsertWholeBook()
+
+      } else {
+        promptAction.showToast({ message: "请登录账号" });
       }
+    }).catch((error: BusinessError) => {
+      hilog.error(0x0000, 'testTag', `getCurrentUser error: ${error.message}`);
     });
 
   }
 
-  public askToDownload() {
-    this.queryAll().then((newRecs) => {
-      this.getUIContext().showAlertDialog({
-        title: '从云端下载账单 ☁️',
-        message: `云端中存在 ${this.ledgerManager.activeBook.name} 的${this.recFound}条记录 \n其中${this.newFound}条新记录 \n是否下载到本地`,
-        primaryButton: {
-          value: '取消',
-          action: () => {
-            console.info('用户取消');
-          }
-        },
-        secondaryButton: {
-          value: '确定',
-          action: () => {
-            this.saveTheRecord(newRecs)
-          }
-        }
-      });
-    })
-
-  }
-
-  saveTheRecord(cloudRecs: CloudRecord[]) {
-    cloudRecs.forEach((rec) => {
-      if (rec.fromBookID === this.ledgerManager.activeBookId) {
-        const newRec = new RecordItem()
-        if (rec.id !== undefined) {
-          newRec.id = rec.id;
-        }
-        if (rec.amount !== undefined) {
-          newRec.amount = rec.amount;
-        }
-        if (rec.unit !== undefined) {
-          newRec.unit = rec.unit;
-        }
-        if (rec.tag !== undefined) {
-          newRec.tag = rec.tag;
-        }
-        if (rec.note !== undefined) {
-          newRec.note = rec.note;
-        }
-        if (rec.date !== undefined) {
-          newRec.date = rec.date;
-        }
-        if (rec.selectimageUriedImage !== undefined) {
-          newRec.selectimageUriedImage = rec.selectimageUriedImage;
-        }
-        this.ledgerManager.activeBook.data.items.push(newRec)
-      }
-
-    })
-  }
-
-  async queryAll(): Promise<CloudRecord[]> {
-    try {
-      this.recFound = 0
-      this.newFound = 0
-      const bookId = this.ledgerManager.activeBookId;
-      const condition = new cloudDatabase.DatabaseQuery(CloudRecord);
-      condition.equalTo('fromBookID', bookId);
-
-      const resultArray = await databaseZone.query(condition);
-      this.recFound = resultArray.length
-      hilog.info(0x0000, 'queryAll',
-        `✅ 查询成功， BookID ${bookId}, 结果如下：\n${JSON.stringify(resultArray, null, 2)}`);
-
-      const localIds = this.ledgerManager.activeBook.data.items.map(item => item.id);
-      const uniqueCloudRecords = resultArray.filter(rec => !localIds.includes(rec.id!));
-      this.newFound = uniqueCloudRecords.length
-      return uniqueCloudRecords;
-    } catch (err) {
-      hilog.error(0x0000, 'queryAll', `❌ 查询失败\n错误码: ${err.code}\n错误信息: ${err.message}`);
-      return [];
-    }
-  }
-
   async upsertWholeBook() {
     try {
-      //云端同步删除Trashbin
-      for (const id of this.ledgerManager.cloudTrashBin) {
-        const query = new cloudDatabase.DatabaseQuery(CloudRecord);
-        query.equalTo('id', id);
-        const resultSet = await databaseZone.query(query)
-        for (const record of resultSet) {
-          await databaseZone.delete(record);
-        }
-      }
-      for (const id of this.ledgerManager.cloudTrashBin) {
-        const query = new cloudDatabase.DatabaseQuery(CloudRecord);
-        query.equalTo('fromBookID', id);
-        const resultSet = await databaseZone.query(query)
-        for (const record of resultSet) {
-          await databaseZone.delete(record);
-        }
-      }
 
-
-      //上传本地的新账单
+      // 查询当前账本记录是否已存在
       const items = this.ledgerManager.activeBook.data.items;
-      for (const record of items) {
-        // 构造查询条件：按主键 ID 查找是否已存在
-        const condition = new cloudDatabase.DatabaseQuery(CloudRecord);
-        condition.equalTo('id', record.id);
+      const allIds = items.map(item => item.id);
+      const existQuery = new cloudDatabase.DatabaseQuery(CloudRecord);
+      existQuery.in('id', allIds);
+      const existingCloudRecords = await databaseZone.query(existQuery);
+      const existingIdSet = new Set(existingCloudRecords.map(r => r.id));
 
-        // 如果记录不存在，则插入；否则更新
-        let newRecord = new CloudRecord();
+      const newRecords: CloudRecord[] = [];
+      const existingRecords: CloudRecord[] = [];
+
+      for (const record of items) {
+        const newRecord = new CloudRecord();
         newRecord.fromBookID = this.ledgerManager.activeBookId;
         newRecord.id = record.id;
         newRecord.amount = record.amount;
@@ -164,24 +80,66 @@ export struct cloudData {
         newRecord.note = record.note;
         newRecord.date = record.date;
         newRecord.selectimageUriedImage = record.selectimageUriedImage;
-        newRecord.fromAccount = "For test now"
-        // check if logged in, use union ID
+        newRecord.fromAccount = this.unionID;
 
-        const resultArray = await databaseZone.query(condition);
-
-        if (resultArray.length === 0) {
-          // 云端没有这条记录 → 执行 upsert（或 insert）
-          let result = await databaseZone.upsert(newRecord);
-          hilog.info(0x0000, 'upsert', `新增记录写入成功: ${JSON.stringify(result)}`);
+        if (!existingIdSet.has(record.id)) {
+          newRecords.push(newRecord);
         } else {
-          // 云端已有这条记录 → 可以跳过或执行 update（如果你想覆盖）
-          hilog.info(0x0000, 'upsert', `记录已存在，跳过: ${record.id}`);
+          existingRecords.push(newRecord);
         }
       }
-      promptAction.showToast({
-        message: "记录同步成功",
+
+      // 弹窗确认
+      const message =
+        `发现 ${newRecords.length} 条新记录 \n是否上传并删除云端旧项？`;
+      this.getUIContext().showAlertDialog({
+        title: `上传账本 ${this.ledgerManager.activeBook.name}`,
+        message: message,
+        primaryButton: {
+          value: '取消',
+          action: () => {
+            hilog.info(0x0000, 'upsert', '用户取消了上传操作');
+          }
+        },
+        secondaryButton: {
+          value: '确定上传',
+          action: async () => {
+
+            //处理本地垃圾
+            try {
+              const trashIds = this.ledgerManager.cloudTrashBin;
+              if (Array.isArray(trashIds) && trashIds.length > 0) {
+                const query1 = new cloudDatabase.DatabaseQuery(CloudRecord);
+                query1.in('id', trashIds);
+                const query2 = new cloudDatabase.DatabaseQuery(CloudRecord);
+                query2.in('fromBookID', trashIds);
+                const result1 = await databaseZone.query(query1);
+                const result2 = await databaseZone.query(query2);
+
+                if (result1.length > 0) {
+                  await databaseZone.delete(result1);
+                }
+
+                if (result2.length > 0) {
+                  await databaseZone.delete(result2);
+                }
+              }
+            } catch (err) {
+              hilog.error(0x0000, 'testTag', `删除失败，code: ${err.code}, message: ${err.message}`);
+            }
+
+            promptAction.showToast({ message: "尝试上传记录" });
+
+            const uploadResults = await Promise.all(
+              newRecords.map(record => databaseZone.upsert(record))
+            );
+
+            promptAction.showToast({ message: `${uploadResults.length} 条记录已上传` });
+            hilog.info(0x0000, 'upsert', '所有记录已成功同步到云端');
+          }
+        }
+
       });
-      hilog.info(0x0000, 'upsert', '所有记录已成功同步到云端');
     } catch (err) {
       promptAction.showToast({
         message: `同步失败: ${err.code}, ${err.message}`,
@@ -191,13 +149,6 @@ export struct cloudData {
   }
 
   build() {
-    Column() {
-      Text("数据同步中")
-      Button("WholeBookUpsert").onClick((event: ClickEvent) => {
-        this.upsertWholeBook()
-        this.queryAll()
-      })
-    }
 
   }
 }

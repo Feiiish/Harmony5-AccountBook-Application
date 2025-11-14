@@ -8,7 +8,7 @@ import { safeCalculate } from '../utils/safeCalculate';
 
 import { findFlag } from '../utils/FindCountryFlags';
 import { CustomContentDialog } from '@kit.ArkUI';
-import { displayExchangeRates } from '../utils/currencyExchange'
+import { displayExchangeRates, updateExchangeRates } from '../utils/currencyExchange'
 
 const RECORDS_DATA_KEY = 'incomeExpenseRecords';
 
@@ -102,6 +102,7 @@ struct CurrencyPickerDialog {
           Button('确认')
             .onClick(() => {
               this.onAccept(this.selected) // ✅ 调用回调函数传值
+              updateExchangeRates(this.selected)
               console.log('选择了:', this.selected)
               this.controller.close()
             })
@@ -226,7 +227,7 @@ struct IncomePage {
       this.couldSave = true
     } else {
 
-      if (this.tempAmount! >= 0) {
+      if (this.tempAmount! >= 0 && this.rate) {
         this.message =
           "收入: " + JSON.stringify(this.tempAmount) + " " + this.tempUnit +
             ` 约为${(this.tempAmount! / this.rate
@@ -379,8 +380,8 @@ struct IncomePage {
   currencyDialogController: CustomDialogController = new CustomDialogController({
     builder: CurrencyPickerDialog({
       onAccept: (value: string) => {
+        this.tempUnit = value
         this.cacuRate().then(() => {
-          this.tempUnit = value
           this.updateMessage()
         })
         console.log('用户选择了货币:', value)
@@ -449,17 +450,19 @@ struct IncomePage {
                     title: '删除确认',
                     message: this.tempTag === '' ? '请选择要删除的标签' : `确定要删除标签 "${this.tempTag}" 吗？`,
                     primaryButton: {
+                      value: '取消',
+                      action: () => {
+                      }
+                    },
+                    secondaryButton: {
+
+
                       value: '删除',
                       action: () => {
                         console.log("123" + this.ledgerManager.activeBook.tags.toString());
                         this.ledgerManager.activeBook.tags =
                           this.ledgerManager.activeBook.tags.filter((item: string) => item !== this.tempTag);
 
-                      }
-                    },
-                    secondaryButton: {
-                      value: '取消',
-                      action: () => {
                       }
                     }
                   });
@@ -474,7 +477,7 @@ struct IncomePage {
                     .fontColor(this.tempTag === item ? "#000000" : $r('app.color.Font_Color'))// 选中时白色文字
                     .padding("2%")
                     .backgroundColor(this.tempTag === item ? "#FFCC22" :
-                    $r('app.color.Basic_Card_background'))// 选中时黄色背景
+                      $r('app.color.Basic_Card_background'))// 选中时黄色背景
                     .borderRadius(5)
                     .margin({ right: 10, bottom: 10 })
                     .onClick(() => {
@@ -895,7 +898,7 @@ struct planningPage {
                       .fontColor(this.tempTag === item ? "#000000" : $r('app.color.Font_Color'))// 选中时白色文字
                       .padding("2%")
                       .backgroundColor(this.tempTag === item ? "#FFCC22" :
-                      $r('app.color.Basic_Card_background'))// 选中时黄色背景
+                        $r('app.color.Basic_Card_background'))// 选中时黄色背景
                       .borderRadius(5)
                       .margin({ right: 10, bottom: 10 })
                       .onClick(() => {

@@ -61,8 +61,8 @@ export struct MultiCurrencyComposition {
     () => new LedgerManager()
   )!;
 
-  @Monitor('userSetting.preferredCurrency')
-  onSettingChange(monitor: IMonitor) {
+  @Monitor('ledgerManager.activeBook.preferredCurrency')
+  onCurrencyChange(monitor: IMonitor) {
     console.log("MultiCurrency Inital: setting changed")
     this.refreshData();
   }
@@ -75,8 +75,8 @@ export struct MultiCurrencyComposition {
   errorMessage: string = ""; // 错误信息
   @Local DEBUG: boolean = true;
   @Local isShowSheet: boolean = false;
-  @Local colors: string[] = ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#F44336'];
   @Local totalAmount: number = 0;
+  @Local colors: Record<string, string> = {}
   private selectedCurrency: singleCurrency | null = null
 
   aboutToAppear() {
@@ -143,7 +143,7 @@ export struct MultiCurrencyComposition {
 
   build() {
     Column() {
-      Text("货币总额").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 8, top: 4 })
+
       /*
             if (this.DEBUG) {
               Text(`当前货币: ${this.userSetting.chosenCurrency.join(", ")}`)
@@ -154,16 +154,69 @@ export struct MultiCurrencyComposition {
             * */
       //build pie chart
       if (this.currencyAmounts.length !== 0) {
-        PieChartExample({ pieData: this.currencyAmounts, colors: this.colors })
+        Column() {
+          Text("货币分布").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 8, top: 4 })
+          PieChartExample({ pieData: this.currencyAmounts })
+        }
+        .basicCard()
+        .shadow(ShadowStyle.OUTER_DEFAULT_SM)
+        .borderRadius(24)
+        .backgroundColor($r('app.color.Card_background_2'))
+        .margin({ top: 5 })
 
       }
 
       Column() {
+        Text(`货币卡片`)
+          .margin({ top: 4, bottom: 12 })
+          .fontSize(20)
+          .fontWeight(FontWeight.Bold)
+        if (this.currencyAmounts.length > 0) {
+          Column() {
 
-        Row() {
-          Text(`净资产 ≈ ${this.totalAmount.toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`)
-            .margin({ top: 4 })
-            .fontWeight(20)
+            //总资产
+            Row() {
+
+              Text(`货币数量`)
+                .margin({ top: 4 })
+                .fontWeight(20)
+                .fontWeight(FontWeight.Bold)
+                .margin({ bottom: 4 })
+
+              Text(`${this.currencyAmounts.length}`)
+                .fontWeight(20)
+                .margin({ bottom: 4 })
+            }.justifyContent(FlexAlign.SpaceBetween)
+            .width('100%')
+
+            //总资产
+            Row() {
+              Column() {
+                Text(`总资产`)
+                  .margin({ top: 4 })
+                  .fontWeight(20)
+                  .fontWeight(FontWeight.Bold)
+                Text('所有货币换算成本位币的总和').opacity(0.5).fontSize(10)
+              }.width('50%')
+              .alignItems(HorizontalAlign.Start)
+
+              Row() {
+                Text(`${this.totalAmount.toFixed(2)} `)
+                  .margin({ top: 4 })
+
+                Text($r(`app.string.${this.ledgerManager.activeBook.preferredCurrency}`))
+                  .margin({ top: 4 })
+
+              }
+
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+          }
+          .backgroundColor($r('app.color.button_color'))
+          .padding(14)
+          .borderRadius(12)
+          .width("98%")
+          .alignItems(HorizontalAlign.Start)
+
         }
 
         // 加载状态
@@ -196,10 +249,10 @@ export struct MultiCurrencyComposition {
 
       }
       .basicCard()
-      .shadow(ShadowStyle.OUTER_FLOATING_SM)
+      .shadow(ShadowStyle.OUTER_DEFAULT_SM)
       .borderRadius(24)
       .backgroundColor($r('app.color.Card_background_2'))
-      .margin({ top: 12 })
+      .margin({ top: 10 })
 
     }
     .padding(12)
@@ -288,7 +341,7 @@ export struct currencyItemView {
   mySheet() {
     Column() {
       Row() {
-        Text(`${this.currency.unit}`)
+        Text($r(`app.string.${this.currency.unit}`))
           .fontWeight(FontWeight.Bold)
           .margin({ right: 12 })
           .fontSize(22)
@@ -301,7 +354,7 @@ export struct currencyItemView {
 
       Column() {
         //text Input 可以用指定货币换算成目标货币
-        Text('计算汇率').width('90%').fontSize(18).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
+        Text('金额换算').width('90%').fontSize(18).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
         Row() {
           TextInput({ text: "1" })
             .type(InputType.NUMBER_DECIMAL)
@@ -326,21 +379,18 @@ export struct currencyItemView {
 
 
       Column() {
+        Row() {
+          Text("货币数量：")
+          Text(`${this.currency.amount}`)
+            .fontColor(this.currency.amount >= 0 ? '#00B300' : '#FF3A3A')
+        }.margin({ bottom: 12 })
 
+        Row() {
+          Text("货币代码：")
+          Text(`${this.currency.unit}`)
+        }.margin({ bottom: 12 })
 
         if (this.currency.unit !== this.ledgerManager.activeBook.preferredCurrency) {
-          Row() {
-            Text("汇率：")
-            Text(`${(1 / this.currency.rate).toFixed(4)}`)
-
-          }.margin({ bottom: 12 })
-
-          Row() {
-            Text("货币总额：")
-            Text(`${this.currency.amount}`)
-
-              .fontColor(this.currency.amount >= 0 ? '#00B300' : '#FF3A3A')
-          }.margin({ bottom: 12 })
 
           Row() {
             Text("大约为：")
@@ -348,6 +398,11 @@ export struct currencyItemView {
             this.ledgerManager.activeBook.preferredCurrency}`)
           }.margin({ bottom: 12 })
 
+          Row() {
+            Text("当前汇率：")
+            Text(`${(1 / this.currency.rate).toFixed(4)}`)
+
+          }.margin({ bottom: 12 })
         }
 
       }.alignItems(HorizontalAlign.Start)
@@ -364,9 +419,8 @@ export struct currencyItemView {
         Row() {
           findFlag({ flagName: this.currency.unit })
             .width(28)
-            .height(20)
-          Text(this.currency.unit)
-            .fontSize(20)
+          Text($r(`app.string.${this.currency.unit}`))
+            .fontSize(15)
         }
 
         Circle()
@@ -378,7 +432,6 @@ export struct currencyItemView {
       }
       .justifyContent(FlexAlign.SpaceBetween)
       .width("100%")
-      .margin({ bottom: 4 })
 
       Text(formatLargeNumber(this.currency.amount))
         .fontSize(20)

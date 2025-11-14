@@ -1,3 +1,11 @@
+import { RecordItem, LedgerManager } from '../models/recordItemReference';
+import { formatDateAdvanced } from '../utils/formatDateAdvanced'
+import { variousToPreferred } from '../utils/moneyCount';
+import { CachedRatesStatus, UserSetting } from "../models/userSetting"
+import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
+import { formatLargeNumber } from "../utils/formatLargeNumber"
+import { recordDeleter } from "../utils/recordDeleter"
+
 @ComponentV2
 export struct findFlag {
   @Require @Param flagName: string
@@ -32,45 +40,75 @@ export struct findFlag {
   }
 }
 
+let colorCache: Record<string, string> = {};
 
-export function findColor(unit: string) {
-  switch (unit.toUpperCase()) {
-    case "USD":
-      return "#00B300"; // 美元 - 绿色
-    case "CAD":
-      return "#007FFF"; // 加元 - 蓝色
-    case "EUR":
-      return "#0000FF"; // 欧元 - 深蓝色
-    case "GBP":
-      return "#800080"; // 英镑 - 紫色
-    case "AUD":
-      return "#228B22"; // 澳元 - 森林绿
-    case "JPY":
-      return "#FF0000"; // 日元 - 红色
-    case "CNY":
-      return "#FFA500"; // 人民币 - 橙色
-    case "INR":
-      return "#FFD700"; // 印度卢比 - 金色
-    case "KRW":
-      return "#4169E1"; // 韩元 - 皇家蓝
-    case "CHF":
-      return "#8B0000"; // 瑞士法郎 - 深红色
-    case "BRL":
-      return "#32CD32"; // 巴西雷亚尔 - 青绿色
-    case "RUB":
-      return "#A52A2A"; // 卢布 - 棕红色
-    case "MXN":
-      return "#20B2AA"; // 墨西哥比索 - 青蓝色
-    case "ZAR":
-      return "#FFD700"; // 南非兰特 - 金色
-    case "NGN":
-      return "#006400"; // 奈拉 - 深绿色
-    case "SAR":
-      return "#2E8B57"; // 沙特里亚尔 - 海绿色
-    case "AED":
-      return "#708090"; // 阿联酋迪拉姆 - 石板灰
-    default:
-      return "#808080"; // 默认 - 灰色
+export function findColor(unit: string): string {
+  const ledgerManager = PersistenceV2.connect(
+    LedgerManager,
+    'multiLedgerStorage',
+    () => new LedgerManager()
+  )!;
+
+  const keys = ledgerManager.activeBook.chosenCurrency;
+
+  if (colorCache[unit]) {
+    return colorCache[unit];
   }
+
+  colorCache = {};
+
+  const total = keys.length;
+  const saturation = 70;
+  const lightness = 60;
+
+  keys.forEach((key, index) => {
+    const hue = Math.floor((index / total) * 360);
+    colorCache[key] = hslToHex(hue, saturation, lightness);
+  });
+
+  return colorCache[unit];
 }
 
+// --- 工具函数：HSL -> HEX ---
+function hslToHex(h: number, s: number, l: number): string {
+  s /= 100;
+  l /= 100;
+
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r = 0, g = 0, b = 0;
+
+  if (0 <= h && h < 60) {
+    r = c;
+    g = x;
+    b = 0;
+  } else if (60 <= h && h < 120) {
+    r = x;
+    g = c;
+    b = 0;
+  } else if (120 <= h && h < 180) {
+    r = 0;
+    g = c;
+    b = x;
+  } else if (180 <= h && h < 240) {
+    r = 0;
+    g = x;
+    b = c;
+  } else if (240 <= h && h < 300) {
+    r = x;
+    g = 0;
+    b = c;
+  } else {
+    r = c;
+    g = 0;
+    b = x;
+  }
+
+  const toHex = (v: number) =>
+  Math.round((v + m) * 255)
+    .toString(16)
+    .padStart(2, '0');
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}

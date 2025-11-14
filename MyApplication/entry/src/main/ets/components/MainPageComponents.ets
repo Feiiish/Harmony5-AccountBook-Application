@@ -1,4 +1,4 @@
-import { BudgetItem, RecordItem, LedgerManager } from '../models/recordItemReference';
+import { RecordItem, LedgerManager } from '../models/recordItemReference';
 import { formatDateAdvanced } from '../utils/formatDateAdvanced'
 import { findFlag } from '../utils/FindCountryFlags';
 import { variousToPreferred } from '../utils/moneyCount';
@@ -9,18 +9,9 @@ import { recordDeleter } from "../utils/recordDeleter"
 import { systemDateTime } from '@kit.BasicServicesKit';
 
 
-@Extend(Row)
-function currencyCard() {
-  .justifyContent(FlexAlign.Start)
-  .width("28%")
-  .padding(4)
-  //.backgroundColor(Color.Red)
-}
-
 @Styles
 function basicCard() {
   .width('100%')
-
   .padding(16)
   .borderRadius(15)
   .margin({ bottom: 12 })
@@ -44,7 +35,7 @@ export struct MonthlySummaryPanel {
     () => new LedgerManager()
   )!;
 
-  @Monitor('userSetting.preferredCurrency')
+  @Monitor('ledgerManager.activeBook.preferredCurrency')
   onCurrencyChange(monitor: IMonitor) {
     console.log("From Monthly Panel: preferredCurrency changed");
     this.updateMonthlySummary();
@@ -67,6 +58,7 @@ export struct MonthlySummaryPanel {
 
   aboutToAppear(): void {
     this.updateMonthlySummary()
+
   }
 
   private async updateMonthlySummary() {
@@ -82,19 +74,21 @@ export struct MonthlySummaryPanel {
     Column({ space: 8 }) {
       Row() {
         Column() {
-          Text($r('app.string.totalExpense'))
-          Text(formatLargeNumber(this.monthlyInOut[0] - this.monthlyInOut[1]) + " " +
-          this.ledgerManager.activeBook.preferredCurrency)
-            .fontSize(24)
-            .fontWeight(FontWeight.Bold)
-
+          Text($r('app.string.Summary'))
+          Row() {
+            Text(formatLargeNumber(this.monthlyInOut[0] - this.monthlyInOut[1]) + " ")
+              .fontSize(24)
+              .fontWeight(FontWeight.Bold)
+            Text($r(`app.string.${this.ledgerManager.activeBook.preferredCurrency}`))
+              .fontSize(20)
+          }
 
         }.alignItems(HorizontalAlign.Start)
 
         // 本月支出&收入
         Column() {
           Row() {
-            Text($r('app.string.Summary'))
+            Text($r('app.string.totalExpense'))
               .fontSize(16)
             Text(formatLargeNumber(this.monthlyInOut[1]))
               .fontColor('#FF3A3A')
@@ -143,7 +137,7 @@ export struct RecordItemView {
   mySheet() {
     Column() {
       // 标题
-      Text('记录详情')
+      Text($r('app.string.recordDetail')) //记录详情
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
         .margin({ top: 20, bottom: 16 })
@@ -166,11 +160,11 @@ export struct RecordItemView {
       Column() {
         // 标签/分类
         Row() {
-          Text('分类：')
+          Text($r('app.string.tag'))
             .fontSize(16)
             .fontColor('#666')
             .width(80)
-          Text(this.item.tag || '未分类')
+          Text(this.item.tag || $r('app.string.notSet'))
             .fontSize(16)
         }
         .justifyContent(FlexAlign.Start)
@@ -179,11 +173,11 @@ export struct RecordItemView {
 
         // 设定时间
         Row() {
-          Text('日期：')
+          Text($r('app.string.date'))
             .fontSize(16)
             .fontColor('#666')
             .width(80)
-          Text(formatDateAdvanced(this.item.date, "YYYY-MM-DD") || '未设定')
+          Text(formatDateAdvanced(this.item.date, "YYYY-MM-DD") || $r('app.string.notSet'))
             .fontSize(16)
         }
         .justifyContent(FlexAlign.Start)
@@ -192,11 +186,11 @@ export struct RecordItemView {
 
         // 备注
         Row() {
-          Text('备注：')
+          Text($r('app.string.note'))
             .fontSize(16)
             .fontColor('#666')
             .width(80)
-          Text(this.item.note || '无备注')
+          Text(this.item.note || $r('app.string.notSet'))
             .fontSize(16)
             .maxLines(3)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -227,7 +221,6 @@ export struct RecordItemView {
         .height(1)   // 线的粗细
         .backgroundColor(Color.Gray)
         .opacity(0.2)
-
 
       Row() {
         Row() {
@@ -334,7 +327,7 @@ export struct RecordListView {
     Column() {
       if (this.recordList.length === 0) {
         Column() {
-          Text("暂无账单数据")
+          Text($r('app.string.noRecord'))
             .fontSize(16)
             .opacity(0.5)
             .margin(20)
