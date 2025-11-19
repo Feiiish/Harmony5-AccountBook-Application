@@ -159,7 +159,7 @@ export struct MultiCurrencyComposition {
           PieChartExample({ pieData: this.currencyAmounts })
         }
         .basicCard()
-        .shadow(ShadowStyle.OUTER_DEFAULT_SM)
+
         .borderRadius(24)
         .backgroundColor($r('app.color.Card_background_2'))
         .margin({ top: 5 })
@@ -216,6 +216,7 @@ export struct MultiCurrencyComposition {
           .borderRadius(12)
           .width("98%")
           .alignItems(HorizontalAlign.Start)
+          .shadow(ShadowStyle.OUTER_DEFAULT_SM)
 
         }
 
@@ -249,7 +250,7 @@ export struct MultiCurrencyComposition {
 
       }
       .basicCard()
-      .shadow(ShadowStyle.OUTER_DEFAULT_SM)
+
       .borderRadius(24)
       .backgroundColor($r('app.color.Card_background_2'))
       .margin({ top: 10 })

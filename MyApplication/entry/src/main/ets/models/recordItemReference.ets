@@ -101,7 +101,8 @@ export class LedgerBook {
   @Type(RecordsData)
   @Trace data: RecordsData = new RecordsData();
   @Trace preferredCurrency: string = "CNY";
-  @Trace chosenCurrency: string[] = ["CNY", "CAD", "USD", "JPY"];
+  @Trace chosenCurrency: string[] = ["CNY", "USD", "HKD", "GBP"];
+  @Trace rateChartCurrency: string[] = ["CNY", "USD", "HKD", "GBP"];
   @Trace tags: string[] = ['餐饮', '购物', '交通', '娱乐', '住房', '工资', '奖金', '投资'];
   @Trace chosenDate: Date = new Date;
   @Trace startDate: Date = new Date(new Date().getFullYear(), 0, 1);

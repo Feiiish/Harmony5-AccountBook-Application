@@ -89,7 +89,7 @@ export struct Index {
               //login component
               avatarControl()
               menuButtons()
-
+              Column().width('100%')
             }
             .borderRadius(8)
             .clip(true)
@@ -108,6 +108,7 @@ export struct Index {
       .width(272)
       .height(344)
       .borderRadius(20)
+      .shadow(ShadowStyle.OUTER_DEFAULT_XS)
 
       //主要内容
       Column() {
@@ -147,7 +148,7 @@ export struct Index {
                     .height(40)
 
                     //########
-                    if (this.userSetting.indexCompo.MonthlySummaryPanel) {
+                    if (this.userSetting.MonthlySummaryPanel) {
                       MonthlySummaryPanel({
                         recordList: filterRecordItems(this.ledgerManager.activeBook.data.items,
                           new Date(this.ledgerManager.activeBook.startDate),
@@ -161,7 +162,7 @@ export struct Index {
                         );
                     }
 
-                    if (this.userSetting.indexCompo.budgetComponent) {
+                    if (this.userSetting.budgetComponent) {
                       budgetComponent()
                         .transition(
                           TransitionEffect.OPACITY
@@ -169,7 +170,7 @@ export struct Index {
                             .animation({ duration: 400, curve: Curve.FastOutSlowIn })
                         );
                     }
-                    if (this.userSetting.indexCompo.budgetComponent) {
+                    if (this.userSetting.rateChart) {
                       rateChart()
                         .transition(
                           TransitionEffect.OPACITY
@@ -178,7 +179,7 @@ export struct Index {
                         );
                     }
 
-                    if (this.userSetting.indexCompo.menuList) {
+                    if (this.userSetting.menuList) {
                       menuList()
                         .transition(
                           TransitionEffect.OPACITY
@@ -186,7 +187,7 @@ export struct Index {
                             .animation({ duration: 400, curve: Curve.FastOutSlowIn })
                         );
                     }
-                    if (this.userSetting.indexCompo.WeeklyChart) {
+                    if (this.userSetting.WeeklyChart) {
                       WeeklyChart({
                         recordList: this.ledgerManager.activeBook.data.items,
                         unit: this.ledgerManager.activeBook.preferredCurrency
@@ -197,7 +198,7 @@ export struct Index {
                             .animation({ duration: 400, curve: Curve.FastOutSlowIn })
                         );
                     }
-                    if (this.userSetting.indexCompo.searchBarView)
+                    if (this.userSetting.searchBarView)
                     // RecordListView({ recordList: this.choosedData.items })
                     {
                       searchBarView({
@@ -226,10 +227,10 @@ export struct Index {
               List() {
                 ListItem() {
                   Column({ space: 2 }) {
-                    if (this.userSetting.secondCompo.MultiCurrencyComposition) {
+                    if (this.userSetting.MultiCurrencyComposition) {
                       MultiCurrencyComposition({ recordList: this.ledgerManager.activeBook.data.items })
                     }
-                    if (this.userSetting.secondCompo.calendar) {
+                    if (this.userSetting.calendar) {
                       Column() {
                         Column() {
                           calendar()

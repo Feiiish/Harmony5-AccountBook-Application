@@ -23,13 +23,8 @@ function basicCard() {
 
 @Styles
 function basicRow() {
-  .height(45)
+  .height(30)
   .width("100%")
-  .padding(6)
-  .borderRadius(12)
-  .shadow(ShadowStyle.OUTER_DEFAULT_XS)
-  .backgroundColor($r('app.color.Currency_Card_1'))
-  .margin({ bottom: 8 })
 
 }
 
@@ -84,11 +79,18 @@ struct CurrencyPickerDialog {
 @ComponentV2
 struct currencySettingPage {
   @Local
+  userSetting: UserSetting = PersistenceV2.connect(
+    UserSetting,
+    'userSetting',
+    () => new UserSetting()
+  )!;
+  @Local
   ledgerManager: LedgerManager = PersistenceV2.connect(
     LedgerManager,
     'multiLedgerStorage',
     () => new LedgerManager()
   )!;
+  @Local isShowSheet: boolean = false;
   @Local showAllCurrencies: boolean = false
   @Local showAllAvailableCurrencies: boolean = false
   availableCurrencies: string[] = [
@@ -97,6 +99,63 @@ struct currencySettingPage {
     'MYR', 'IDR', 'PHP', 'PLN', 'TRY', 'ILS', 'EGP', 'VND',
     'UAH', 'ARS', 'CLP', 'COP'
   ]
+
+  @Builder
+  mySheet() {
+    Column() {
+      Row() {
+        Text('添加货币')
+          .fontWeight(FontWeight.Bold)
+          .fontSize(22)
+      }
+      .width('100%')
+      .margin({ top: 25, bottom: 12 })
+
+      Column({ space: 4 }) {
+        ForEach(
+          this.availableCurrencies.filter(currency =>
+          !this.ledgerManager.activeBook.chosenCurrency.includes(currency)
+          ),
+          (currency: string) => {
+            Divider()
+
+            Row() {
+
+              //currency name
+              Row({ space: 6 }) {
+                Text($r(`app.string.${currency}`))
+                findFlag({ flagName: currency })
+                if (this.userSetting.showCurrencyCode) {
+                  Text(currency)
+                    .opacity(0.5)
+                }
+              }
+
+            }
+            .height(30)
+            .width('100%')
+            .justifyContent(FlexAlign.SpaceBetween)
+            .onClick(() => {
+              if (!this.ledgerManager.activeBook.chosenCurrency.includes(currency)) {
+                this.getUIContext()?.animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
+                  this.ledgerManager.activeBook.chosenCurrency = [
+                    ...this.ledgerManager.activeBook.chosenCurrency,
+                    currency
+                  ];
+                });
+                promptAction.showToast({ message: `${currency} 已添加` });
+              }
+            })
+
+          }
+        )
+      }
+      .padding(2)
+
+    }
+    .width('75%')
+    .alignItems(HorizontalAlign.Start)
+  }
 
   build() {
     List() {
@@ -121,41 +180,71 @@ struct currencySettingPage {
 
           Column() {
             Row() {
-              Text('只显示货币代码')
-              Text('开关')
+              Text('显示货币代码')
+              Toggle({ type: ToggleType.Switch, isOn: this.userSetting.showCurrencyCode })
+                .onChange((statue) => {
+                  this.userSetting.showCurrencyCode = statue
+                })
             }.justifyContent(FlexAlign.SpaceBetween).width('100%')
 
-            Divider().margin({ top: 8, bottom: 8 }).color(Color.Gray)
-            Row() {
-              Text('只显示货币代码')
-              Text('开关')
-            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
           }
           .basicCard()
 
           Column() {
-            Text("当前货币")
-              .fontSize(20)
-              .padding(10).width("100%")
-            Grid() {
+
+            Column() {
+              Text("当前货币")
+                .fontSize(20)
+
+              Text('点击货币以设置本位币').opacity(0.5).fontSize(14)
+            }.width("100%").padding(6)
+
+            Column({ space: 4 }) {
               ForEach(
                 this.showAllCurrencies
                   ? this.ledgerManager.activeBook.chosenCurrency
                   : this.ledgerManager.activeBook.chosenCurrency.slice(0, 5),
                 (currency: string, index: number) => {
-                  GridItem() {
+                  Divider()
+                  Row() {
                     Row() {
-                      Row() {
-                        Text($r(`app.string.${currency}`))
-                          .fontSize(20)
-                          .margin({ right: 6 })
 
-                        Text(currency)
-                          .fontSize(20)
-                          .margin({ right: 6 })
+                      //currency name
+                      Row({ space: 6 }) {
+                        Text($r(`app.string.${currency}`))
+
                         findFlag({ flagName: currency })
+
+                        if (this.userSetting.showCurrencyCode) {
+                          Text(currency)
+                            .opacity(0.5)
+
+                        }
+
+                        if (currency === this.ledgerManager.activeBook.preferredCurrency) {
+                          Text('本位币')
+                            .fontColor($r('app.color.Font_Color'))
+                            .fontSize(14)
+                            .textAlign(TextAlign.Center)
+                            .backgroundColor($r('app.color.button_color'))
+                            .padding(4)
+                            .borderRadius(5)
+                            .opacity(0.5)
+                        }
+                        if (!this.ledgerManager.activeBook.data.items.some((item: RecordItem) => item.unit ===
+                          currency)) {
+                          Text('无记录')
+                            .fontColor($r('app.color.Font_Color'))
+                            .fontSize(14)
+                            .textAlign(TextAlign.Center)
+                            .backgroundColor($r('app.color.button_color'))
+                            .padding(4)
+                            .borderRadius(5)
+                            .opacity(0.5)
+                        }
                       }
 
+                      //trash bin
                       if (
                         !this.ledgerManager.activeBook.data.items.some((item: RecordItem) => item.unit === currency)
                           && this.ledgerManager.activeBook.preferredCurrency !== currency
@@ -165,17 +254,16 @@ struct currencySettingPage {
                             this.getUIContext()?.animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
                               this.ledgerManager.activeBook.chosenCurrency =
                                 this.ledgerManager.activeBook.chosenCurrency.filter(c => c !== currency);
+
                             });
                           }).margin({ left: 8 })
                       }
+
+
                     }
-                    .basicRow()
+                    .height(30)
+                    .width('100%')
                     .justifyContent(FlexAlign.SpaceBetween)
-                    .backgroundColor(
-                      currency === this.ledgerManager.activeBook.preferredCurrency ?
-                        $r('app.color.Currency_Card_Main') :
-                        $r('app.color.Currency_Card_1')
-                    )
                     .transition(
                       TransitionEffect.asymmetric(
                         TransitionEffect.scale({ x: 0.9, y: 0.9 }),
@@ -202,93 +290,47 @@ struct currencySettingPage {
                         })
                       }
                     })
+
                   }
+
                 }
               )
             }
             .padding(2)
-            .maxCount(1)
-            .layoutDirection(GridDirection.Row)
-            .columnsGap(12)
+
 
             // 展开/折叠按钮
             if (this.ledgerManager.activeBook.chosenCurrency.length > 5) {
-              Button(this.showAllCurrencies ? '折叠' : '···')
-                .fontSize(18)
-                .backgroundColor(Color.Gray)
-                .fontWeight(FontWeight.Bold)
+              Button(this.showAllCurrencies ? '收起' :
+                `展示剩余${this.ledgerManager.activeBook.chosenCurrency.length - 5}条...`)
+                .backgroundColor($r('app.color.button_color'))
+                .fontColor($r('app.color.Font_Color'))
                 .onClick(() => {
                   this.showAllCurrencies = !this.showAllCurrencies;
                 })
+                .opacity(0.5)
+                .margin({ top: 6 })
+                .backgroundColor(Color.Transparent)
             }
 
           }
           .basicCard()
 
-
           Column() {
-            Text("添加货币")
-              .fontSize(20)
-              .padding(10).width("100%")
-            Grid(new Scroller()) {
-              ForEach(
-                this.showAllAvailableCurrencies
-                  ? this.availableCurrencies.filter(currency =>
-                !this.ledgerManager.activeBook.chosenCurrency.includes(currency)
-                )
-                  : this.availableCurrencies.filter(currency =>
-                !this.ledgerManager.activeBook.chosenCurrency.includes(currency)
-                ).slice(0, 5),
-                (currency: string) => {
-                  GridItem() {
-                    Row() {
-                      Row() {
-                        Text($r(`app.string.${currency}`))
-                          .fontSize(20)
-                          .margin({ right: 6 })
 
-                        Text(currency)
-                          .fontSize(20)
-                          .margin({ right: 6 })
-                        findFlag({ flagName: currency })
-                      }
-                    }
-                    .basicRow()
-                    .justifyContent(FlexAlign.SpaceBetween)
-                    .onClick(() => {
-                      if (!this.ledgerManager.activeBook.chosenCurrency.includes(currency)) {
-                        this.getUIContext()?.animateTo({ duration: 400, curve: Curve.EaseOut }, () => {
-                          this.ledgerManager.activeBook.chosenCurrency = [
-                            ...this.ledgerManager.activeBook.chosenCurrency,
-                            currency
-                          ];
-                        });
-                        promptAction.showToast({ message: `${currency} 已添加` });
-                      }
-                    })
-                  }
+            Button('添加货币+')
+              .onClick(() => {
+                this.isShowSheet = true;
+              })
+              .opacity(0.5)
+              .bindSheet(this.isShowSheet, this.mySheet(), {
+                height: 560,
+                onWillDisappear: () => {
+                  this.isShowSheet = false;
                 }
-              )
-            }
-            .padding(2)
-            .maxCount(1)
-            .layoutDirection(GridDirection.Row)
-            .columnsGap(12)
-
-            // 展开/折叠按钮
-            if (
-              this.availableCurrencies.filter(currency =>
-              !this.ledgerManager.activeBook.chosenCurrency.includes(currency)
-              ).length > 5
-            ) {
-              Button(this.showAllAvailableCurrencies ? '折叠' : '···')
-                .fontSize(18)
-                .backgroundColor(Color.Gray)
-                .fontWeight(FontWeight.Bold)
-                .onClick(() => {
-                  this.showAllAvailableCurrencies = !this.showAllAvailableCurrencies;
-                })
-            }
+              })
+              .fontColor($r('app.color.Font_Color'))
+              .backgroundColor(Color.Transparent)
           }
           .basicCard()
 

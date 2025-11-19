@@ -6,7 +6,6 @@ import i18n from '@ohos.i18n'
 import { calculateTotalAssets, } from "../utils/moneyCount"
 import { RecordItem, RecordsData, LedgerManager, LedgerBook } from '../models/recordItemReference';
 import { UserSetting } from "../models/userSetting"
-import { ratesStatus } from "../components/RatesStatus"
 import { exporter } from "../utils/cloudAndFiles/csvExporter"
 import { cloudData } from "../utils/cloudAndFiles/cloud"
 
@@ -59,7 +58,7 @@ export struct menuButtons {
       LedgerUI()
       functionButtons1()
       functionButtons2()
-      ratesStatus().margin({ bottom: 16 })
+
     }
 
   }
@@ -181,7 +180,6 @@ export struct functionButtons1 {
   @Local menuItems: string[] = [
     '货币设置',
     '应用设置',
-    '隐私政策',
   ];
 
   handleMenuItemClick(item: string) {
@@ -195,16 +193,6 @@ export struct functionButtons1 {
           }
         })
         console.log('执行货币设置');
-        break;
-
-      case "隐私政策":
-        router.pushUrl({
-          url: "pages/AboutThisApp"
-        }, router.RouterMode.Standard, (err) => {
-          if (err) {
-            console.log("跳转失败:", err)
-          }
-        })
         break;
       case "应用设置":
         router.pushUrl({
@@ -434,7 +422,7 @@ export struct LedgerUI {
           .width("90%")
           .textAlign(TextAlign.Center)
           .padding(8)
-          .borderRadius(28)
+          .borderRadius(6)
           .shadow(ShadowStyle.OUTER_DEFAULT_XS)
 
       })

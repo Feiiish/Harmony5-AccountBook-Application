@@ -1,4 +1,5 @@
 import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
+import { displayExchangeRates } from '../utils/currencyExchange';
 import {
   RecordItem,
   RecordsData,
@@ -13,6 +14,8 @@ import { recordDeleter } from '../utils/recordDeleter';
 import { text } from '@kit.ArkGraphics2D';
 import { updateExchangeRates } from "../utils/currencyExchange"
 import { formatDateAdvanced } from "../utils/formatDateAdvanced"
+import { findFlag } from "../utils/FindCountryFlags"
+import { ratesStatus } from "../components/RatesStatus"
 
 // 将样式定义移动到组件外部
 @Styles
@@ -39,48 +42,53 @@ export struct rateChart {
     'multiLedgerStorage',
     () => new LedgerManager()
   )!;
+  @Local
+  cachedRatesStorage: CachedRatesStatus = PersistenceV2.connect(
+    CachedRatesStatus,
+    "cachedRatesStatus",
+    () => new CachedRatesStatus()
+  )!;
 
-  @Monitor('ledgerManager.activeBook.data.items')
-  onItemsChange(monitor: IMonitor) {
-    this.calculateBudgetProgress(this.ledgerManager.activeBook.data);
+  @Monitor('cachedRatesStorage.lastUpdateTime')
+  onStatusChange(monitor: IMonitor) {
+    this.updateRates()
   }
 
-  @Monitor('ledgerManager.activeBook.data.budgets')
-  onCreate(monitor: IMonitor) {
-    this.calculateBudgetProgress(this.ledgerManager.activeBook.data);
+  @Monitor('this.ledgerManager.activeBook.rateChartCurrency')
+  onListChange(monitor: IMonitor) {
+    this.updateRates()
+  }
+
+  @Monitor('this.ledgerManager.activeBook.preferredCurrency')
+  onPreferChange(monitor: IMonitor) {
+    this.updateRates()
+
   }
 
   @Local value: number = 0
   @Local isShowSheet: boolean = false
-
-  calculateBudgetProgress(recordsData: RecordsData): Promise<void> {
-
-    const tasks = recordsData.budgets.map((budget) => {
-      const filteredItems = filterRecordItems(
-        recordsData.items,
-        new Date(budget.startDate),
-        new Date(budget.endDate),
-        budget.countAll ? undefined : budget.unit,
-        budget.tag !== "" ? budget.tag : undefined
-      );
-
-      return variousToPreferred(filteredItems, budget.unit)
-        .then((result) => {
-          const value = budget.targetAmount > 0 ? result[0] : Math.abs(result[1]);
-          budget.currentAmount = parseFloat(value.toFixed(2)); // ✅ 直接赋值
-        })
-        .catch((e: Error) => {
-          console.error("预算进度计算失败", e);
-          budget.currentAmount = 0;
-        });
-    });
-
-    return Promise.all(tasks).then(() => {
-    });
-  }
+  @Local rates: string[] = []
+  @Local
+  userSetting: UserSetting = PersistenceV2.connect(
+    UserSetting,
+    'userSetting',
+    () => new UserSetting()
+  )!;
 
   aboutToAppear(): void {
-    this.calculateBudgetProgress(this.ledgerManager.activeBook.data)
+    this.updateRates()
+  }
+
+  async updateRates() {
+    const preferred = this.ledgerManager.activeBook.preferredCurrency;
+    this.rates = []
+    for (const currency of this.ledgerManager.activeBook.rateChartCurrency) {
+      const rate = await displayExchangeRates(preferred, currency);
+      // 存储汇率，可以直接写入对象或单独保存
+      this.rates.push((1 / rate).toFixed(2))
+    }
+
+    console.log("所有汇率已更新:",);
   }
 
   @Builder
@@ -102,45 +110,60 @@ export struct rateChart {
   build() {
 
 
-    Column({ space: 8 }) {
-      if (this.ledgerManager.activeBook.chosenCurrency.length > 0) {
+    Column() {
+      Column() {
 
-        ForEach(this.ledgerManager.activeBook.chosenCurrency, (r: string, index: number) => {
+        if (this.ledgerManager.activeBook.chosenCurrency.length > 0) {
 
-          Column() {
+          ratesStatus().margin({ top: 8, bottom: 8 })
+          ForEach(this.ledgerManager.activeBook.rateChartCurrency, (r: string, index: number) => {
 
+            Column() {
+              Divider()
+              Row({ space: 6 }) {
+                findFlag({ flagName: r })
 
-            Row() {
-              Text(
-                r
-              )
-                .fontSize(16)
-                .fontWeight(FontWeight.Medium)
-                .margin({ right: 4 })
-              Text(`${r}`)
-                .fontSize(14)
-                .fontColor($r('app.color.Font_Color'))
-                .fontColor(Color.Gray)
+                Text(`${this.rates[index]}`)
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Medium)
+                if (this.userSetting.showCurrencyCode) {
+                  Text(r)
+                    .fontSize(14)
+                    .fontColor($r('app.color.Font_Color'))
+                    .fontColor(Color.Gray)
+                }
+
+                Text($r(`app.string.${r}`))
+                  .fontSize(14)
+                  .fontColor($r('app.color.Font_Color'))
+                  .fontColor(Color.Gray)
+
+              }.padding(12)
+
+              if (index + 1 !== this.ledgerManager.activeBook.chosenCurrency.length) {
+                Divider()
+              }
+
             }
+            .width('100%')
+            .alignItems(HorizontalAlign.Start)
 
-            Divider()
-          }
-          .padding(12)
-          .borderRadius(20)
-          .backgroundColor($r("app.color.button_color"))
-          .onClick(() => {
-            this.isShowSheet = !this.isShowSheet
+            /*
+            .onClick(() => {
+              this.isShowSheet = !this.isShowSheet
+            })
+            .bindSheet(this.isShowSheet, this.mySheet(this.selectedCurre), {
+              height: 300,
+              onWillDisappear: () => {
+                this.isShowSheet = false
+              }
+            })
+            * */
           })
-          .bindSheet(this.isShowSheet, this.mySheet(this.selectedCurre), {
-            height: 300,
-            onWillDisappear: () => {
-              this.isShowSheet = false
-            }
-          })
-        })
-      } else {
-        Text("暂无汇率数据").fontColor(Color.Gray)
-      }
+        } else {
+          Text("暂无汇率数据").fontColor(Color.Gray)
+        }
+      }.backgroundColor($r('app.color.Card_background_2')).borderRadius(12)
 
     }.basicCard()
 

@@ -1,10 +1,15 @@
 import { RecordItem, RecordsData, filterRecordItems, LedgerManager } from "../../models/recordItemReference"
-import { CapsuleSegmentButtonV2, PersistenceV2, promptAction, router } from '@kit.ArkUI';
+import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { CachedRatesStatus, UserSetting } from "../../models/userSetting"
 import { formatDateAdvanced } from "../../utils/formatDateAdvanced"
 import { TipsDialog } from '@kit.ArkUI'
 import { emitter, Callback } from '@kit.BasicServicesKit';
-import { SegmentButtonV2Items, TabSegmentButtonV2 } from '@kit.ArkUI';
+import {
+  TabSegmentButtonV2,
+  CapsuleSegmentButtonV2,
+  MultiCapsuleSegmentButtonV2,
+  SegmentButtonV2Items
+} from '@kit.ArkUI';
 
 @ComponentV2
 export struct datePicker {

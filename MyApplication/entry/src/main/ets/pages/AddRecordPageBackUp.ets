@@ -143,7 +143,7 @@ struct IncomePage {
   @Local message: string = "";
   @Local tempAmount: number | null = 0
   @Local couldSave: boolean = false;
-  @Local showSelect: boolean = false;
+  @Local showSelect: boolean = true;
   @Local
   ledgerManager: LedgerManager = PersistenceV2.connect(
     LedgerManager,
@@ -171,7 +171,7 @@ struct IncomePage {
   @Local backBlur: boolean = false;
   @Local rate: number = 0
   controller: TextInputController = new TextInputController();
-  @Local show: boolean = false;
+  @Local show: boolean = true;
 
   private saveRecord() {
     // 创建新记录
@@ -264,13 +264,20 @@ struct IncomePage {
   customKeyboardBuilder() {
     Column() {
       Row({}) {
-        Image($r('app.media.arrow_down'))
-          .height("100%")
-          .onClick(() => {
-            this.controller.stopEditing();
-            this.show = !this.show;
+        TextInput({ text: this.tempString, controller: this.controller, placeholder: '请输入金额' })
+          .customKeyboard(this.customKeyboardBuilder())
+          .width('60%')
+          .height(50)
+          .inputFilter("[0-9+\\-*/.]", (value: string) => {
+            console.log("被过滤的字符: " + value);
           })
-      }.width("100%").justifyContent(FlexAlign.Center).height(30)
+          .defaultFocus(true)
+          .onChange((value: string) => {
+
+            this.tempAmount = safeCalculate(value);
+            this.cacuRate()
+          })
+      }.width("100%").justifyContent(FlexAlign.SpaceAround).height(30)
 
       Grid() {
         ForEach([
@@ -394,150 +401,122 @@ struct IncomePage {
     List() {
       ListItem() {
         Column() {
-          Column({ space: 12 }) {
+          Column({ space: 20 }) {
             // 收入/支出切换
-            Row({ space: 15 }) {
-              Text('金额')
+            Row({ space: 10 }) {
+
               // 金额输入
               TextInput({ text: this.tempString, controller: this.controller, placeholder: '请输入金额' })
                 .customKeyboard(this.customKeyboardBuilder())
                 .width('60%')
-                .height(40)
+                .height(50)
+                .backgroundColor(Color.Transparent)
+                .caretStyle({ width: '0vp' })
                 .defaultFocus(true)
-                .inputFilter("[0-9+\\-*/.]", (value: string) => {
-                  console.log("被过滤的字符: " + value);
-                })
-
                 .onChange((value: string) => {
-
                   this.tempAmount = safeCalculate(value);
                   this.cacuRate()
                 })
 
-            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
-
-            Divider()
-
-            Row({ space: 10 }) {
-              Text('货币')
+              //currency Sign
               Row({ space: 4 }) {
-                Text($r(`app.string.${this.tempUnit}`))
                 findFlag({ flagName: this.tempUnit })
 
-                Text((`${this.tempUnit}`)).opacity(0.5)
-              }
+              }.onClick(() => {
+                this.currencyDialogController.open()
 
-            }.justifyContent(FlexAlign.SpaceBetween).width('100%').onClick(() => {
-              this.currencyDialogController.open()
-            })
 
-            Divider()
+              })
+            }.margin({ top: 20 })
+
 
             //record message
             Text(this.message)
-            Column({ space: 12 }) {
 
-              Column() {
-                Row() {
-                  Text('标签')
-                  Image($r('app.media.delete'))
-                    .width(24)
-                    .margin({ left: 8, bottom: 4 }).onClick(() => {
-                    AlertDialog.show({
-                      title: '删除确认',
-                      message: this.tempTag === '' ? '请选择要删除的标签' : `确定要删除标签 "${this.tempTag}" 吗？`,
-                      primaryButton: {
-                        value: '取消',
-                        action: () => {
-                        }
-                      },
-                      secondaryButton: {
-
-
-                        value: '删除',
-                        action: () => {
-                          console.log("123" + this.ledgerManager.activeBook.tags.toString());
-                          this.ledgerManager.activeBook.tags =
-                            this.ledgerManager.activeBook.tags.filter((item: string) => item !== this.tempTag);
-
-                        }
-                      }
-                    });
-                  });
-                }.width('100%').margin({ bottom: 4 })
-
-                Flex({ wrap: FlexWrap.Wrap }) {
-                  ForEach(this.ledgerManager.activeBook.tags, (item: string) => {
-                    Column() {
-                      Text(item)
-                        .fontSize(16)
-                        .fontColor(this.tempTag === item ? "#000000" : $r('app.color.Font_Color'))// 选中时白色文字
-                        .onClick(() => {
-                          if (this.tempTag === item) {
-                            this.tempTag = ""
-                          } else {
-                            this.tempTag = item;
-                          }
-                          console.log("Now the tag is " + this.tempTag)
-                        })
-
-                    }
-                    .justifyContent(FlexAlign.Center)
-                    .backgroundColor(this.tempTag === item ? "#66ccff" :
-                      $r('app.color.Basic_Card_background')) // 选中时黄色背景
-                    .padding("2%")
-                    .margin({ right: 8, bottom: 8 })
-                    .borderRadius(5)
+            Column() {
+              Row() {
+                Text("时间").secondTitle()
+                CalendarPicker({ hintRadius: 10, selected: new Date() })
+                  .edgeAlign(CalendarAlign.END)
+                  .textStyle({ color: $r('app.color.Font_Color'), font: { size: 20, weight: FontWeight.Normal } })
+                  .onChange((value) => {
+                    this.tempDate = value.toDateString();
+                    console.info(`CalendarPicker onChange: ${value.toString()}`);
                   })
-                  Text("+")
-                    .fontWeight(FontWeight.Bold)
-                    .fontColor($r('app.color.Font_Color'))
+              }.width("100%")
+              .justifyContent(FlexAlign.SpaceBetween)
+            }
+
+            Column() {
+              Row() {
+                Text("选择标签").secondTitle()
+                Image($r('app.media.delete')).width(24).margin({ left: 8, bottom: 12 }).onClick(() => {
+                  AlertDialog.show({
+                    title: '删除确认',
+                    message: this.tempTag === '' ? '请选择要删除的标签' : `确定要删除标签 "${this.tempTag}" 吗？`,
+                    primaryButton: {
+                      value: '取消',
+                      action: () => {
+                      }
+                    },
+                    secondaryButton: {
+
+
+                      value: '删除',
+                      action: () => {
+                        console.log("123" + this.ledgerManager.activeBook.tags.toString());
+                        this.ledgerManager.activeBook.tags =
+                          this.ledgerManager.activeBook.tags.filter((item: string) => item !== this.tempTag);
+
+                      }
+                    }
+                  });
+                });
+              }.width('100%')
+
+
+              Flex({ wrap: FlexWrap.Wrap }) {
+                ForEach(this.ledgerManager.activeBook.tags, (item: string) => {
+                  Text(item)
                     .fontSize(16)
-                    .width(44)
-                    .textAlign(TextAlign.Center)
-                    .backgroundColor($r('app.color.Basic_Card_background'))
+                    .fontColor(this.tempTag === item ? "#000000" : $r('app.color.Font_Color'))// 选中时白色文字
                     .padding("2%")
+                    .backgroundColor(this.tempTag === item ? "#FFCC22" :
+                      $r('app.color.Basic_Card_background'))// 选中时黄色背景
                     .borderRadius(5)
                     .margin({ right: 10, bottom: 10 })
                     .onClick(() => {
-                      this.dialogController?.open()
+                      if (this.tempTag === item) {
+                        this.tempTag = ""
+                      } else {
+                        this.tempTag = item;
+                      }
+                      console.log("Now the tag is " + this.tempTag)
                     })
-
-                }
+                })
+                Text("+")
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor($r('app.color.Font_Color'))
+                  .fontSize(16)
+                  .width(44)
+                  .textAlign(TextAlign.Center)
+                  .backgroundColor($r('app.color.Basic_Card_background'))
+                  .padding("2%")
+                  .borderRadius(5)
+                  .margin({ right: 10, bottom: 10 })
+                  .onClick(() => {
+                    this.dialogController?.open()
+                  })
               }
             }
-            .width("100%")
-            .backgroundColor($r('app.color.Card_background_2'))
-            .padding(16)
-            .borderRadius(15)
-            .margin({ bottom: 12 })
-
-            Divider()
 
             Row() {
-              Text('时间')
-              CalendarPicker({ hintRadius: 10, selected: new Date() })
-                .edgeAlign(CalendarAlign.END)
-                .textStyle({ color: $r('app.color.Font_Color'), font: { size: 20, weight: FontWeight.Normal } })
-                .onChange((value) => {
-                  this.tempDate = value.toDateString();
-                  console.info(`CalendarPicker onChange: ${value.toString()}`);
-                })
-
-            }.width("100%")
-            .justifyContent(FlexAlign.SpaceBetween)
-
-            Divider()
-            Row() {
-
               TextInput({ placeholder: '添加备注' })
                 .width('60%')
                 .height(40)
-                .backgroundColor(Color.Transparent)
                 .onChange((value: string) => {
                   this.tempNote = value
                 })
-
 
               Image($r('app.media.image')).onClick(() => {
                 try {
@@ -565,23 +544,17 @@ struct IncomePage {
                 }
               })
                 .width(32)
-                .margin({ left: 12 })
+
+
             }.width("100%").justifyContent(FlexAlign.SpaceEvenly)
 
-            Divider()
-
-
-            Column() {
-
-
-              if (this.selectedImage !== '') {
-                Image(this.selectedImage)
-                  .objectFit(ImageFit.Contain)
-                  .borderRadius($r('sys.float.corner_radius_level5'))
-                  .width('100%')
-                  .height('40%')
-              }
-            }.shadow(ShadowStyle.OUTER_DEFAULT_XS).borderRadius(24)
+            if (this.selectedImage !== '') {
+              Image(this.selectedImage)
+                .objectFit(ImageFit.Contain)
+                .borderRadius($r('sys.float.corner_radius_level5'))
+                .width('100%')
+                .height('40%')
+            }
 
             // 保存按钮
             Button('保存记录')
@@ -607,12 +580,7 @@ struct IncomePage {
                 }
 
               })
-          }
-          .width("90%")
-          .backgroundColor($r('app.color.Basic_Card_background'))
-          .padding(16)
-          .borderRadius(15)
-          .margin({ bottom: 12 })
+          }.width("90%")
 
         }
       }

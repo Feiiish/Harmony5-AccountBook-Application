@@ -202,7 +202,7 @@ export struct budgetComponent {
   build() {
 
 
-    Column({ space: 12 }) {
+    Column({ space: 10 }) {
       if (this.ledgerManager.activeBook.data.budgets.length > 0) {
 
         ForEach(this.ledgerManager.activeBook.data.budgets, (budget: BudgetItem, index: number) => {
@@ -256,7 +256,7 @@ export struct budgetComponent {
 
               // 判断是否有名称
 
-            }.margin({ bottom: 8 }).width('94%')
+            }.margin({ bottom: 4 }).width('94%')
 
             Row() {
               // 进度条
@@ -292,9 +292,6 @@ export struct budgetComponent {
             }.justifyContent(FlexAlign.SpaceEvenly).width('100%')
 
           }
-          .padding(12)
-          .borderRadius(20)
-          .backgroundColor($r("app.color.button_color"))
           .onClick(() => {
             this.selectedBudget = budget
             this.isShowSheet = !this.isShowSheet
@@ -305,6 +302,11 @@ export struct budgetComponent {
               this.isShowSheet = false
             }
           })
+
+          if (index + 1 !== this.ledgerManager.activeBook.data.budgets.length) {
+            Divider()
+          }
+
         })
       } else {
         Text("暂无预算数据").fontColor(Color.Gray)
