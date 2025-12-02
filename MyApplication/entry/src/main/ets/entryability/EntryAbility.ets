@@ -18,13 +18,15 @@ const DOMAIN = 0x0000;
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+
+
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
 
     let file = this.context.resourceManager.getRawFileContentSync('agconnect-services.json');
     let json: string = buffer.from(file.buffer).toString();
     auth.init(this.context, json);
-    
+
 
   }
 
@@ -41,11 +43,27 @@ export default class EntryAbility extends UIAbility {
         hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
         return;
       }
+
+      let usersetting = PersistenceV2.connect(UserSetting, 'userSetting', () => new UserSetting());
+      if (usersetting?.darkMode === 0) {
+        this.context.getApplicationContext()
+
+          .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+
+      } else if (usersetting?.darkMode === 1) {
+        this.context.getApplicationContext()
+          .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT);
+      } else {
+        this.context.getApplicationContext()
+          .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK);
+
+      }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
     });
 
+    //this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET)
 
-    this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET)
+
   }
 
   onWindowStageDestroy(): void {

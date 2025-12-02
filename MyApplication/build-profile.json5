@@ -7,11 +7,11 @@
         "material": {
           "certpath": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B5FAE3E74C2FB2FF5EABC0EF99F9103E57BA83840B04A13AF04BB2BD197F2325F9A8C25080CDA33",
+          "keyPassword": "0000001A1A1C0B26C63E13D4844AE53B282E01AE3A1D7BB667E903123B679C54706F19CB29F7C0923EF0",
           "profile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
-          "storePassword": "0000001B96630BFFB4FB2AEF6D1F74C3AC088F0101E586F4AF81081CF3C4E7C99FF45065F7233C4EC02FFF"
+          "storePassword": "0000001AD5906820C02AC4AC199EA3F52BEBDC3340D4B118B3A73F6D30EAE4407ADFC16DDE7202230E31"
         }
       }
     ],

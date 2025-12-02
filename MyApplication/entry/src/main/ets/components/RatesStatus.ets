@@ -96,8 +96,6 @@ export struct ratesStatus {
               }).height(28).margin({ left: 4 })
       */
     }
-    .width("100%")
-    .justifyContent(FlexAlign.Center)
 
   }
 }

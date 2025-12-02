@@ -97,7 +97,6 @@ export struct WeeklyChart {
   @Monitor('recordList')
   onChanged(monitor: IMonitor) {
     calculateWeeklyTables(this.recordList, this.unit).then((result) => {
-
       //设定为目标数字
       this.tempIncome = result.income
       this.tempExpense = result.expense
@@ -107,8 +106,8 @@ export struct WeeklyChart {
 
   @Local selectedIndex: number = 0;
   @Local textItems: SegmentButtonV2Items = new SegmentButtonV2Items([
-    { text: '周盈余' },
     { text: '周收支' },
+    { text: '周盈余' },
   ]);
   @Local pillarHeight: number = 120
   // 星期标签
@@ -135,7 +134,6 @@ export struct WeeklyChart {
       },
       name: this.unit
     },
-
     series: [
       {
         name: '收入',
@@ -149,8 +147,6 @@ export struct WeeklyChart {
 
         }
       },
-
-
       {
         name: '支出',
         data: new Array(7).fill(0),
@@ -162,7 +158,6 @@ export struct WeeklyChart {
 
         }
       },
-
     ],
     legend: {
       show: true,
@@ -173,7 +168,6 @@ export struct WeeklyChart {
         fontSize: 40,
         color: "#808080"
       }
-
     },
   })
 
@@ -182,7 +176,6 @@ export struct WeeklyChart {
     if (nums.length === 0) {
       return 100;
     }
-
     const maxPositive = Math.max(...nums.filter(val => val >= 0));
     const minNegative = Math.min(...nums.filter(val => val < 0));
 
@@ -190,7 +183,6 @@ export struct WeeklyChart {
       maxPositive > 0 ? maxPositive : 0,
       Math.abs(minNegative < 0 ? minNegative : 0)
     );
-
     return maxAbs > 0 ? maxAbs * 1.1 : 100;
   }
 
@@ -223,29 +215,26 @@ export struct WeeklyChart {
       this.tempIncome = result.income
       this.tempExpense = result.expense.map(val => Math.abs(val));
       this.tempSurplus = result.surplus;
-
-
     })
-
   }
 
   build() {
     Column() {
+      CapsuleSegmentButtonV2({
+        items: this.textItems,
+        selectedIndex: this.selectedIndex,
+        $selectedIndex: (index: number) => {
+          this.selectedIndex = index;
+        }
+      }).width("80%")
       Column() {
         // 数据统计摘要
         if (this.selectedIndex === 0) {
-
           Row() {
-            Text(`周收入: ${this.getTotal(this.tempSurplus).toFixed(2)}`)
-              .fontSize(15)
-
-
-            Text(`日均: ${this.getAverage()}`)
-              .fontSize(15)
-              .margin({ left: 16 })
-
+            Index({ list: this.recordList, unit: this.unit })
           }
-
+          .height(220)
+        } else {
           // 柱状图图表主体
           Row() {
 
@@ -320,27 +309,23 @@ export struct WeeklyChart {
             .layoutWeight(1)
           }
           .height(180)
-
-        } else {
-          Row() {
-            Index({ list: this.recordList, unit: this.unit })
-          }
-          .height(220)
-
         }
-
       }
       .margin({ top: 8 })
       .justifyContent(FlexAlign.Center)
 
-      CapsuleSegmentButtonV2({
-        items: this.textItems,
-        selectedIndex: this.selectedIndex,
-        $selectedIndex: (index: number) => {
-          this.selectedIndex = index;
-        }
-      }).width("80%")
-
+      Column({ space: 8 }) {
+        Text(`本周收入: ${this.getTotal(this.tempSurplus).toFixed(2)} ${this.unit}`)
+          .fontSize(15)
+        Text(`每日平均收入: ${this.getAverage()} ${this.unit}`)
+          .fontSize(15)
+      }
+      .width('100%')
+      .padding(16)
+      .borderRadius(15)
+      .backgroundColor($r("app.color.Basic_Card_background"))
+      .shadow(ShadowStyle.OUTER_DEFAULT_XS)
+      .alignItems(HorizontalAlign.Start)
     }.basicChart()
     .shadow({
       radius: 6,

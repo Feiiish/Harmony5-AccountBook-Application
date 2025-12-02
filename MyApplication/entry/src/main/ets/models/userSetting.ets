@@ -7,6 +7,7 @@ type ExchangeRates = Record<string, number>;
 export class UserSetting {
   @Trace profile: string | undefined = ""
   @Trace nickName: string | undefined = ""
+  @Trace darkMode: number = 0
   // IndexComponents
   @Trace MonthlySummaryPanel: boolean = true
   @Trace budgetComponent: boolean = true
@@ -19,7 +20,9 @@ export class UserSetting {
   @Trace calendar: boolean = true
   //currencySetting
   @Trace showCurrencyCode: boolean = true
-  @Trace awfawf: boolean = true
+  //dialogue
+  @Trace addRecord: boolean = false
+  @Trace welcomeDialogue: boolean = false
 }
 
 @ObservedV2

@@ -8,6 +8,7 @@
     "pages/AddLegerBookPage",
     "pages/testPage",
     "pages/cloudDownload",
-    "pages/appSetting"
+    "pages/appSetting",
+    "pages/userGuide"
   ]
 }

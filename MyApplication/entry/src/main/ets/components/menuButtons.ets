@@ -75,15 +75,11 @@ export struct menuList {
   @Local recordsData: RecordsData = this.ledgerManager.activeBook.data
   @Local menuItems: string[] = [
     '货币设置',
-    '隐私政策',
-    '货币设置',
-    '隐私政策',
-    '货币设置',
-    '隐私政策',
-    '货币设置',
-    '隐私政策',
-    '货币设置',
-    '隐私政策',
+    '查看汇率',
+    '记账',
+    '上传云端',
+    '添加按钮',
+
   ];
 
   handleMenuItemClick(item: string) {
@@ -109,6 +105,19 @@ export struct menuList {
         })
         break;
       // 其他case...
+
+      case "记账":
+        router.pushUrl({
+          url: "pages/AddRecordPage"
+        }, router.RouterMode.Standard, (err) => {
+          if (err) {
+            console.log("跳转失败:", err)
+          }
+        })
+
+        break;
+
+
     }
   }
 
@@ -120,7 +129,11 @@ export struct menuList {
       '隐私政策': '🔒',
       '设置': '⚙️',
       '帮助': '❓',
-      '关于应用': 'ℹ️'
+      '关于应用': 'ℹ️',
+      '查看汇率': '💲',
+      '记账': '✏️',
+      '上传云端': '☁️',
+      '添加按钮': '➕',
     };
     return iconMap[item] || '▪️'; // 默认符号
   }
@@ -142,7 +155,7 @@ export struct menuList {
                   .fontSize(12)
                   .margin({ top: 4 })
               }
-              .width('20%')
+              .width('25%')
               .padding({ left: 12, right: 12 })
               .onClick(() => {
                 this.handleMenuItemClick(item);

@@ -9,6 +9,9 @@ import { safeCalculate } from '../utils/safeCalculate';
 import { findFlag } from '../utils/FindCountryFlags';
 import { CustomContentDialog } from '@kit.ArkUI';
 import { displayExchangeRates, updateExchangeRates } from '../utils/currencyExchange'
+import { UserSetting } from "../models/userSetting"
+import { CollaborationDevicePicker } from '@hms.collaboration.CollaborationDevicePicker';
+import { addRecordPage } from '../components/charts/welcomeDialogue';
 
 const RECORDS_DATA_KEY = 'incomeExpenseRecords';
 
@@ -54,89 +57,6 @@ struct AddRecordPage {
   }
 }
 
-@CustomDialog
-struct CurrencyPickerDialog {
-  controller: CustomDialogController = new CustomDialogController({ builder: "just no sense" })
-  @State selected: string = ''
-  onAccept: (value: string) => void = (_) => {
-  }
-  ledgerManager: LedgerManager = PersistenceV2.connect(
-    LedgerManager,
-    'multiLedgerStorage',
-    () => new LedgerManager()
-  )!;
-
-  build() {
-    Stack() {
-
-
-      Column({ space: 20 }) {
-
-        TextPicker({
-          range: this.ledgerManager.activeBook.chosenCurrency
-        })
-          .selectedIndex(1)
-          .onChange((value, index) => {
-            this.selected = value as string
-          })
-
-          .defaultPickerItemHeight(40)
-          .canLoop(false)
-          .disappearTextStyle({ color: Color.Gray, font: { size: 14, weight: FontWeight.Regular } })
-          .textStyle({ color: Color.Gray, font: { size: 18, weight: FontWeight.Normal } })
-          .selectedTextStyle({ font: { size: 22, weight: FontWeight.Bold } })
-
-        Row({ space: 12 }) {
-          Button('取消')
-            .onClick(() => {
-              this.controller.close()
-            })
-            .buttonStyle(ButtonStyleMode.TEXTUAL)
-            .fontSize(22)
-            .fontWeight(FontWeight.Normal)
-            .backgroundColor(Color.Transparent)
-            .fontColor($r('app.color.Font_Color'))
-            .width("50%")
-
-
-          Button('确认')
-            .onClick(() => {
-              this.onAccept(this.selected) // ✅ 调用回调函数传值
-              updateExchangeRates(this.selected)
-              console.log('选择了:', this.selected)
-              this.controller.close()
-            })
-            .buttonStyle(ButtonStyleMode.TEXTUAL)
-            .fontSize(22)
-            .fontWeight(FontWeight.Normal)
-            .backgroundColor(Color.Transparent)
-            .fontColor($r('app.color.Font_Color'))
-            .width("50%")
-        }.justifyContent(FlexAlign.SpaceAround).width("80%")
-      }
-      .padding(20)
-      .borderRadius(12)
-
-      Image($r('app.media.settings'))
-        .width(35)
-        .onClick(() => {
-          router.pushUrl({
-            url: "pages/CurrencySetting"
-          }, router.RouterMode.Standard, (err) => {
-            if (err) {
-              console.log("跳转失败:", err)
-            }
-          })
-          this.controller.close()
-
-        })
-        .margin({ right: 8, top: 20 })
-
-    }.alignContent(Alignment.TopEnd)
-
-  }
-}
-
 // 收支页面组件
 @ComponentV2
 struct IncomePage {
@@ -151,14 +71,6 @@ struct IncomePage {
     () => new LedgerManager()
   )!;
   @Local recordsData: RecordsData = this.ledgerManager.activeBook.data
-  /*
-  @Local
-  recordsData: RecordsData = PersistenceV2.connect(
-    RecordsData,
-    RECORDS_DATA_KEY,
-    () => new RecordsData()
-  )!;
-  * */
   @Local tempUnit: string = this.ledgerManager.activeBook.preferredCurrency;
   @Local tempDate: string = new Date().toDateString();
   @Local tempTag: string = ""
@@ -172,6 +84,79 @@ struct IncomePage {
   @Local rate: number = 0
   controller: TextInputController = new TextInputController();
   @Local show: boolean = false;
+  @Local
+  userSetting: UserSetting = PersistenceV2.connect(
+    UserSetting,
+    'userSetting',
+    () => new UserSetting()
+  )!;
+
+  @Builder
+  mySheet() {
+    Column() {
+      Row({ space: 12 }) {
+        Text('选择货币')
+          .fontWeight(FontWeight.Bold)
+          .fontSize(22)
+        Image($r('app.media.settings'))
+          .width(25)
+          .onClick(() => {
+            router.pushUrl({
+              url: "pages/CurrencySetting"
+            }, router.RouterMode.Standard, (err) => {
+              if (err) {
+                console.log("跳转失败:", err)
+              }
+            })
+            this.isShowSheet = false
+
+          })
+      }
+      .width('100%')
+      .margin({ top: 25, bottom: 12 })
+
+      Column() {
+        Column({ space: 4 }) {
+          ForEach(this.ledgerManager.activeBook.chosenCurrency, (currency: string, index: number) => {
+            Divider()
+
+            Row() {
+
+              //currency name
+              Row({ space: 12 }) {
+                Text($r(`app.string.${currency}`)).fontSize(18)
+                findFlag({ flagName: currency })
+                if (this.userSetting.showCurrencyCode) {
+                  Text(currency)
+                    .opacity(0.5)
+                }
+              }
+
+            }
+            .height(30)
+            .width('100%')
+            .justifyContent(FlexAlign.SpaceBetween)
+            .onClick(() => {
+              this.tempUnit = currency
+              this.cacuRate().then(() => {
+                this.updateMessage()
+              })
+
+
+              console.log('选择了:', currency)
+              this.isShowSheet = false
+            })
+          }
+          )
+        }
+        .padding(2)
+
+      }.alignItems(HorizontalAlign.Start)
+
+    }
+    .width('75%')
+    .alignItems(HorizontalAlign.Start)
+  }
 
   private saveRecord() {
     // 创建新记录
@@ -227,24 +212,28 @@ struct IncomePage {
       this.couldSave = true
     } else {
 
-      if (this.tempAmount! >= 0 && this.rate) {
-        this.message =
-          "收入: " + JSON.stringify(this.tempAmount) + " " + this.tempUnit +
-            ` 约为${(this.tempAmount! / this.rate
-            ).toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`
+      if (this.rate && this.rate !== 0) {
+
+        if (this.tempAmount! >= 0) {
+          this.message =
+            "收入: " + JSON.stringify(this.tempAmount) + " " + this.tempUnit +
+              ` 约为${(this.tempAmount! / this.rate).toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`;
+        } else {
+          this.message =
+            "支出: " + JSON.stringify(this.tempAmount) + " " + this.tempUnit +
+              ` 约为${(this.tempAmount! / this.rate).toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`;
+        }
       } else {
-        this.message =
-          "支出: " + JSON.stringify(this.tempAmount) + " " + this.tempUnit +
-            ` 约为${(this.tempAmount! / this.rate
-            ).toFixed(2)} ${this.ledgerManager.activeBook.preferredCurrency}`
+        this.message = "无效的 金额";
       }
+
       this.couldSave = true
     }
 
   }
 
   private dialogController: CustomDialogController | undefined = new CustomDialogController({
-    builder: this.progressDialogBuilder,
+    builder: this.tagCreateDialogBuilder,
     onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
       if (dismissDialogAction.reason === DismissReason.PRESS_BACK) {
         dismissDialogAction.dismiss();
@@ -259,7 +248,9 @@ struct IncomePage {
   });
   // button tag
   @Local inputTagValue: string = ""
+  @Local isShowSheet: boolean = false
 
+  //keyboard dialog
   @Builder
   customKeyboardBuilder() {
     Column() {
@@ -281,8 +272,8 @@ struct IncomePage {
         ], (item: string) => {
           GridItem() {
             Button(item)
-              .width("20%")
-              .height("6%")
+              .width('20%')
+              .height(44)
               .fontSize(20)
               .backgroundColor(item === '⌫' ? Color.Red : $r('app.color.Basic_Card_background'))
               .fontColor($r('app.color.Font_Color'))
@@ -313,14 +304,15 @@ struct IncomePage {
       .rowsGap(14)
       .padding(10)
     }
-    .backgroundColor($r('app.color.Basic_Card_background'))
+    .backgroundColor($r('app.color.Darker_window_background'))
     .padding(10)
+    .shadow(ShadowStyle.OUTER_DEFAULT_XS)
 
   }
 
   // button to add a tag #1
   @Builder
-  progressDialogBuilder() {
+  tagCreateDialogBuilder() {
     CustomContentDialog({
       contentBuilder: () => {
         this.buildContent();
@@ -377,24 +369,20 @@ struct IncomePage {
     this.dialogController = undefined;
   }
 
-  currencyDialogController: CustomDialogController = new CustomDialogController({
-    builder: CurrencyPickerDialog({
-      onAccept: (value: string) => {
-        this.tempUnit = value
-        this.cacuRate().then(() => {
-          this.updateMessage()
-        })
-        console.log('用户选择了货币:', value)
-      }
-    })
-  })
+  aboutToAppear(): void {
+    this.updateMessage()
+    if (!this.userSetting.addRecord) {
+      const add = new addRecordPage;
+      add.triggerDialogue()
+    }
+  }
 
   build() {
 
     List() {
       ListItem() {
         Column() {
-          Column({ space: 12 }) {
+          Column({ space: 16 }) {
             // 收入/支出切换
             Row({ space: 15 }) {
               Text('金额')
@@ -416,8 +404,8 @@ struct IncomePage {
 
             }.justifyContent(FlexAlign.SpaceBetween).width('100%')
 
-            Divider()
 
+            Divider()
             Row({ space: 10 }) {
               Text('货币')
               Row({ space: 4 }) {
@@ -428,13 +416,19 @@ struct IncomePage {
               }
 
             }.justifyContent(FlexAlign.SpaceBetween).width('100%').onClick(() => {
-              this.currencyDialogController.open()
+              // this.currencyDialogController.open()
+              this.isShowSheet = true;
+            }).bindSheet(this.isShowSheet, this.mySheet(), {
+              height: 360,
+              onWillDisappear: () => {
+                this.isShowSheet = false;
+              }
             })
 
             Divider()
-
             //record message
             Text(this.message)
+            Divider()
             Column({ space: 12 }) {
 
               Column() {
@@ -513,9 +507,8 @@ struct IncomePage {
             .margin({ bottom: 12 })
 
             Divider()
-
             Row() {
-              Text('时间')
+              Text('日期')
               CalendarPicker({ hintRadius: 10, selected: new Date() })
                 .edgeAlign(CalendarAlign.END)
                 .textStyle({ color: $r('app.color.Font_Color'), font: { size: 20, weight: FontWeight.Normal } })
@@ -572,8 +565,6 @@ struct IncomePage {
 
 
             Column() {
-
-
               if (this.selectedImage !== '') {
                 Image(this.selectedImage)
                   .objectFit(ImageFit.Contain)
@@ -629,7 +620,7 @@ struct IncomePage {
 // 转账页面组件
 @ComponentV2
 struct planningPage {
-  @Local message: string = "";
+  @Local message: string = '';
   @Local tempAmount: number | null = 0
   @Local tempString: string = "";
   @Local couldSave: boolean = false;
@@ -723,8 +714,8 @@ struct planningPage {
         ], (item: string) => {
           GridItem() {
             Button(item)
-              .width("20%")
-              .height("6%")
+              .width('20%')
+              .height(44)
               .fontSize(20)
               .backgroundColor(item === '⌫' ? Color.Red : $r('app.color.Basic_Card_background'))
               .fontColor($r('app.color.Font_Color'))
@@ -751,13 +742,13 @@ struct planningPage {
         })
       }
       .maxCount(4)
-      .columnsGap(10)
-      .rowsGap(10)
+      .columnsGap(14)
+      .rowsGap(14)
       .padding(10)
     }
-    .backgroundColor($r('app.color.Basic_Card_background'))
+    .backgroundColor($r('app.color.Darker_window_background'))
     .padding(10)
-
+    .shadow(ShadowStyle.OUTER_DEFAULT_XS)
   }
 
   @Builder
@@ -794,7 +785,6 @@ struct planningPage {
     console.info('Callback when the second button is clicked');
   }
 
-  // button to add a tag #2
   @Builder
   buildContent(): void {
     Column() {
@@ -813,39 +803,103 @@ struct planningPage {
     }
   }
 
+  aboutToAppear(): void {
+    this.message = "存钱计划： " + '0' + " " + this.tempUnit
+  }
+
   aboutToDisappear() {
     this.dialogController = undefined;
   }
 
-  currencyDialogController: CustomDialogController = new CustomDialogController({
-    builder: CurrencyPickerDialog({
-      onAccept: (value: string) => {
-        this.tempUnit = value
+  @Local
+  userSetting: UserSetting = PersistenceV2.connect(
+    UserSetting,
+    'userSetting',
+    () => new UserSetting()
+  )!;
+  @Local isShowSheet: boolean = false;
 
-        console.log('用户选择了货币:', value)
+  @Builder
+  mySheet() {
+    Column() {
+      Row({ space: 12 }) {
+        Text('选择货币')
+          .fontWeight(FontWeight.Bold)
+          .fontSize(22)
+        Image($r('app.media.settings'))
+          .width(25)
+          .onClick(() => {
+            router.pushUrl({
+              url: "pages/CurrencySetting"
+            }, router.RouterMode.Standard, (err) => {
+              if (err) {
+                console.log("跳转失败:", err)
+              }
+            })
+            this.isShowSheet = false
+
+          })
       }
-    })
-  })
+      .width('100%')
+      .margin({ top: 25, bottom: 12 })
+
+      Column() {
+        Column({ space: 4 }) {
+          ForEach(this.ledgerManager.activeBook.chosenCurrency, (currency: string, index: number) => {
+            Divider()
+
+            Row() {
+
+              //currency name
+              Row({ space: 12 }) {
+                Text($r(`app.string.${currency}`)).fontSize(18)
+                findFlag({ flagName: currency })
+                if (this.userSetting.showCurrencyCode) {
+                  Text(currency)
+                    .opacity(0.5)
+                }
+              }
+
+            }
+            .height(30)
+            .width('100%')
+            .justifyContent(FlexAlign.SpaceBetween)
+            .onClick(() => {
+              this.tempUnit = currency
+              this.isShowSheet = false
+            })
+          }
+          )
+        }
+        .padding(2)
+
+      }.alignItems(HorizontalAlign.Start)
+
+    }
+    .width('75%')
+    .alignItems(HorizontalAlign.Start)
+  }
 
   build() {
 
     List() {
       ListItem() {
         Column() {
-          Column({ space: 20 }) {
-
-            // 收入/支出切换
-            Row({ space: 10 }) {
-
+          Column({ space: 16 }) {
+            Row({ space: 15 }) {
+              Text('金额')
               // 金额输入
-              TextInput({ controller: this.controller, text: this.tempString, placeholder: '请输入金额' })
+              TextInput({ text: this.tempString, controller: this.controller, placeholder: '请输入金额' })
                 .customKeyboard(this.customKeyboardBuilder())
                 .width('60%')
-                .height(50)
+                .height(40)
+                .defaultFocus(true)
                 .inputFilter("[0-9+\\-*/.]", (value: string) => {
                   console.log("被过滤的字符: " + value);
                 })
+
                 .onChange((value: string) => {
+
 
                   this.tempAmount = safeCalculate(value);
 
@@ -862,122 +916,124 @@ struct planningPage {
                   }
                 })
 
-              //currency Sign
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+
+            Divider()
+            Row({ space: 10 }) {
+              Text('货币')
               Row({ space: 4 }) {
+                Text($r(`app.string.${this.tempUnit}`))
                 findFlag({ flagName: this.tempUnit })
-
-              }.onClick(() => {
-                this.currencyDialogController.open()
-
-              })
-            }.margin({ top: 20 })
-
-            //record message
-            Text(this.message)
-
-            Column() {
-              Row() {
-                Text("名称").secondTitle()
-                TextInput({ placeholder: '计划名称' })
-                  .margin({ bottom: 14 })
-                  .width('40%')
-                  .height(40)
-                  .onChange((value: string) => {
-                    this.bugetName = value
-                  })
-              }.width("100%").justifyContent(FlexAlign.SpaceBetween)
-
-              Row() {
-                Text("开始时间").secondTitle()
-                CalendarPicker({ hintRadius: 10, selected: new Date() })
-                  .margin({ bottom: 12 })
-                  .edgeAlign(CalendarAlign.END)
-                  .textStyle({ color: $r('app.color.Font_Color'), font: { size: 20, weight: FontWeight.Normal } })
-                  .onChange((value) => {
-                    this.tempStartDate = value.toDateString();
-                    console.info(`CalendarPicker onChange: ${value.toString()}`);
-                  })
-              }.width("100%")
-              .justifyContent(FlexAlign.SpaceBetween)
-
-              Row() {
-                Text("结束时间").secondTitle()
-                CalendarPicker({ hintRadius: 10, selected: new Date(this.tempEndDate) })
-                  .margin({ bottom: 12 })
-                  .edgeAlign(CalendarAlign.END)
-                  .textStyle({ color: $r('app.color.Font_Color'), font: { size: 20, weight: FontWeight.Normal } })
-                  .onChange((value) => {
-                    this.tempEndDate = value.toDateString();
-                    console.info(`CalendarPicker onChange: ${value.toString()}`);
-                  })
-              }.width("100%")
-              .justifyContent(FlexAlign.SpaceBetween)
-            }
-
-            Column() {
-              Row() {
-                Text("限制标签").secondTitle()
-                Toggle({ type: ToggleType.Switch, isOn: false })
-                  .margin({ left: 12, bottom: 12 })
-                  .onChange((isOn: boolean) => {
-
-                    this.isLimitedToTag = isOn
-
-                  })
-
-              }.width('100%')
-
-              if (this.isLimitedToTag) {
-                Flex({ wrap: FlexWrap.Wrap }) {
-                  ForEach(this.ledgerManager.activeBook.tags, (item: string) => {
-                    Text(item)
-                      .fontSize(16)
-                      .fontColor(this.tempTag === item ? "#000000" : $r('app.color.Font_Color'))// 选中时白色文字
-                      .padding("2%")
-                      .backgroundColor(this.tempTag === item ? "#FFCC22" :
-                        $r('app.color.Basic_Card_background'))// 选中时黄色背景
-                      .borderRadius(5)
-                      .margin({ right: 10, bottom: 10 })
-                      .onClick(() => {
-                        if (this.tempTag === item) {
-                          this.tempTag = ""
-                        } else {
-                          this.tempTag = item;
-                        }
-                        console.log("Now the tag is " + this.tempTag)
-                      })
-                  })
-                  Text("+")
-                    .fontWeight(FontWeight.Bold)
-                    .fontColor($r('app.color.Font_Color'))
-                    .fontSize(16)
-                    .width(44)
-                    .textAlign(TextAlign.Center)
-                    .backgroundColor($r('app.color.Basic_Card_background'))
-                    .padding("2%")
-                    .borderRadius(5)
-                    .margin({ right: 10, bottom: 10 })
-                    .onClick(() => {
-                      this.dialogController?.open()
-                    })
-                }
+                Text((`${this.tempUnit}`)).opacity(0.5)
               }
 
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%').onClick(() => {
+              // this.currencyDialogController.open()
+              this.isShowSheet = true;
+            }).bindSheet(this.isShowSheet, this.mySheet(), {
+              height: 360,
+              onWillDisappear: () => {
+                this.isShowSheet = false;
+              }
+            })
 
-              Row() {
-                Text("计算所有币种").secondTitle()
-                Toggle({ type: ToggleType.Switch, isOn: false })
-                  .margin({ left: 12, bottom: 12 })
-                  .onChange((isOn: boolean) => {
+            Divider()
+            Row({ space: 15 }) {
+              Text('预算名称')
+              // 金额输入
+              TextInput({ text: this.bugetName, placeholder: '请输入名称' })
+                .width('60%')
+                .height(40)
+                .defaultFocus(true)
+                .onChange((value: string) => {
+                  this.bugetName = value
+                })
 
-                    this.countAll = isOn
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+
+            Divider()
+            //record message
+            Text(this.message)
+            Divider()
+            Row() {
+              Text("开始日期")
+              CalendarPicker({ hintRadius: 10, selected: new Date() })
+                .edgeAlign(CalendarAlign.END)
+                .textStyle({ color: $r('app.color.Font_Color'), font: { size: 20, weight: FontWeight.Normal } })
+                .onChange((value) => {
+                  this.tempStartDate = value.toDateString();
+                  console.info(`CalendarPicker onChange: ${value.toString()}`);
+                })
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+
+            Divider()
+            Row() {
+              Text("结束日期")
+              CalendarPicker({ hintRadius: 10, selected: new Date(this.tempEndDate) })
+                .edgeAlign(CalendarAlign.END)
+                .textStyle({ color: $r('app.color.Font_Color'), font: { size: 20, weight: FontWeight.Normal } })
+                .onChange((value) => {
+                  this.tempEndDate = value.toDateString();
+                  console.info(`CalendarPicker onChange: ${value.toString()}`);
+                })
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+
+            Divider()
+            Row({ space: 15 }) {
+              Text("限制标签")
+              Toggle({ type: ToggleType.Switch, isOn: false })
+                .margin({ left: 12, bottom: 12 })
+                .onChange((isOn: boolean) => {
+                  this.isLimitedToTag = isOn
+                })
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+
+            if (this.isLimitedToTag) {
+              Column() {
+                Flex({ wrap: FlexWrap.Wrap }) {
+                  ForEach(this.ledgerManager.activeBook.tags, (item: string) => {
+                    Column() {
+                      Text(item)
+                        .fontSize(16)
+                        .fontColor(this.tempTag === item ? "#000000" : $r('app.color.Font_Color'))// 选中时白色文字
+                        .onClick(() => {
+                          if (this.tempTag === item) {
+                            this.tempTag = ""
+                          } else {
+                            this.tempTag = item;
+                          }
+                          console.log("Now the tag is " + this.tempTag)
+                        })
+
+                    }
+                    .justifyContent(FlexAlign.Center)
+                    .backgroundColor(this.tempTag === item ? "#66ccff" :
+                      $r('app.color.Basic_Card_background')) // 选中时黄色背景
+                    .padding("2%")
+                    .margin({ right: 8, bottom: 8 })
+                    .borderRadius(5)
                   })
-
-              }.width('100%')
+                }
+              }
+              .width("100%")
+              .backgroundColor($r('app.color.Card_background_2'))
+              .padding(16)
+              .borderRadius(15)
+              .margin({ bottom: 12 })
 
             }
+            Divider()
+            Row({ space: 15 }) {
+              Text("计算所有币种")
+              Toggle({ type: ToggleType.Switch, isOn: false })
+                .margin({ left: 12, bottom: 12 })
+                .onChange((isOn: boolean) => {
 
+                  this.countAll = isOn
+                })
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
 
+            Divider()
             // 保存按钮
             Button('保存记录')
               .width('30%')
@@ -1011,7 +1067,12 @@ struct planningPage {
                 }
 
               })
-          }.width("90%")
+          }
+          .width("90%")
+          .backgroundColor($r('app.color.Basic_Card_background'))
+          .padding(16)
+          .borderRadius(15)
+          .margin({ bottom: 12 })
 
         }
       }

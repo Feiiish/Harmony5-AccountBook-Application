@@ -3,7 +3,7 @@
 		"bundleName": "com.feiiish.globalAccount",
 		"debug": true,
 		"versionCode": 42,
-		"versionName": "1.2.6",
+		"versionName": "1.4.5",
 		"minAPIVersion": 50000012,
 		"targetAPIVersion": 50101019,
 		"apiReleaseType": "Release",

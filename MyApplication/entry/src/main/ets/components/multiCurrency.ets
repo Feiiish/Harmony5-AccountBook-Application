@@ -143,29 +143,6 @@ export struct MultiCurrencyComposition {
 
   build() {
     Column() {
-
-      /*
-            if (this.DEBUG) {
-              Text(`当前货币: ${this.userSetting.chosenCurrency.join(", ")}`)
-                .fontSize(12)
-                .fontColor("#999")
-                .margin({ bottom: 8 });
-            }
-            * */
-      //build pie chart
-      if (this.currencyAmounts.length !== 0) {
-        Column() {
-          Text("货币分布").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 8, top: 4 })
-          PieChartExample({ pieData: this.currencyAmounts })
-        }
-        .basicCard()
-
-        .borderRadius(24)
-        .backgroundColor($r('app.color.Card_background_2'))
-        .margin({ top: 5 })
-
-      }
-
       Column() {
         Text(`货币卡片`)
           .margin({ top: 4, bottom: 12 })
@@ -251,13 +228,21 @@ export struct MultiCurrencyComposition {
       }
       .basicCard()
 
-      .borderRadius(24)
-      .backgroundColor($r('app.color.Card_background_2'))
-      .margin({ top: 10 })
+
+      //build pie chart
+      if (this.currencyAmounts.length !== 0) {
+        Column() {
+          Text("货币分布").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 8, top: 4 })
+          PieChartExample({ pieData: this.currencyAmounts })
+        }
+
+        .basicCard()
+
+      }
+
 
     }
-    .padding(12)
-    .basicCard()
+
   }
 
   // 构建加载中视图
@@ -355,7 +340,10 @@ export struct currencyItemView {
 
       Column() {
         //text Input 可以用指定货币换算成目标货币
-        Text('金额换算').width('90%').fontSize(18).fontWeight(FontWeight.Bold).margin({ bottom: 8 })
+        Row() {
+          Text('快速换算').fontSize(16).margin({ bottom: 8 })
+        }.width('100%').justifyContent(FlexAlign.Center)
+
         Row() {
           TextInput({ text: "1" })
             .type(InputType.NUMBER_DECIMAL)
@@ -364,9 +352,10 @@ export struct currencyItemView {
               this.forCalcu = Number(val)
             })
           // enter prefered currency
-          Text(" " + this.ledgerManager.activeBook.preferredCurrency + " ")
+          Text(" " + this.currency.unit + " ")
 
-          Text(`${"≈" + " " + (this.currency.rate * this.forCalcu).toFixed(2) + " " + this.currency.unit}`)
+          Text(`${"≈" + " " + (1 / this.currency.rate * this.forCalcu).toFixed(2) + " " +
+          this.ledgerManager.activeBook.preferredCurrency}`)
         }.width('90%')
 
       }
@@ -403,6 +392,10 @@ export struct currencyItemView {
             Text("当前汇率：")
             Text(`${(1 / this.currency.rate).toFixed(4)}`)
 
+          }.margin({ bottom: 12 })
+        } else {
+          Row() {
+            Text("本位币")
           }.margin({ bottom: 12 })
         }
 
@@ -461,7 +454,7 @@ export struct currencyItemView {
       console.log(JSON.stringify(this.currency));
     })
     .bindSheet(this.isShowSheet, this.mySheet(), {
-      height: 560,
+      height: 360,
       onWillDisappear: () => {
         this.isShowSheet = false;
       }

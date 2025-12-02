@@ -226,7 +226,7 @@ struct currencySettingPage {
                             .fontColor($r('app.color.Font_Color'))
                             .fontSize(14)
                             .textAlign(TextAlign.Center)
-                            .backgroundColor($r('app.color.button_color'))
+                            .backgroundColor('#66ccff')
                             .padding(4)
                             .borderRadius(5)
                             .opacity(0.5)

@@ -73,6 +73,7 @@ struct CurrencyPickerDialog {
 @Entry
 @ComponentV2
 struct appSetting {
+  @Local isShowSheet: boolean = false;
   @Local
   ledgerManager: LedgerManager = PersistenceV2.connect(
     LedgerManager,
@@ -92,6 +93,30 @@ struct appSetting {
     { text: '亮色' },
     { text: '暗色' },
   ]);
+
+  @Builder
+  mySheet() {
+    Column() {
+      Row() {
+        Text($r('app.string.app_version'))
+          .fontWeight(FontWeight.Bold)
+          .margin({ right: 12 })
+          .fontSize(22)
+      }
+      .width('100%')
+      .margin({ top: 25 })
+
+      Column({ space: 12 }) {
+        Text('本次更新重新设计了添加记录页面.')
+        Text('本次更新添加了设置中的主页布局. 用户可以关闭主页中的一些组件.')
+        Text('本次更新添加了用户指南和联系作者页面.')
+        Text('修复了一些已知Bug. 优化了用户体验.')
+      }.alignItems(HorizontalAlign.Start)
+
+    }
+    .width('75%')
+    .alignItems(HorizontalAlign.Start)
+  }
 
   build() {
     List() {
@@ -120,20 +145,19 @@ struct appSetting {
               Text('主题')
               CapsuleSegmentButtonV2({
                 items: this.textItems,
-                selectedIndex: this.selectedIndex,
+                selectedIndex: this.userSetting.darkMode,
                 $selectedIndex: (index: number) => {
-                  this.selectedIndex = index;
+                  this.userSetting.darkMode = index;
 
                   if (index === 0) {
-
                     this.context.getApplicationContext()
-                      .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
-                  } else if (index === 1) {
 
+                      .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+
+                  } else if (index === 1) {
                     this.context.getApplicationContext()
                       .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT);
                   } else {
-
                     this.context.getApplicationContext()
                       .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK);
 
@@ -175,25 +199,9 @@ struct appSetting {
               })
             }.justifyContent(FlexAlign.SpaceBetween).width('100%')
 
-            Divider().margin({ top: 8, bottom: 8 }).color(Color.Gray)
-            Row() {
-              Text('周表')
-              Toggle({ type: ToggleType.Switch, isOn: this.userSetting.WeeklyChart }).onChange((statue) => {
-                this.userSetting.WeeklyChart = statue
-              })
-            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
-
-            Divider().margin({ top: 8, bottom: 8 }).color(Color.Gray)
-            Row() {
-              Text('账单列表')
-              Toggle({ type: ToggleType.Switch, isOn: this.userSetting.searchBarView })
-                .onChange((statue) => {
-                  this.userSetting.searchBarView = statue
-                })
-            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
-
           }.basicCard()
 
+          /*
           //second page components
           Column() {
             Text('副页布局')
@@ -217,6 +225,7 @@ struct appSetting {
             }.justifyContent(FlexAlign.SpaceBetween).width('100%')
 
           }.basicCard()
+          * */
 
           //about this app
           Column() {
@@ -239,29 +248,44 @@ struct appSetting {
 
             Row() {
               Text('版本信息')
-              Text('❯')
-                .fontSize(14)
-                .fontColor('#999999')
+              Row({ space: 6 }) {
+                Text($r('app.string.app_version'))
+                  .fontSize(16)
+                  .fontColor('#999999')
+                Text('❯')
+                  .fontSize(14)
+                  .fontColor('#999999')
+              }
+
             }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+            .onClick(() => {
+              this.isShowSheet = true;
+
+            })
+            .bindSheet(this.isShowSheet, this.mySheet(), {
+              height: 360,
+              onWillDisappear: () => {
+                this.isShowSheet = false;
+              }
+            })
 
 
             Divider().margin({ top: 8, bottom: 8 }).color(Color.Gray)
 
             Row() {
-              Text('用户指南')
+              Text('使用指南')
               Text('❯')
                 .fontSize(14)
                 .fontColor('#999999')
-            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
-
-            Divider().margin({ top: 8, bottom: 8 }).color(Color.Gray)
-
-            Row() {
-              Text('联系作者')
-              Text('❯')
-                .fontSize(14)
-                .fontColor('#999999')
-            }.justifyContent(FlexAlign.SpaceBetween).width('100%')
+            }.justifyContent(FlexAlign.SpaceBetween).width('100%').onClick(() => {
+              router.pushUrl({
+                url: "pages/userGuide"
+              }, router.RouterMode.Standard, (err) => {
+                if (err) {
+                  console.log("跳转失败:", err)
+                }
+              })
+            })
 
             Divider().margin({ top: 8, bottom: 8 }).color(Color.Gray)
             Row() {

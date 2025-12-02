@@ -5,6 +5,10 @@
       "value": "模块描述"
     },
     {
+      "name": "app_version",
+      "value": "v1.4.5"
+    },
+    {
       "name": "EntryAbility_desc",
       "value": "描述"
     },
