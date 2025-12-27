@@ -42,25 +42,27 @@ export struct rateChart {
     "cachedRatesStatus",
     () => new CachedRatesStatus()
   )!;
-
-  @Monitor('cachedRatesStorage.lastUpdateTime')
-  onStatusChange(monitor: IMonitor) {
-    this.updateRates()
-  }
+  @Local ratesMap: Record<string, string> = {} // 改用 Map！关键！
+  @Local filteredCurrencies: string[] = [] // 专门存“不含本位币”的订阅货币
 
   @Monitor('ledgerManager.activeBook.rateChartCurrency')
-  onListChange(monitor: IMonitor) {
-    this.updateRates()
+  on1Change() {
+    console.log('ActiveBook1')
+    this.refreshData()
   }
 
   @Monitor('ledgerManager.activeBook.preferredCurrency')
-  onPreferChange(monitor: IMonitor) {
-    this.updateRates()
+  on2Change() {
+    this.refreshData()
+  }
+
+  @Monitor('cachedRatesStorage.lastUpdateTime')
+  on3Change() {
+    this.refreshData()
   }
 
   @Local value: number = 0
   @Local isShowSheet: boolean = false
-  @Local rates: string[] = []
   @Local
   userSetting: UserSetting = PersistenceV2.connect(
     UserSetting,
@@ -69,19 +71,39 @@ export struct rateChart {
   )!;
 
   aboutToAppear(): void {
-    this.updateRates()
+    this.refreshData()
   }
 
-  async updateRates() {
+  private refreshData() {
     const preferred = this.ledgerManager.activeBook.preferredCurrency;
-    this.rates = []
-    for (const currency of this.ledgerManager.activeBook.rateChartCurrency) {
-      const rate = await displayExchangeRates(preferred, currency);
-      // 存储汇率，可以直接写入对象或单独保存
-      this.rates.push((1 / rate).toFixed(2))
+
+    // 1. 过滤掉本位币，生成最终显示顺序（这才是真正的渲染顺序！）
+    this.filteredCurrencies = this.ledgerManager.activeBook.rateChartCurrency
+      .filter(c => c !== preferred)
+
+    // 2. 开始异步更新汇率（用 Promise.all + .then）
+    this.updateRatesAsync(preferred, this.filteredCurrencies)
+      .then(() => {
+        // 只有所有汇率都算完，才触发一次 UI 重绘（完美避免闪烁/错位）
+        // ArkUI 会自动检测 ratesMap 变化
+      })
+  }
+
+  private async updateRatesAsync(base: string, targets: string[]): Promise<void> {
+    const newMap: Record<string, string> = {}
+
+    // 即使 targets 为空也走一遍（避免旧数据残留）
+    for (const currency of targets) {
+      try {
+        const rate = await displayExchangeRates(base, currency)
+        newMap[currency] = (1 / rate).toFixed(2)
+      } catch (e) {
+        newMap[currency] = "-.--"
+      }
     }
 
-    console.log("所有汇率已更新:",);
+    // 一次性赋值，触发最小化重绘
+    this.ratesMap = newMap
   }
 
   @Builder
@@ -97,6 +119,35 @@ export struct rateChart {
 
       Column() {
         Column({ space: 4 }) {
+          Divider()
+
+          Row() {
+
+            //currency name
+            Row({ space: 12 }) {
+              Text($r(`app.string.${this.ledgerManager.activeBook.preferredCurrency}`)).fontSize(18)
+              findFlag({ flagName: this.ledgerManager.activeBook.preferredCurrency })
+              if (this.userSetting.showCurrencyCode) {
+                Text(this.ledgerManager.activeBook.preferredCurrency)
+                  .opacity(0.5)
+              }
+            }.transition(
+              TransitionEffect.asymmetric(
+                TransitionEffect.scale({ x: 0.9, y: 0.9 }),
+                TransitionEffect.IDENTITY
+              ).animation({ duration: 400, curve: Curve.FastOutSlowIn })
+            )
+
+          }
+          .height(30)
+          .width('100%')
+          .justifyContent(FlexAlign.SpaceBetween)
+          .onClick(() => {
+            promptAction.showToast({ message: "无法取消本位币" })
+            return
+
+          })
+
           ForEach(this.ledgerManager.activeBook.rateChartCurrency, (currency: string, index: number) => {
             Divider()
 
@@ -122,10 +173,15 @@ export struct rateChart {
             .width('100%')
             .justifyContent(FlexAlign.SpaceBetween)
             .onClick(() => {
-              this.ledgerManager.activeBook.rateChartCurrency =
-                this.ledgerManager.activeBook.rateChartCurrency.filter(
-                  c => c !== currency
-                );
+              if (currency === this.ledgerManager.activeBook.preferredCurrency) {
+                promptAction.showToast({ message: "无法取消本位币" })
+                return
+              } else {
+                this.ledgerManager.activeBook.rateChartCurrency =
+                  this.ledgerManager.activeBook.rateChartCurrency.filter(
+                    c => c !== currency
+                  );
+              }
 
 
             })
@@ -149,33 +205,45 @@ export struct rateChart {
           ForEach(this.ledgerManager.activeBook.chosenCurrency.filter(
             c => !this.ledgerManager.activeBook.rateChartCurrency.includes(c)
           ), (currency: string, index: number) => {
-            Divider()
+            if (currency !== this.ledgerManager.activeBook.preferredCurrency) {
+              Divider()
 
-            Row() {
+              Row() {
 
-              //currency name
-              Row({ space: 12 }) {
-                Text($r(`app.string.${currency}`)).fontSize(18)
-                findFlag({ flagName: currency })
-                if (this.userSetting.showCurrencyCode) {
-                  Text(currency)
-                    .opacity(0.5)
+                //currency name
+                Row({ space: 12 }) {
+                  Text($r(`app.string.${currency}`)).fontSize(18)
+                  findFlag({ flagName: currency })
+                  if (this.userSetting.showCurrencyCode) {
+                    Text(currency)
+                      .opacity(0.5)
+                  }
+                }.transition(
+                  TransitionEffect.asymmetric(
+                    TransitionEffect.scale({ x: 0.9, y: 0.9 }),
+                    TransitionEffect.IDENTITY
+                  ).animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                )
+
+              }
+              .height(30)
+              .width('100%')
+              .justifyContent(FlexAlign.SpaceBetween)
+              .onClick(() => {
+                if (currency === this.ledgerManager.activeBook.preferredCurrency) {
+                  promptAction.showToast({ message: "本位币无需订阅" })
+                  return
                 }
-              }.transition(
-                TransitionEffect.asymmetric(
-                  TransitionEffect.scale({ x: 0.9, y: 0.9 }),
-                  TransitionEffect.IDENTITY
-                ).animation({ duration: 400, curve: Curve.FastOutSlowIn })
-              )
-
+                if (!this.ledgerManager.activeBook.rateChartCurrency.includes(currency)) {
+                  this.ledgerManager.activeBook.rateChartCurrency = [
+                    ...this.ledgerManager.activeBook.rateChartCurrency,
+                    currency
+                  ];
+                  // 不需要手动调用 updateRates，@Monitor 会自动触发 refreshData / updateAllRates
+                }
+              })
             }
-            .height(30)
-            .width('100%')
-            .justifyContent(FlexAlign.SpaceBetween)
-            .onClick(() => {
-              this.ledgerManager.activeBook.rateChartCurrency.push(currency)
-              this.updateRates()
-            })
+
           }
           )
         }
@@ -193,117 +261,78 @@ export struct rateChart {
 
     Column() {
       Column() {
-
         if (this.ledgerManager.activeBook.chosenCurrency.length > 0) {
           Row() {
             Text(`当前汇率`)
             ratesStatus()
-          }.width('90%').justifyContent(FlexAlign.SpaceBetween).margin({ top: 12, bottom: 12 })
+          }
+          .width('90%')
+          .justifyContent(FlexAlign.SpaceBetween)
+          .margin({ top: 12, bottom: 12 })
 
-          ForEach((this.ledgerManager.activeBook.rateChartCurrency), (r: string, index: number) => {
-            if (r === this.ledgerManager.activeBook.preferredCurrency) {
-              Column() {
-                Divider()
-                Row({ space: 6 }) {
 
-                  findFlag({ flagName: r })
-                  Row() {
-                    Text(`1:`)
-                      .fontSize(12)
-                      .fontWeight(FontWeight.Medium)
-                      .opacity(0.5)
-                    Text(`${this.rates[index]}`)
-                      .fontSize(16)
-                      .fontWeight(FontWeight.Medium)
-                  }
-
-                  if (this.userSetting.showCurrencyCode) {
-                    Text(r)
-                      .fontSize(14)
-                      .fontColor($r('app.color.Font_Color'))
-                      .fontColor(Color.Gray)
-                  }
-
-                  Text($r(`app.string.${r}`))
-                    .fontSize(14)
-                    .fontColor($r('app.color.Font_Color'))
-                    .fontColor(Color.Gray)
-
-                  Text('本位币')
-                    .fontColor($r('app.color.Font_Color'))
-                    .fontSize(14)
-                    .textAlign(TextAlign.Center)
-                    .backgroundColor('#66ccff')
-                    .padding(4)
-                    .borderRadius(5)
-                    .opacity(0.5)
-
-                }.padding(12)
-
+          Column() {
+            Divider()
+            Row({ space: 6 }) {
+              findFlag({ flagName: this.ledgerManager.activeBook.preferredCurrency })
+              Row() {
+                Text("1:").fontSize(12).fontWeight(FontWeight.Medium).opacity(0.5)
+                Text("1.00").fontSize(16).fontWeight(FontWeight.Medium)
               }
-              .width('100%')
-              .alignItems(HorizontalAlign.Start)
+
+              if (this.userSetting.showCurrencyCode) {
+                Text(this.ledgerManager.activeBook.preferredCurrency).fontSize(14).fontColor(Color.Gray)
+              }
+              Text($r(`app.string.${this.ledgerManager.activeBook.preferredCurrency}`))
+                .fontSize(14)
+                .fontColor(Color.Gray)
+              Text('本位币')
+                .fontSize(14)
+                .textAlign(TextAlign.Center)
+                .backgroundColor('#66ccff')
+                .padding(4)
+                .borderRadius(5)
+                .opacity(0.5)
+            }.padding(12)
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Start)
+
+          // 2. 其它已订阅货币（用 Map 取值，永不错位）
+          ForEach(this.ledgerManager.activeBook.rateChartCurrency
+            .filter(c => c !== this.ledgerManager.activeBook.preferredCurrency), (currency: string) => {
+            Column() {
+              Divider()
+              Row({ space: 6 }) {
+                findFlag({ flagName: currency })
+                Row() {
+                  Text("1:").fontSize(12).fontWeight(FontWeight.Medium).opacity(0.5)
+                  Text(this.ratesMap[currency] ?? "--")   // 异步还没回来时显示 --
+                    .fontSize(16)
+                    .fontWeight(FontWeight.Medium)
+                }
+
+                if (this.userSetting.showCurrencyCode) {
+                  Text(currency).fontSize(14).fontColor(Color.Gray)
+                }
+                Text($r(`app.string.${currency}`))
+                  .fontSize(14)
+                  .fontColor(Color.Gray)
+              }.padding(12)
             }
+            .width('100%')
+            .alignItems(HorizontalAlign.Start)
           })
-          ForEach(
-            this.ledgerManager.activeBook.rateChartCurrency
-              .filter(c => c !== this.ledgerManager.activeBook.preferredCurrency),
-            (r: string, index: number) => {
 
-              Column() {
-                Divider()
-                Row({ space: 6 }) {
-
-
-                  findFlag({ flagName: r })
-                  Row() {
-                    Text(`1:`)
-                      .fontSize(12)
-                      .fontWeight(FontWeight.Medium)
-                      .opacity(0.5)
-                    Text(`${this.rates[index]}`)
-                      .fontSize(16)
-                      .fontWeight(FontWeight.Medium)
-                  }
-
-                  if (this.userSetting.showCurrencyCode) {
-                    Text(r)
-                      .fontSize(14)
-                      .fontColor($r('app.color.Font_Color'))
-                      .fontColor(Color.Gray)
-                  }
-
-                  Text($r(`app.string.${r}`))
-                    .fontSize(14)
-                    .fontColor($r('app.color.Font_Color'))
-                    .fontColor(Color.Gray)
-                  if (r === this.ledgerManager.activeBook.preferredCurrency) {
-                    Text('本位币')
-                      .fontColor($r('app.color.Font_Color'))
-                      .fontSize(14)
-                      .textAlign(TextAlign.Center)
-                      .backgroundColor('#66ccff')
-                      .padding(4)
-                      .borderRadius(5)
-                      .opacity(0.5)
-                  }
-                }.padding(12)
-
-              }
-              .width('100%')
-              .alignItems(HorizontalAlign.Start)
-
-            })
+          // 3. 订阅按钮（完全不变）
           Column() {
             Divider()
             Row() {
-
-              Text((`订阅货币+`))
+              Text("订阅货币+")
                 .fontSize(14)
-                .fontColor($r('app.color.Font_Color'))
                 .fontColor(Color.Gray)
                 .onClick(() => {
-                  this.isShowSheet = !this.isShowSheet
+                  this.isShowSheet = true
                 })
                 .bindSheet(this.isShowSheet, this.mySheet(), {
                   height: 360,
@@ -311,16 +340,16 @@ export struct rateChart {
                     this.isShowSheet = false
                   }
                 })
-
             }.padding(12)
-
           }
           .width('100%')
 
         } else {
           Text("暂无汇率数据").fontColor(Color.Gray)
         }
-      }.backgroundColor($r('app.color.Card_background_2')).borderRadius(12)
+      }
+      .backgroundColor($r('app.color.Card_background_2'))
+      .borderRadius(12)
 
     }.basicCard()
 

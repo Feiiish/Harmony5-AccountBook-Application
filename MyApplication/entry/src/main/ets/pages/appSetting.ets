@@ -10,10 +10,7 @@ import { RecordItem, RecordsData, LedgerManager } from '../models/recordItemRefe
 import { UserSetting } from "../models/userSetting"
 import { ConfigurationConstant } from '@kit.AbilityKit';
 import {
-  TabSegmentButtonV2,
-  CapsuleSegmentButtonV2,
-  MultiCapsuleSegmentButtonV2,
-  SegmentButtonV2Items
+  SegmentButton, SegmentButtonItemTuple, SegmentButtonOptions,
 } from '@kit.ArkUI';
 
 @Styles
@@ -70,6 +67,59 @@ struct CurrencyPickerDialog {
 }
 
 
+@Component
+struct segmentButtons {
+  userSetting: UserSetting = PersistenceV2.connect(
+    UserSetting,
+    'userSetting',
+    () => new UserSetting()
+  )!;
+  @State selectedIndex: number[] = [0];
+  @State singleSelectCapsuleOptions: SegmentButtonOptions = SegmentButtonOptions.capsule({
+    buttons: [
+      { text: '系统' },
+      { text: '亮色' },
+      { text: '暗色' },
+    ] as SegmentButtonItemTuple,
+    multiply: false,
+    backgroundBlurStyle: BlurStyle.BACKGROUND_THICK
+  ,
+    textPadding: {
+      top: 6,
+      right: 10,
+      bottom: 6,
+      left: 10
+    },
+  });
+
+  aboutToAppear(): void {
+    this.selectedIndex = [this.userSetting.darkMode]
+  }
+
+  build() {
+    SegmentButton({
+      options: this.singleSelectCapsuleOptions,
+      selectedIndexes: $selectedIndex,
+      onItemClicked: (index: number) => {
+        this.userSetting.darkMode = index;
+        this.selectedIndex = [index]
+
+        let appContext = getContext().getApplicationContext();
+
+        if (index === 0) {
+          appContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+        } else if (index === 1) {
+          appContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT);
+        } else {
+          appContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK);
+        }
+      },
+
+    })
+      .width("50%")
+  }
+}
+
 @Entry
 @ComponentV2
 struct appSetting {
@@ -80,19 +130,12 @@ struct appSetting {
     'multiLedgerStorage',
     () => new LedgerManager()
   )!;
-  @Local selectedIndex: number = 0;
   @Local
   userSetting: UserSetting = PersistenceV2.connect(
     UserSetting,
     'userSetting',
     () => new UserSetting()
   )!;
-  context = getContext();
-  @Local textItems: SegmentButtonV2Items = new SegmentButtonV2Items([
-    { text: '系统' },
-    { text: '亮色' },
-    { text: '暗色' },
-  ]);
 
   @Builder
   mySheet() {
@@ -143,29 +186,8 @@ struct appSetting {
           Column() {
             Row() {
               Text('主题')
-              CapsuleSegmentButtonV2({
-                items: this.textItems,
-                selectedIndex: this.userSetting.darkMode,
-                $selectedIndex: (index: number) => {
-                  this.userSetting.darkMode = index;
+              segmentButtons()
 
-                  if (index === 0) {
-                    this.context.getApplicationContext()
-
-                      .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
-
-                  } else if (index === 1) {
-                    this.context.getApplicationContext()
-                      .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT);
-                  } else {
-                    this.context.getApplicationContext()
-                      .setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK);
-
-                  }
-
-                }
-
-              }).width("50%")
             }.justifyContent(FlexAlign.SpaceBetween).width('100%')
           }.basicCard()
 

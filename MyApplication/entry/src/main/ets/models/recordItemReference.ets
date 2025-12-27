@@ -104,6 +104,8 @@ export class LedgerBook {
   @Trace chosenCurrency: string[] = ["CNY", "USD", "HKD", "GBP"];
   @Trace rateChartCurrency: string[] = ["CNY", "USD", "HKD", "GBP"];
   @Trace tags: string[] = ['餐饮', '购物', '交通', '娱乐', '住房', '工资', '奖金', '投资'];
+  //forDataPicker
+  @Trace dateIndex: number[] = [0];
   @Trace chosenDate: Date = new Date;
   @Trace startDate: Date = new Date(new Date().getFullYear(), 0, 1);
   @Trace endDate: Date = new Date(new Date().getFullYear(), 11, 31);

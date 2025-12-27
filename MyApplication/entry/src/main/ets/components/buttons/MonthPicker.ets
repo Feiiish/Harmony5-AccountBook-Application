@@ -3,30 +3,39 @@ import { PersistenceV2, promptAction, router } from '@kit.ArkUI';
 import { CachedRatesStatus, UserSetting } from "../../models/userSetting"
 import { formatDateAdvanced } from "../../utils/formatDateAdvanced"
 import { TipsDialog } from '@kit.ArkUI'
-import { emitter, Callback } from '@kit.BasicServicesKit';
+
 import {
-  TabSegmentButtonV2,
-  CapsuleSegmentButtonV2,
-  MultiCapsuleSegmentButtonV2,
-  SegmentButtonV2Items,
+  SegmentButton, SegmentButtonItemTuple, SegmentButtonOptions,
 } from '@kit.ArkUI';
 
-@ComponentV2
+@Component
 export struct datePicker {
-  @Local isShowSheet: boolean = false;
-  @Local selectedIndex: number = 0;
-  @Local selectedDate: Date = new Date();
-  @Local now: Date = new Date();
-  @Local ledgerManager: LedgerManager = PersistenceV2.connect(
+  @State isShowSheet: boolean = false;
+  @State selectedDate: Date = new Date();
+  @State now: Date = new Date();
+  ledgerManager: LedgerManager = PersistenceV2.connect(
     LedgerManager,
     'multiLedgerStorage',
     () => new LedgerManager()
   )!;
-  @Local textItems: SegmentButtonV2Items = new SegmentButtonV2Items([
-    { text: '按年' },
-    { text: '按月' },
-    { text: '所有' },
-  ]);
+  @State singleSelectCapsuleSelectedIndexes: number[] = this.ledgerManager.activeBook.dateIndex;
+  @State singleSelectCapsuleOptions: SegmentButtonOptions = SegmentButtonOptions.capsule({
+    buttons: [
+      { text: '按年' },
+      { text: '按月' },
+      { text: '全部' }
+    ] as SegmentButtonItemTuple,
+    multiply: false,
+    backgroundBlurStyle: BlurStyle.BACKGROUND_THICK
+  ,
+    backgroundColor: $r('app.color.Darker_window_background'),
+    textPadding: {
+      top: 10,
+      right: 10,
+      bottom: 10,
+      left: 10
+    },
+  });
   private fruits: string[][] = [
     this.generateYears(2000, 2030),
     ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
@@ -55,10 +64,10 @@ export struct datePicker {
     let selected: number[] = [currentYear - 2000, currentMonth];
     let range: string[][] = [];
 
-    if (this.selectedIndex === 0) {
+    if (this.singleSelectCapsuleSelectedIndexes[0] === 0) {
       range = [this.generateYears(2000, 2030)];
       selected = [currentYear - 2000];
-    } else if (this.selectedIndex === 1) {
+    } else if (this.singleSelectCapsuleSelectedIndexes[0] === 1) {
       range = this.fruits;
     } else {
       return;
@@ -75,7 +84,7 @@ export struct datePicker {
 
         if (Array.isArray(value.index)) {
           year += value.index[0];
-          month = this.selectedIndex === 1 ? value.index[1] : 0;
+          month = this.singleSelectCapsuleSelectedIndexes[0] === 1 ? value.index[1] : 0;
         } else {
           year += value.index;
           month = 0; // 强制重置月份为一月
@@ -86,7 +95,7 @@ export struct datePicker {
           date = new Date(year, month, 1);
           this.ledgerManager.activeBook.startDate = date;
         } else {
-          date = this.selectedIndex === 0
+          date = this.singleSelectCapsuleSelectedIndexes[0] === 0
             ? new Date(year, 11, 31)
             : new Date(year, month + 1, 0);
           this.ledgerManager.activeBook.endDate = date;
@@ -98,11 +107,11 @@ export struct datePicker {
 
         if (start && end && start.getTime() > end.getTime()) {
           if (isStart) {
-            this.ledgerManager.activeBook.endDate = this.selectedIndex === 0
+            this.ledgerManager.activeBook.endDate = this.singleSelectCapsuleSelectedIndexes[0] === 0
               ? new Date(start.getFullYear() + 1, 11, 31)
               : new Date(start.getFullYear(), start.getMonth() + 1, 0);
           } else {
-            this.ledgerManager.activeBook.startDate = this.selectedIndex === 0
+            this.ledgerManager.activeBook.startDate = this.singleSelectCapsuleSelectedIndexes[0] === 0
               ? new Date(end.getFullYear() - 1, 0, 1)
               : new Date(end.getFullYear(), end.getMonth() - 1, 1);
           }
@@ -116,68 +125,72 @@ export struct datePicker {
   @Builder
   mySheet() {
     Column() {
-      Text(this.selectedIndex === 0 ? '按照年份过滤账单'
-        : this.selectedIndex === 1 ? '按照月份过滤账单'
+      Text(this.singleSelectCapsuleSelectedIndexes[0] === 0 ? '按照年份过滤账单'
+        : this.singleSelectCapsuleSelectedIndexes[0] === 1 ? '按照月份过滤账单'
           : '展示所有账单')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
         .margin({ top: 20, bottom: 16 })
 
       Column() {
-        if (this.selectedIndex === 0 || this.selectedIndex === 1) {
-          Row({ space: 20 }) {
-            Button(formatDateAdvanced(this.ledgerManager.activeBook.startDate,
-              this.selectedIndex === 0 ? "YYYY年" : "YYYY-MM"))
-              .onClick(() => this.showDatePicker(true))
-              .buttonStyle(ButtonStyleMode.TEXTUAL)
-              .fontSize(24)
-            Text("-")
-              .fontSize(24)
-            Button(formatDateAdvanced(this.ledgerManager.activeBook.endDate,
-              this.selectedIndex === 0 ? "YYYY年" : "YYYY-MM"))
-              .onClick(() => this.showDatePicker(false))
-              .buttonStyle(ButtonStyleMode.TEXTUAL)
-              .fontSize(24)
-          }.margin({ bottom: 20 })
+        if (this.singleSelectCapsuleSelectedIndexes[0] === 0 || this.singleSelectCapsuleSelectedIndexes[0] === 1) {
+
+          Column({ space: 6 }) {
+            Row() {
+              Text("开始时间:")
+                .fontSize(20)
+              Button(formatDateAdvanced(this.ledgerManager.activeBook.startDate,
+                this.singleSelectCapsuleSelectedIndexes[0] === 0 ? "YYYY年" : "YYYY年MM月"))
+                .onClick(() => this.showDatePicker(true))
+                .buttonStyle(ButtonStyleMode.TEXTUAL)
+                .fontSize(20)
+            }
+
+            Row() {
+              Text("结束时间:")
+                .fontSize(20)
+              Button(formatDateAdvanced(this.ledgerManager.activeBook.endDate,
+                this.singleSelectCapsuleSelectedIndexes[0] === 0 ? "YYYY年" : "YYYY年MM月"))
+                .onClick(() => this.showDatePicker(false))
+                .buttonStyle(ButtonStyleMode.TEXTUAL)
+                .fontSize(20)
+            }
+
+          }.width('80%')
         } else {
-          Text("展示所有账单").fontSize(20).margin({ bottom: 20 })
+          Text("展示所有账单").fontSize(24)
         }
       }.height(140).justifyContent(FlexAlign.Center)
 
-      CapsuleSegmentButtonV2({
-        items: this.textItems,
-        selectedIndex: this.selectedIndex,
-        $selectedIndex: (index: number) => {
-          this.selectedIndex = index;
 
-          const start = this.ledgerManager.activeBook.startDate;
-          const end = this.ledgerManager.activeBook.endDate;
-
+      SegmentButton({
+        options: this.singleSelectCapsuleOptions,
+        selectedIndexes: $singleSelectCapsuleSelectedIndexes,
+        onItemClicked: (index: number) => {
+          const book = this.ledgerManager.activeBook;
+          this.ledgerManager.activeBook.dateIndex = [index]
           if (index === 0) {
-            // 周总结（按年） → 保留年份，重置为该年起止
-            const startYear = start.getFullYear();
-            const endYear = end.getFullYear();
-
-            this.ledgerManager.activeBook.startDate = new Date(startYear, 0, 1); // 年初
-            this.ledgerManager.activeBook.endDate = new Date(endYear, 11, 31); // 年末
+            // 按年
+            const year = book.endDate.getFullYear(); // 或者用当前年也行
+            book.startDate = new Date(year, 0, 1);
+            book.endDate = new Date(year, 11, 31);
           } else if (index === 1) {
-            // 按月 → 保留年月，重置为该月起止
-            const startYear = start.getFullYear();
-            const startMonth = start.getMonth();
-            const endYear = end.getFullYear();
-            const endMonth = end.getMonth();
-
-            this.ledgerManager.activeBook.startDate = new Date(startYear, startMonth, 1); // 月初
-            this.ledgerManager.activeBook.endDate = new Date(endYear, endMonth + 1, 0); // 月末
+            // 按月
+            const year = book.endDate.getFullYear();
+            const month = book.endDate.getMonth();
+            book.startDate = new Date(year, month, 1);
+            book.endDate = new Date(year, month + 1, 0);
           } else {
-            // 所有账单 → 默认范围
-            this.ledgerManager.activeBook.startDate = new Date(2000, 0, 1);
-            this.ledgerManager.activeBook.endDate = new Date();
+            // 全部
+            book.startDate = new Date(2000, 0, 1);
+            book.endDate = new Date();
           }
 
-        }
+        },
 
-      }).width("80%").margin({ top: 22 })
+      })
+        .width("80%")
+        .margin({ top: 22 })
     }.width('100%').alignItems(HorizontalAlign.Center)
   }
 
@@ -185,9 +198,9 @@ export struct datePicker {
 
     Column() {
       Row() {
-        Text(this.selectedIndex === 0
+        Text(this.singleSelectCapsuleSelectedIndexes[0] === 0
           ? formatDateAdvanced(this.ledgerManager.activeBook.endDate, "... YYYY年")
-          : this.selectedIndex === 1
+          : this.singleSelectCapsuleSelectedIndexes[0] === 1
             ? formatDateAdvanced(this.ledgerManager.activeBook.endDate, "... YY年MM月")
             : "所有账单")
           .fontWeight(FontWeight.Bold)
@@ -198,6 +211,7 @@ export struct datePicker {
       .onClick(() => {
         this.isShowSheet = !this.isShowSheet;
       })
+
       .bindSheet(this.isShowSheet, this.mySheet(), {
         height: 300,
         onWillDisappear: () => {

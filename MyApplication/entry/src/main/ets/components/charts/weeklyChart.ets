@@ -4,7 +4,9 @@ import { RecordItem, RecordsData } from "../../models/recordItemReference"
 import { variousToPreferred } from "../../utils/moneyCount"
 import { PersistenceV2, promptAction, router, CapsuleSegmentButtonV2 } from '@kit.ArkUI';
 import { displayExchangeRates } from '../../utils/currencyExchange';
-import { SegmentButtonV2Items, TabSegmentButtonV2 } from '@kit.ArkUI';
+import {
+  SegmentButton, SegmentButtonItemTuple, SegmentButtonOptions,
+} from '@kit.ArkUI';
 import { McLineChart, Options } from '@mcui/mccharts'
 
 @Styles
@@ -89,13 +91,12 @@ export async function calculateWeeklyTables(recordList: RecordItem[],
 }
 
 
-@ComponentV2
+@Component
 export struct WeeklyChart {
-  @Require @Param recordList: RecordItem[] = [];
-  @Require @Param unit: string = ""
+  @Require @Prop @Watch('recordListChange') recordList: RecordItem[] = [];
+  @Require @Prop unit: string = ""
 
-  @Monitor('recordList')
-  onChanged(monitor: IMonitor) {
+  recordListChange(monitor: IMonitor) {
     calculateWeeklyTables(this.recordList, this.unit).then((result) => {
       //设定为目标数字
       this.tempIncome = result.income
@@ -104,19 +105,29 @@ export struct WeeklyChart {
     })
   }
 
-  @Local selectedIndex: number = 0;
-  @Local textItems: SegmentButtonV2Items = new SegmentButtonV2Items([
-    { text: '周收支' },
-    { text: '周盈余' },
-  ]);
-  @Local pillarHeight: number = 120
+  @State singleSelectCapsuleSelectedIndexes: number[] = [0]
+  @State singleSelectCapsuleOptions: SegmentButtonOptions = SegmentButtonOptions.capsule({
+    buttons: [
+      { text: '周收支' },
+      { text: '周盈余' },
+    ] as SegmentButtonItemTuple,
+    multiply: false,
+    backgroundBlurStyle: BlurStyle.BACKGROUND_THICK
+  ,
+    textPadding: {
+      top: 6,
+      right: 10,
+      bottom: 6,
+      left: 10
+    },
+  });
+  @State pillarHeight: number = 120
   // 星期标签
   private days: string[] = ['一', '二', '三', '四', '五', '六', '日'];
-  @Local tempIncome: number[] = new Array(7).fill(0)
-  @Local tempExpense: number[] = new Array(7).fill(0)
-  @Local tempSurplus: number[] = new Array(7).fill(0)
-  @Local seriesOption: Options = new Options({
-
+  @State tempIncome: number[] = new Array(7).fill(0)
+  @State tempExpense: number[] = new Array(7).fill(0)
+  @State tempSurplus: number[] = new Array(7).fill(0)
+  @State seriesOption: Options = new Options({
     xAxis: {
       axisLabel: {
 
@@ -220,16 +231,18 @@ export struct WeeklyChart {
 
   build() {
     Column() {
-      CapsuleSegmentButtonV2({
-        items: this.textItems,
-        selectedIndex: this.selectedIndex,
-        $selectedIndex: (index: number) => {
-          this.selectedIndex = index;
-        }
-      }).width("80%")
+      SegmentButton({
+        options: this.singleSelectCapsuleOptions,
+        selectedIndexes: $singleSelectCapsuleSelectedIndexes,
+        onItemClicked: (index: number) => {
+          this.singleSelectCapsuleSelectedIndexes = [index]
+        },
+
+      })
+        .width("80%")
       Column() {
         // 数据统计摘要
-        if (this.selectedIndex === 0) {
+        if (this.singleSelectCapsuleSelectedIndexes[0] === 0) {
           Row() {
             Index({ list: this.recordList, unit: this.unit })
           }
@@ -315,10 +328,20 @@ export struct WeeklyChart {
       .justifyContent(FlexAlign.Center)
 
       Column({ space: 8 }) {
-        Text(`本周收入: ${this.getTotal(this.tempSurplus).toFixed(2)} ${this.unit}`)
-          .fontSize(15)
-        Text(`每日平均收入: ${this.getAverage()} ${this.unit}`)
-          .fontSize(15)
+        Row() {
+          Text(`本周收入: ${this.getTotal(this.tempSurplus).toFixed(2)}`)
+            .fontSize(15)
+          Text($r(`app.string.${this.unit}`))
+            .fontSize(15)
+        }
+
+
+        Row() {
+          Text(`每日平均收入: ${this.getAverage()} ${this.unit}`)
+            .fontSize(15)
+          Text($r(`app.string.${this.unit}`))
+            .fontSize(15)
+        }
       }
       .width('100%')
       .padding(16)
@@ -336,7 +359,6 @@ export struct WeeklyChart {
 
   }
 }
-
 
 @Component
 struct Index {

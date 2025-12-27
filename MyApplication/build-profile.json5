@@ -5,13 +5,13 @@
         "name": "feiiish",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.cer",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001A1A1C0B26C63E13D4844AE53B282E01AE3A1D7BB667E903123B679C54706F19CB29F7C0923EF0",
-          "profile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p7b",
+          "storeFile": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/release/app_release.p12",
+          "storePassword": "0000001BE578E20DA267A416123C4F3C92BE0B8C33422F445626341B37905F8FE7F8ED515A9DBDEA9EDDBB",
+          "keyAlias": "app_release",
+          "keyPassword": "0000001BA55F64FCF9D8CAAB72CD839AFE109F582B9BB1B80B057F6E1DA6D1CFCFE790131689D1467FC5A6",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\24070\\.ohos\\config\\feiiish_MyApplication_e24iEa2r6zFDrYQz35Q9TdB_8EvtlH308ucS5NOIHoI=.p12",
-          "storePassword": "0000001AD5906820C02AC4AC199EA3F52BEBDC3340D4B118B3A73F6D30EAE4407ADFC16DDE7202230E31"
+          "profile": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/release/app_releaseRelease.p7b",
+          "certpath": "D:/Projects/Code/GlobalAccountBook/GlobalAccountBook/credentials/release/app_release.cer"
         }
       }
     ],

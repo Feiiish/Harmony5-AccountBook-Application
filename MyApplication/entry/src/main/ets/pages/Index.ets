@@ -162,17 +162,30 @@ export struct Index {
                         );
                     }
                     /*
-                    if (this.userSetting.menuList) {
-                      menuList()
+                                        if (this.userSetting.menuList) {
+                                          menuList()
+                                            .transition(
+                                              TransitionEffect.OPACITY
+                                                .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+                                                .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                                            );
+                                        }
+                                        * */
+
+                    if (this.userSetting.budgetComponent) {
+                      budgetComponent()
                         .transition(
                           TransitionEffect.OPACITY
                             .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
                             .animation({ duration: 400, curve: Curve.FastOutSlowIn })
                         );
                     }
-                    * */
-                    if (this.userSetting.budgetComponent) {
-                      budgetComponent()
+
+                    if (this.userSetting.WeeklyChart) {
+                      WeeklyChart({
+                        recordList: this.ledgerManager.activeBook.data.items,
+                        unit: this.ledgerManager.activeBook.preferredCurrency
+                      })
                         .transition(
                           TransitionEffect.OPACITY
                             .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
@@ -207,70 +220,6 @@ export struct Index {
             TabContent() {
               List() {
                 ListItem() {
-
-                  Column({ space: 2 }) {
-                    Row() {
-                      Text('图表').fontWeight(FontWeight.Bold)
-                        .fontSize(28)
-                      //抽屉开关
-                      Button({ type: ButtonType.Circle, stateEffect: true }) {
-                        Image($r('app.media.moreMenu')).width(35).height(35).align(Alignment.Center)
-                      }
-                      .backgroundColor($r('app.color.Basic_Card_background'))
-                      .width(40)
-                      .height(40)
-                      .onClick(() => {
-
-                        this.show = !this.show
-                        this.getUIContext().animateTo({
-                          duration: Constants.ANIMATION_DURATION,
-                          curve: Curve.EaseOut,
-                          playMode: PlayMode.Normal,
-                        }, () => {
-                          // 动画完成后的回调
-                        })
-                      })
-                    }
-                    .justifyContent(FlexAlign.SpaceBetween)
-                    .width("90%")
-                    .margin({ bottom: 18 })
-                    .height(40)
-
-                    if (this.userSetting.WeeklyChart) {
-                      WeeklyChart({
-                        recordList: this.ledgerManager.activeBook.data.items,
-                        unit: this.ledgerManager.activeBook.preferredCurrency
-                      })
-                        .transition(
-                          TransitionEffect.OPACITY
-                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
-                        );
-                    }
-                    if (this.userSetting.rateChart) {
-                      rateChart()
-                        .transition(
-                          TransitionEffect.OPACITY
-                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
-                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
-                        );
-                    }
-
-
-                  }.padding(12)
-                }
-              }
-              .sticky(StickyStyle.Header)
-              .scrollBar(BarState.Off)
-              .listDirection(Axis.Vertical)
-              .edgeEffect(EdgeEffect.Spring)
-              .height("100%")
-
-            }.tabBar('图表')
-
-            TabContent() {
-              List() {
-                ListItem() {
                   Column({ space: 2 }) {
                     Row() {
                       Text('货币').fontWeight(FontWeight.Bold)
@@ -299,6 +248,15 @@ export struct Index {
                     .margin({ bottom: 18 })
                     .height(40)
 
+                    if (this.userSetting.rateChart) {
+                      rateChart()
+                        .transition(
+                          TransitionEffect.OPACITY
+                            .combine(TransitionEffect.scale({ x: 0.8, y: 0.8 }))
+                            .animation({ duration: 400, curve: Curve.FastOutSlowIn })
+                        );
+                    }
+
                     if (this.userSetting.MultiCurrencyComposition) {
                       MultiCurrencyComposition({ recordList: this.ledgerManager.activeBook.data.items })
                     }
@@ -312,62 +270,6 @@ export struct Index {
               .height("100%")
 
             }.tabBar('货币')
-
-            TabContent() {
-              List() {
-                ListItem() {
-                  Column({ space: 2 }) {
-                    Row() {
-                      Text('日历').fontWeight(FontWeight.Bold)
-                        .fontSize(28)
-                      //抽屉开关
-                      Button({ type: ButtonType.Circle, stateEffect: true }) {
-                        Image($r('app.media.moreMenu')).width(35).height(35).align(Alignment.Center)
-                      }
-                      .backgroundColor($r('app.color.Basic_Card_background'))
-                      .width(40)
-                      .height(40)
-                      .onClick(() => {
-
-                        this.show = !this.show
-                        this.getUIContext().animateTo({
-                          duration: Constants.ANIMATION_DURATION,
-                          curve: Curve.EaseOut,
-                          playMode: PlayMode.Normal,
-                        }, () => {
-                          // 动画完成后的回调
-                        })
-                      })
-                    }
-                    .justifyContent(FlexAlign.SpaceBetween)
-                    .width("90%")
-                    .margin({ bottom: 18 })
-                    .height(40)
-
-                    if (this.userSetting.calendar) {
-                      Column() {
-                        Column() {
-                          calendar()
-                        }
-                      }
-                      .backgroundColor($r('app.color.Basic_Card_background'))
-                      .width('100%')
-                      .padding(12)
-                      .borderRadius(24)
-                      .margin({ bottom: 12 })
-                    }
-
-
-                  }
-                }.padding(10)
-              }
-              .sticky(StickyStyle.Header)
-              .scrollBar(BarState.Off)
-              .listDirection(Axis.Vertical)
-              .edgeEffect(EdgeEffect.Spring)
-              .height("100%")
-
-            }.tabBar('日历')
 
           }
 
