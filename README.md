@@ -38,7 +38,13 @@ Customize income and expense categories.
 - Light & Dark Mode  
 Adaptive UI based on system theme.
 
+Video Demo for adding a new record 
 ![2025-12-30 21-31-34 (1)](https://github.com/user-attachments/assets/84c3d663-869f-43c1-b7b7-2aab92310ccd)
+
+An screenshot for currency page. The currency subscription board and currency card were displayed.
+
+<img width="438" height="944" alt="Screenshot_20251230221821964" src="https://github.com/user-attachments/assets/bcbcbecc-8f1c-4070-8079-3ec930d7d16c" />
+
 
 Running on the HarmonyOS Emulator
 This project supports running on the HarmonyOS emulator (6.0.0 or above) provided by DevEco Studio.
