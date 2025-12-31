@@ -263,7 +263,7 @@ export struct rateChart {
       Column() {
         if (this.ledgerManager.activeBook.chosenCurrency.length > 0) {
           Row() {
-            Text(`当前汇率`)
+            Text(`Current Rate`)
             ratesStatus()
           }
           .width('90%')
@@ -286,7 +286,7 @@ export struct rateChart {
               Text($r(`app.string.${this.ledgerManager.activeBook.preferredCurrency}`))
                 .fontSize(14)
                 .fontColor(Color.Gray)
-              Text('本位币')
+              Text('main currency')
                 .fontSize(14)
                 .textAlign(TextAlign.Center)
                 .backgroundColor('#66ccff')
@@ -328,7 +328,7 @@ export struct rateChart {
           Column() {
             Divider()
             Row() {
-              Text("订阅货币+")
+              Text("Subscribe+")
                 .fontSize(14)
                 .fontColor(Color.Gray)
                 .onClick(() => {
@@ -345,7 +345,7 @@ export struct rateChart {
           .width('100%')
 
         } else {
-          Text("暂无汇率数据").fontColor(Color.Gray)
+          Text("No rate data").fontColor(Color.Gray)
         }
       }
       .backgroundColor($r('app.color.Card_background_2'))

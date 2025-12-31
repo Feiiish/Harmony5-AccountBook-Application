@@ -33,6 +33,7 @@ PersistenceV2.notifyOnError((key: string, reason: string, msg: string) => {
 
 
 @Entry
+@Preview
 @ComponentV2
 export struct Index {
   @Local weeklyData: number[] = [];
@@ -65,12 +66,12 @@ export struct Index {
   build() {
 
     SideBarContainer(SideBarContainerType.Overlay) {
-      //边栏内容
+      //sidebar content
       Column() {
 
         List() {
           ListItem() {
-            //边栏菜单
+            //Sidebar menu
             Column() {
               Row() {
                 Image($r('app.media.right_arrow'))
@@ -111,19 +112,18 @@ export struct Index {
       .borderRadius(20)
       .shadow(ShadowStyle.OUTER_DEFAULT_XS)
 
-      //主要内容
+      //main content
       Column() {
         Stack({ alignContent: Alignment.Bottom }) {
           Tabs({ barPosition: BarPosition.End }) {
             TabContent() {
               List() {
                 ListItem() {
-
                   Column({ space: 2 }) {
                     //顶栏
                     Row() {
                       datePicker()
-                      //抽屉开关
+                      //drawer
                       Button({ type: ButtonType.Circle, stateEffect: true }) {
                         Image($r('app.media.moreMenu')).width(35).height(35).align(Alignment.Center)
                       }
@@ -138,7 +138,7 @@ export struct Index {
                           curve: Curve.EaseOut,
                           playMode: PlayMode.Normal,
                         }, () => {
-                          // 动画完成后的回调
+                          // after animation complete
                         })
                       })
                     }
@@ -147,7 +147,6 @@ export struct Index {
                     .margin({ bottom: 18 })
                     .height(40)
 
-                    //########
                     if (this.userSetting.MonthlySummaryPanel) {
                       MonthlySummaryPanel({
                         recordList: filterRecordItems(this.ledgerManager.activeBook.data.items,
@@ -215,14 +214,14 @@ export struct Index {
               .edgeEffect(EdgeEffect.Spring)
               .height("100%")
 
-            }.tabBar('首页')
+            }.tabBar($r('app.string.mainPage'))
 
             TabContent() {
               List() {
                 ListItem() {
                   Column({ space: 2 }) {
                     Row() {
-                      Text('货币').fontWeight(FontWeight.Bold)
+                      Text($r('app.string.currentAmount')).fontWeight(FontWeight.Bold)
                         .fontSize(28)
                       //抽屉开关
                       Button({ type: ButtonType.Circle, stateEffect: true }) {
@@ -269,7 +268,7 @@ export struct Index {
               .edgeEffect(EdgeEffect.Spring)
               .height("100%")
 
-            }.tabBar('货币')
+            }.tabBar($r('app.string.currency'))
 
           }
 

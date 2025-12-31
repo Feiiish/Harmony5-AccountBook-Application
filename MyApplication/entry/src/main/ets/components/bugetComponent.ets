@@ -55,10 +55,10 @@ export struct budgetComponent {
       return variousToPreferred(filteredItems, budget.unit)
         .then((result) => {
           const value = budget.targetAmount > 0 ? result[0] : Math.abs(result[1]);
-          budget.currentAmount = parseFloat(value.toFixed(2)); // ✅ 直接赋值
+          budget.currentAmount = parseFloat(value.toFixed(2));
         })
         .catch((e: Error) => {
-          console.error("预算进度计算失败", e);
+          console.error("failed to caculate budget progress", e);
           budget.currentAmount = 0;
         });
     });
@@ -77,21 +77,21 @@ export struct budgetComponent {
       // 标题
       Text(
         budget.name === ""
-          ? (budget.targetAmount >= 0 ? "存款计划" : "支出预算")
+          ? (budget.targetAmount >= 0 ? "Saving Plan" : "Expend Budget")
           : budget.name
       )
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
         .margin({ top: 20, bottom: 16 })
 
-      // 时间范围
+      // Time Range
       Row() {
-        Text(`起始：${formatDateAdvanced(budget.startDate, "YYYY-MM-DD")}`)
+        Text(`From：${formatDateAdvanced(budget.startDate, "YYYY-MM-DD")}`)
           .fontSize(14)
           .fontColor('#666')
           .margin({ right: 12 })
 
-        Text(`结束：${formatDateAdvanced(budget.endDate, "YYYY-MM-DD")}`)
+        Text(`To：${formatDateAdvanced(budget.endDate, "YYYY-MM-DD")}`)
           .fontSize(14)
           .fontColor('#666')
       }
@@ -99,12 +99,12 @@ export struct budgetComponent {
       .width('100%')
       .margin({ bottom: 20 })
 
-      // 详细信息容器
+      // Detailed INFO
       Column() {
 
-        // 目标金额
+        // TargetAmount
         Row() {
-          Text('目标金额：')
+          Text('Target Info')
             .fontSize(16)
             .fontColor('#666')
             .width(80)
@@ -123,7 +123,7 @@ export struct budgetComponent {
         // 标签
         if (budget.tag !== "") {
           Row() {
-            Text('限制标签：')
+            Text('Limit to tag')
               .fontSize(16)
               .fontColor('#666')
 
@@ -138,19 +138,19 @@ export struct budgetComponent {
         // 多币种标识
         if (budget.countAll) {
           Row() {
-            Text('币种限制：')
+            Text('One Currency')
               .fontSize(16)
               .fontColor('#666')
               .width(80)
 
-            Text('多币种')
+            Text('Multi-Currency')
               .fontSize(16)
               .fontColor('#4CAF50')
           }
           .margin({ bottom: 12 })
         } else {
           Row() {
-            Text('币种限制：')
+            Text('One Currency')
               .fontSize(16)
               .fontColor('#666')
               .width(80)
@@ -217,8 +217,8 @@ export struct budgetComponent {
                   budget.name !== ""
                     ? budget.name
                     : budget.targetAmount > 0
-                    ? "存款计划"
-                    : "支出预算"
+                    ? "expense budget"
+                    : "saving plan"
                 )
                   .fontSize(16)
                   .fontWeight(FontWeight.Medium)
@@ -241,7 +241,7 @@ export struct budgetComponent {
               // 标签和单位限制信息
               Row({ space: 6 }) {
                 if (budget.countAll) {
-                  Text(`多货币`)
+                  Text(`multi-currency`)
                     .fontSize(12)
                     .fontColor(Color.Gray)
                 }
@@ -273,10 +273,10 @@ export struct budgetComponent {
                 ))
 
               if (budget.isCompleted) {
-                Text("已达到").fontSize(14)
+                Text("completed").fontSize(14)
                   .fontColor(budget.isCompleted ? '#4CAF50' : '#2196F3')
               } else if (budget.isExpired) {
-                Text("已过期")
+                Text("outdated")
                   .fontSize(14)
                   .fontColor("#FFC107")
               } else {
@@ -309,7 +309,7 @@ export struct budgetComponent {
 
         })
       } else {
-        Text("暂无预算数据").fontColor(Color.Gray)
+        Text("No budget data").fontColor(Color.Gray)
       }
 
     }.basicCard()

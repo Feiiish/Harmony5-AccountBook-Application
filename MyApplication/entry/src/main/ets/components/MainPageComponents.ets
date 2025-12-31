@@ -64,9 +64,9 @@ export struct MonthlySummaryPanel {
   private async updateMonthlySummary() {
     try {
       this.monthlyInOut = await variousToPreferred(this.recordList, this.ledgerManager.activeBook.preferredCurrency);
-      console.log('月度统计已更新');
+      console.log('monthly panel updated');
     } catch (error) {
-      console.error('更新月度统计失败:', error);
+      console.error('monthly panel update failed:', error);
     }
   }
 
@@ -117,7 +117,6 @@ export struct MonthlySummaryPanel {
 }
 
 
-//记账记录
 @ComponentV2
 export struct RecordItemView {
   @Require @Param item: RecordItem
@@ -217,8 +216,8 @@ export struct RecordItemView {
 
     Column() {
       Line()
-        .width(2000)  // 线的长度
-        .height(1)   // 线的粗细
+        .width(2000)  // length
+        .height(1)   // line width
         .backgroundColor(Color.Gray)
         .opacity(0.2)
 
@@ -305,11 +304,11 @@ export struct RecordListView {
       let shownDate: string;
       let today: number = Number(formatDateAdvanced(new Date, "DD"))
       if (today - Number(formatDateAdvanced(date, "DD")) === 0) {
-        shownDate = '今天'
+        shownDate = 'today'
       } else if (today - Number(formatDateAdvanced(date, "DD")) === -1) {
-        shownDate = '明天'
+        shownDate = 'tmr'
       } else if (today - Number(formatDateAdvanced(date, "DD")) === 1) {
-        shownDate = '昨天'
+        shownDate = 'ystd'
       } else {
         shownDate = formatDateAdvanced(date, "MM-DD");
       }

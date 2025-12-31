@@ -134,8 +134,8 @@ export struct MultiCurrencyComposition {
       }, 0);
 
     } catch (error) {
-      this.errorMessage = "货币计算失败";
-      console.error("计算错误:", error);
+      this.errorMessage = "failed currency calculation";
+      console.error("calculation failed:", error);
     } finally {
       this.isLoading = false;
     }
@@ -144,7 +144,7 @@ export struct MultiCurrencyComposition {
   build() {
     Column() {
       Column() {
-        Text(`货币卡片`)
+        Text(`Currency Card`)
           .margin({ top: 4, bottom: 12 })
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
@@ -169,11 +169,11 @@ export struct MultiCurrencyComposition {
             //总资产
             Row() {
               Column() {
-                Text(`总资产`)
+                Text(`Total Asset`)
                   .margin({ top: 4 })
                   .fontWeight(20)
                   .fontWeight(FontWeight.Bold)
-                Text('所有货币换算成本位币的总和').opacity(0.5).fontSize(10)
+                Text('total in base currency').opacity(0.5).fontSize(10)
               }.width('50%')
               .alignItems(HorizontalAlign.Start)
 
@@ -232,7 +232,7 @@ export struct MultiCurrencyComposition {
       //build pie chart
       if (this.currencyAmounts.length !== 0) {
         Column() {
-          Text("货币分布").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 8, top: 4 })
+          Text("Currency distribution").fontSize(20).fontWeight(FontWeight.Bold).margin({ bottom: 8, top: 4 })
           PieChartExample({ pieData: this.currencyAmounts })
         }
 
@@ -294,7 +294,7 @@ export struct MultiCurrencyComposition {
     .height(60)
     .margin({ bottom: 8 });
         */
-      Text('暂无货币数据')
+      Text('No currency Data')
         .fontSize(16)
         .fontColor("#999");
     }
@@ -341,7 +341,7 @@ export struct currencyItemView {
       Column() {
         //text Input 可以用指定货币换算成目标货币
         Row() {
-          Text('快速换算').fontSize(16).margin({ bottom: 8 })
+          Text('Rate Cacu').fontSize(16).margin({ bottom: 8 })
         }.width('100%').justifyContent(FlexAlign.Center)
 
         Row() {
@@ -370,32 +370,32 @@ export struct currencyItemView {
 
       Column() {
         Row() {
-          Text("货币数量：")
+          Text("Currency Amount：")
           Text(`${this.currency.amount}`)
             .fontColor(this.currency.amount >= 0 ? '#00B300' : '#FF3A3A')
         }.margin({ bottom: 12 })
 
         Row() {
-          Text("货币代码：")
+          Text("Currency Code：")
           Text(`${this.currency.unit}`)
         }.margin({ bottom: 12 })
 
         if (this.currency.unit !== this.ledgerManager.activeBook.preferredCurrency) {
 
           Row() {
-            Text("大约为：")
+            Text("Approximate：")
             Text(`${(this.currency.amount / this.currency.rate).toFixed(2) + " " +
             this.ledgerManager.activeBook.preferredCurrency}`)
           }.margin({ bottom: 12 })
 
           Row() {
-            Text("当前汇率：")
+            Text("Current Rate：")
             Text(`${(1 / this.currency.rate).toFixed(4)}`)
 
           }.margin({ bottom: 12 })
         } else {
           Row() {
-            Text("本位币")
+            Text("Base Currency")
           }.margin({ bottom: 12 })
         }
 
@@ -434,7 +434,7 @@ export struct currencyItemView {
       if (this.currency.unit == this.ledgerManager.activeBook.preferredCurrency) {
         Text(" 本位币")
       } else {
-        Text(`汇率：${parseFloat((1 / this.currency.rate).toFixed(4))}`)
+        Text(`Rate：${parseFloat((1 / this.currency.rate).toFixed(4))}`)
       }
 
     }

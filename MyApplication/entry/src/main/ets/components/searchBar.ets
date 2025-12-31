@@ -282,7 +282,6 @@ export struct searchBarView {
             Row() {
             }.width("95%").height(40).justifyContent(FlexAlign.SpaceBetween)
 
-            // 如果搜索栏没有内容， 则显示 searchItemView({ item }) 并且插入日期标签
             if (this.searchKeyword.trim() === '') {
               ForEach(this.records, (group: GroupedRecord) => {
                 Column() {
@@ -319,7 +318,7 @@ export struct searchBarView {
       .borderRadius(15)
       .margin({ top: 4 })
 
-      TextInput({ placeholder: '搜索金额，标签' })
+      TextInput({ placeholder: 'Search for amount, tag' })
         .width("100%")
         .height(50)
         .backgroundColor($r('app.color.Basic_Card_background'))

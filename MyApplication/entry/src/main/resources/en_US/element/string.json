@@ -2,7 +2,11 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "Module Description"
+      "value": "module Description"
+    },
+    {
+      "name": "app_version",
+      "value": "v1.4.7"
     },
     {
       "name": "EntryAbility_desc",
@@ -10,15 +14,23 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "Global Ledger"
+      "value": "GlobalAccountbook"
     },
     {
       "name": "privatePolicy",
-      "value": "Privacy Policy"
+      "value": "PrivatePolicy"
     },
     {
       "name": "currencySetting",
-      "value": "Currency Settings"
+      "value": "CurrencySetting"
+    },
+    {
+      "name": "deleteALLRecord",
+      "value": "DeleteALLRecord"
+    },
+    {
+      "name": "recordDetail",
+      "value": "RecordDetail"
     },
     {
       "name": "tag",
@@ -30,7 +42,7 @@
     },
     {
       "name": "notSet",
-      "value": "not set"
+      "value": "notSet"
     },
     {
       "name": "note",
@@ -46,87 +58,83 @@
     },
     {
       "name": "ystd",
-      "value": "昨天"
+      "value": "ystd"
     },
     {
       "name": "noRecord",
-      "value": "暂无数据"
+      "value": "noRecord"
     },
     {
       "name": "Summary",
-      "value": "结余"
+      "value": "summary"
     },
     {
       "name": "Income",
-      "value": "收入"
-    },
-    {
-      "name": "deleteALLRecord",
-      "value": "Clear Records"
+      "value": "income"
     },
     {
       "name": "totalExpense",
-      "value": "Expense Summary"
+      "value": "expense"
     },
     {
       "name": "normal_exchange_rate",
-      "value": "Exchange Rate Normal"
+      "value": "exchange rate stable"
     },
     {
       "name": "delayed_exchange_rate",
-      "value": "Exchange Rate Delayed"
+      "value": "exchange rate delayed"
     },
     {
       "name": "mainPage",
-      "value": "Home"
+      "value": "main"
     },
     {
       "name": "mine",
-      "value": "Mine"
+      "value": "mine"
     },
     {
       "name": "weeklySummary",
-      "value": "Weekly Summary"
+      "value": "weeklySummary"
     },
     {
       "name": "total",
-      "value": "Total"
+      "value": "total"
     },
     {
       "name": "average",
-      "value": "Average"
+      "value": "average"
     },
     {
       "name": "currentAmount",
-      "value": "Total Currency Amount"
+      "value": "currentAmount"
     },
     {
       "name": "login",
-      "value": "Login / Register"
+      "value": "login"
     },
     {
       "name": "personalInfo",
-      "value": "Personal Information"
+      "value": "personalInfo"
     },
     {
       "name": "avatar",
-      "value": "Avatar"
+      "value": "avatar"
     },
     {
       "name": "nickname",
-      "value": "Nickname"
+      "value": "nickname"
     },
     {
       "name": "phone",
-      "value": "Phone Number"
+      "value": "phone"
     },
     {
       "name": "hwid_no_internet_connect",
-      "value": "Network not connected, please check settings."
+      "value": "hwid_no_internet_connect"
     },
     {
       "name": "agree",
-      "value": "Read and Agreed"
+      "value": "agree"
     },
     {
       "name": "and",
@@ -134,207 +142,211 @@
     },
     {
       "name": "cancel",
-      "value": "Cancel"
+      "value": "cancel"
     },
     {
       "name": "close",
-      "value": "Close"
+      "value": "close"
     },
     {
       "name": "other_login_models",
-      "value": "Other Login Methods"
+      "value": "other_login_models"
     },
     {
       "name": "next_step",
-      "value": "Next Step"
+      "value": "next_step"
     },
     {
       "name": "pwd_login",
-      "value": "Password Login"
+      "value": "pwd_login"
     },
     {
       "name": "huaweiId_user_authentication_protocol",
-      "value": "Huawei Account Authentication Agreement"
+      "value": "huaweiId_user_authentication_protocol"
     },
     {
       "name": "user_agreement_and_privacy_policy",
-      "value": "User Agreement and Privacy Policy"
+      "value": "user_agreement_and_privacy_policy"
     },
     {
       "name": "service_error",
-      "value": "Service or network error, please try again later"
+      "value": "service_error"
     },
     {
       "name": "agree_and_sign_in",
-      "value": "Agree and Sign In"
+      "value": "agree_and_sign_in"
     },
     {
       "name": "not_login_in",
-      "value": "Huawei account not logged in, please retry"
+      "value": "not_login_in"
     },
     {
       "name": "scope_not_supported",
-      "value": "This scope or permission is not supported"
+      "value": "scope_not_supported"
     },
     {
       "name": "use_hwid_silently_login",
-      "value": "Silent Login with Huawei Account"
+      "value": "use_hwid_silently_login"
     },
     {
       "name": "logout",
-      "value": "Logout"
+      "value": "logout"
+    },
+    {
+      "name": "currency",
+      "value": "currency"
     },
     {
       "name": "get_network_info_reason",
-      "value": "Check network status before clicking privacy agreement."
+      "value": "get_network_info_reason。"
     },
     {
       "name": "get_network_info_permission_reason",
-      "value": "Used to check network connection before navigating to Huawei authentication agreement page."
+      "value": "get_network_info_permission_reason。"
     },
     {
-      "name": "NGN",
-      "value": "Nigerian Naira"
+      "name": "CNY",
+      "value": "Chinese yuan"
     },
     {
-      "name": "SAR",
-      "value": "Saudi Riyal"
+      "name": "USD",
+      "value": "US dollars"
     },
     {
-      "name": "AED",
-      "value": "UAE Dirham"
-    },
-    {
-      "name": "ZAR",
-      "value": "South African Rand"
-    },
-    {
-      "name": "MXN",
-      "value": "Mexican Peso"
-    },
-    {
-      "name": "RUB",
-      "value": "Russian Ruble"
-    },
-    {
-      "name": "BRL",
-      "value": "Brazilian Real"
-    },
-    {
-      "name": "CHF",
-      "value": "Swiss Franc"
-    },
-    {
-      "name": "KRW",
-      "value": "South Korean Won"
-    },
-    {
-      "name": "INR",
-      "value": "Indian Rupee"
-    },
-    {
-      "name": "JPY",
-      "value": "Japanese Yen"
-    },
-    {
-      "name": "AUD",
-      "value": "Australian Dollar"
-    },
-    {
-      "name": "GBP",
-      "value": "British Pound"
+      "name": "CAD",
+      "value": "Canadian dollars"
     },
     {
       "name": "EUR",
       "value": "Euro"
     },
     {
-      "name": "CAD",
-      "value": "Canadian Dollar"
+      "name": "GBP",
+      "value": "British pound"
     },
     {
-      "name": "USD",
-      "value": "US Dollar"
+      "name": "AUD",
+      "value": "Australian dollar"
     },
     {
-      "name": "CNY",
-      "value": "Chinese Yuan"
+      "name": "JPY",
+      "value": "Japanese yen"
+    },
+    {
+      "name": "INR",
+      "value": "Indian rupee"
+    },
+    {
+      "name": "KRW",
+      "value": "South Korean won"
+    },
+    {
+      "name": "CHF",
+      "value": "Swiss franc"
+    },
+    {
+      "name": "BRL",
+      "value": "Brazilian real"
+    },
+    {
+      "name": "RUB",
+      "value": "Russian ruble"
+    },
+    {
+      "name": "MXN",
+      "value": "Mexican peso"
+    },
+    {
+      "name": "ZAR",
+      "value": "South African rand"
+    },
+    {
+      "name": "NGN",
+      "value": "Nigerian naira"
+    },
+    {
+      "name": "SAR",
+      "value": "Saudi riyal"
+    },
+    {
+      "name": "AED",
+      "value": "UAE dirham"
     },
     {
       "name": "SGD",
-      "value": "Singapore Dollar"
+      "value": "Singapore dollar"
     },
     {
       "name": "NZD",
-      "value": "New Zealand Dollar"
+      "value": "New Zealand dollar"
     },
     {
       "name": "SEK",
-      "value": "Swedish Krona"
+      "value": "Swedish krona"
     },
     {
       "name": "NOK",
-      "value": "Norwegian Krone"
+      "value": "Norwegian krone"
     },
     {
       "name": "DKK",
-      "value": "Danish Krone"
+      "value": "Danish krone"
     },
     {
       "name": "THB",
-      "value": "Thai Baht"
+      "value": "Thai baht"
     },
     {
       "name": "MYR",
-      "value": "Malaysian Ringgit"
+      "value": "Malaysian ringgit"
     },
     {
       "name": "IDR",
-      "value": "Indonesian Rupiah"
+      "value": "Indonesian rupiah"
     },
     {
       "name": "PHP",
-      "value": "Philippine Peso"
+      "value": "Philippine peso"
     },
     {
       "name": "PLN",
-      "value": "Polish Zloty"
+      "value": "Polish zloty"
     },
     {
       "name": "TRY",
-      "value": "Turkish Lira"
+      "value": "Turkish lira"
     },
     {
       "name": "ILS",
-      "value": "Israeli New Shekel"
+      "value": "Israeli new shekel"
     },
     {
       "name": "EGP",
-      "value": "Egyptian Pound"
+      "value": "Egyptian pound"
     },
     {
       "name": "VND",
-      "value": "Vietnamese Dong"
+      "value": "Vietnamese dong"
     },
     {
       "name": "UAH",
-      "value": "Ukrainian Hryvnia"
+      "value": "Ukrainian hryvnia"
     },
     {
       "name": "ARS",
-      "value": "Argentine Peso"
+      "value": "Argentine peso"
     },
     {
       "name": "CLP",
-      "value": "Chilean Peso"
+      "value": "Chilean peso"
     },
     {
       "name": "COP",
-      "value": "Colombian Peso"
+      "value": "Colombian peso"
     },
     {
       "name": "HKD",
-      "value": "Hong Kong Dollar"
+      "value": "Hong Kong dollar"
     },
     {
       "name": "TWD",

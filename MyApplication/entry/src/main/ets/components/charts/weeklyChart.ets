@@ -98,7 +98,7 @@ export struct WeeklyChart {
 
   recordListChange(monitor: IMonitor) {
     calculateWeeklyTables(this.recordList, this.unit).then((result) => {
-      //设定为目标数字
+      //set as target number
       this.tempIncome = result.income
       this.tempExpense = result.expense
       this.tempSurplus = result.surplus;
@@ -108,8 +108,8 @@ export struct WeeklyChart {
   @State singleSelectCapsuleSelectedIndexes: number[] = [0]
   @State singleSelectCapsuleOptions: SegmentButtonOptions = SegmentButtonOptions.capsule({
     buttons: [
-      { text: '周收支' },
-      { text: '周盈余' },
+      { text: 'Weekly Ex' },
+      { text: 'Weekly In' },
     ] as SegmentButtonItemTuple,
     multiply: false,
     backgroundBlurStyle: BlurStyle.BACKGROUND_THICK
@@ -123,7 +123,7 @@ export struct WeeklyChart {
   });
   @State pillarHeight: number = 120
   // 星期标签
-  private days: string[] = ['一', '二', '三', '四', '五', '六', '日'];
+  private days: string[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   @State tempIncome: number[] = new Array(7).fill(0)
   @State tempExpense: number[] = new Array(7).fill(0)
   @State tempSurplus: number[] = new Array(7).fill(0)
@@ -329,18 +329,24 @@ export struct WeeklyChart {
 
       Column({ space: 8 }) {
         Row() {
-          Text(`本周收入: ${this.getTotal(this.tempSurplus).toFixed(2)}`)
+          Text(`Summary: ${this.getTotal(this.tempSurplus).toFixed(2)} ${this.unit}`)
             .fontSize(15)
+          /*
           Text($r(`app.string.${this.unit}`))
             .fontSize(15)
+           */
+
         }
 
 
         Row() {
-          Text(`每日平均收入: ${this.getAverage()} ${this.unit}`)
+          Text(`Average: ${this.getAverage()} ${this.unit}`)
             .fontSize(15)
-          Text($r(`app.string.${this.unit}`))
+          /*
+                          Text($r(`app.string.${this.unit}`))
             .fontSize(15)
+           */
+
         }
       }
       .width('100%')
@@ -409,7 +415,7 @@ struct Index {
 
     series: [
       {
-        name: '收入',
+        name: 'In',
         data: new Array(7).fill(0),
         smooth: true,
         color: '#4CAF50',
@@ -426,7 +432,7 @@ struct Index {
 
 
       {
-        name: '支出',
+        name: 'out',
         data: new Array(7).fill(0),
         smooth: true,
         color: '#F44336',
@@ -462,13 +468,13 @@ struct Index {
       this.seriesOption.setVal({
         series: [
           {
-            name: '收入',
+            name: 'In',
             data: this.result.income,
           },
 
 
           {
-            name: '支出',
+            name: 'Out',
             data: this.result.expense.map(val => Math.abs(val))
           },
 

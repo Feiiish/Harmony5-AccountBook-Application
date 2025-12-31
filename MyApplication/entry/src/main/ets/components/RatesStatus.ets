@@ -65,25 +65,25 @@ export struct ratesStatus {
     // 使用Column作为根组件，应用样式
     Row() {
       if (!this.cachedRatesStorage.lastUpdateTime) {
-        Text("暂无汇率数据")
+        Text("no Data")
           .fontSize(14)
           .fontColor(Color.Gray)
       } else {
 
         if (this.getTimeDiffMinutes() < 20) {
 
-          Text("汇率正常")
+          Text("stable")
             .fontSize(14)
             .fontColor("#00B300")
         } else if (this.getTimeDiffMinutes() >= 20 && this.getTimeDiffMinutes() < 1440) {
 
           // 小于24小时显示分钟
-          Text(`汇率滞后${this.getTimeDiffMinutes()}分钟`)
+          Text(`Delayed ${this.getTimeDiffMinutes()}m`)
             .fontSize(14)
             .fontColor(Color.Yellow)
         } else {
           // 大于24小时显示天数
-          Text(`汇率滞后${Math.floor(this.getTimeDiffMinutes() / 1440)}天`)
+          Text(`Delayed${Math.floor(this.getTimeDiffMinutes() / 1440)}D`)
             .fontSize(14)
             .fontColor(Color.Red)
         }

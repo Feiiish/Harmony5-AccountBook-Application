@@ -21,9 +21,9 @@ export struct datePicker {
   @State singleSelectCapsuleSelectedIndexes: number[] = this.ledgerManager.activeBook.dateIndex;
   @State singleSelectCapsuleOptions: SegmentButtonOptions = SegmentButtonOptions.capsule({
     buttons: [
-      { text: '按年' },
-      { text: '按月' },
-      { text: '全部' }
+      { text: 'By Year' },
+      { text: 'By Month' },
+      { text: 'All' }
     ] as SegmentButtonItemTuple,
     multiply: false,
     backgroundBlurStyle: BlurStyle.BACKGROUND_THICK
@@ -38,7 +38,7 @@ export struct datePicker {
   });
   private fruits: string[][] = [
     this.generateYears(2000, 2030),
-    ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   ];
 
   generateYears(start: number, end: number): string[] {
@@ -125,9 +125,9 @@ export struct datePicker {
   @Builder
   mySheet() {
     Column() {
-      Text(this.singleSelectCapsuleSelectedIndexes[0] === 0 ? '按照年份过滤账单'
-        : this.singleSelectCapsuleSelectedIndexes[0] === 1 ? '按照月份过滤账单'
-          : '展示所有账单')
+      Text(this.singleSelectCapsuleSelectedIndexes[0] === 0 ? 'filter records by year'
+        : this.singleSelectCapsuleSelectedIndexes[0] === 1 ? 'fliter records by month'
+          : 'present all records')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
         .margin({ top: 20, bottom: 16 })
@@ -137,20 +137,20 @@ export struct datePicker {
 
           Column({ space: 6 }) {
             Row() {
-              Text("开始时间:")
+              Text("Begin time:")
                 .fontSize(20)
               Button(formatDateAdvanced(this.ledgerManager.activeBook.startDate,
-                this.singleSelectCapsuleSelectedIndexes[0] === 0 ? "YYYY年" : "YYYY年MM月"))
+                this.singleSelectCapsuleSelectedIndexes[0] === 0 ? "YYYY" : "YYYY,MM"))
                 .onClick(() => this.showDatePicker(true))
                 .buttonStyle(ButtonStyleMode.TEXTUAL)
                 .fontSize(20)
             }
 
             Row() {
-              Text("结束时间:")
+              Text("End time:")
                 .fontSize(20)
               Button(formatDateAdvanced(this.ledgerManager.activeBook.endDate,
-                this.singleSelectCapsuleSelectedIndexes[0] === 0 ? "YYYY年" : "YYYY年MM月"))
+                this.singleSelectCapsuleSelectedIndexes[0] === 0 ? "YYYY" : "YYYY,MM"))
                 .onClick(() => this.showDatePicker(false))
                 .buttonStyle(ButtonStyleMode.TEXTUAL)
                 .fontSize(20)
@@ -158,7 +158,7 @@ export struct datePicker {
 
           }.width('80%')
         } else {
-          Text("展示所有账单").fontSize(24)
+          Text("Present All Records").fontSize(24)
         }
       }.height(140).justifyContent(FlexAlign.Center)
 
@@ -170,18 +170,18 @@ export struct datePicker {
           const book = this.ledgerManager.activeBook;
           this.ledgerManager.activeBook.dateIndex = [index]
           if (index === 0) {
-            // 按年
-            const year = book.endDate.getFullYear(); // 或者用当前年也行
+
+            const year = book.endDate.getFullYear();
             book.startDate = new Date(year, 0, 1);
             book.endDate = new Date(year, 11, 31);
           } else if (index === 1) {
-            // 按月
+
             const year = book.endDate.getFullYear();
             const month = book.endDate.getMonth();
             book.startDate = new Date(year, month, 1);
             book.endDate = new Date(year, month + 1, 0);
           } else {
-            // 全部
+
             book.startDate = new Date(2000, 0, 1);
             book.endDate = new Date();
           }
@@ -199,10 +199,10 @@ export struct datePicker {
     Column() {
       Row() {
         Text(this.singleSelectCapsuleSelectedIndexes[0] === 0
-          ? formatDateAdvanced(this.ledgerManager.activeBook.endDate, "... YYYY年")
+          ? formatDateAdvanced(this.ledgerManager.activeBook.endDate, "... YYYY")
           : this.singleSelectCapsuleSelectedIndexes[0] === 1
-            ? formatDateAdvanced(this.ledgerManager.activeBook.endDate, "... YY年MM月")
-            : "所有账单")
+            ? formatDateAdvanced(this.ledgerManager.activeBook.endDate, "... YY,MM")
+            : "All Records")
           .fontWeight(FontWeight.Bold)
           .fontSize(28)
 

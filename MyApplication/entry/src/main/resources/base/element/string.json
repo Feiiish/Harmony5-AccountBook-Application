@@ -2,7 +2,7 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "模块描述"
+      "value": "module Description"
     },
     {
       "name": "app_version",
@@ -10,343 +10,347 @@
     },
     {
       "name": "EntryAbility_desc",
-      "value": "描述"
+      "value": "Description"
     },
     {
       "name": "EntryAbility_label",
-      "value": "全球账本"
+      "value": "GlobalAccountbook"
     },
     {
       "name": "privatePolicy",
-      "value": "隐私政策"
+      "value": "PrivatePolicy"
     },
     {
       "name": "currencySetting",
-      "value": "货币设置"
+      "value": "CurrencySetting"
     },
     {
       "name": "deleteALLRecord",
-      "value": "清除记录"
+      "value": "DeleteALLRecord"
     },
     {
       "name": "recordDetail",
-      "value": "记录详情"
+      "value": "RecordDetail"
     },
     {
       "name": "tag",
-      "value": "标签"
+      "value": "tag"
     },
     {
       "name": "date",
-      "value": "日期"
+      "value": "date"
     },
     {
       "name": "notSet",
-      "value": "未设定"
+      "value": "notSet"
     },
     {
       "name": "note",
-      "value": "备注"
+      "value": "note"
     },
     {
       "name": "today",
-      "value": "今天"
+      "value": "today"
     },
     {
       "name": "tmr",
-      "value": "每天"
+      "value": "tmr"
     },
     {
       "name": "ystd",
-      "value": "昨天"
+      "value": "ystd"
     },
     {
       "name": "noRecord",
-      "value": "暂无数据"
+      "value": "noRecord"
     },
     {
       "name": "Summary",
-      "value": "结余"
+      "value": "summary"
     },
     {
       "name": "Income",
-      "value": "收入"
+      "value": "income"
     },
     {
       "name": "totalExpense",
-      "value": "支出"
+      "value": "totalExpense"
     },
     {
       "name": "normal_exchange_rate",
-      "value": "汇率正常"
+      "value": "exchange rate stable"
     },
     {
       "name": "delayed_exchange_rate",
-      "value": "汇率滞后"
+      "value": "exchange rate delayed"
     },
     {
       "name": "mainPage",
-      "value": "首页"
+      "value": "main"
     },
     {
       "name": "mine",
-      "value": "我的"
+      "value": "mine"
     },
     {
       "name": "weeklySummary",
-      "value": "本周总结"
+      "value": "weeklySummary"
     },
     {
       "name": "total",
-      "value": "总计"
+      "value": "total"
     },
     {
       "name": "average",
-      "value": "平均"
+      "value": "average"
     },
     {
       "name": "currentAmount",
-      "value": "货币总额"
+      "value": "currentAmount"
     },
     {
       "name": "login",
-      "value": "登录 / 注册"
+      "value": "login"
     },
     {
       "name": "personalInfo",
-      "value": "个人信息"
+      "value": "personalInfo"
     },
     {
       "name": "avatar",
-      "value": "头像"
+      "value": "avatar"
     },
     {
       "name": "nickname",
-      "value": "昵称"
+      "value": "nickname"
     },
     {
       "name": "phone",
-      "value": "手机号"
+      "value": "phone"
     },
     {
       "name": "hwid_no_internet_connect",
-      "value": "网络未连接，请检查网络设置。"
+      "value": "hwid_no_internet_connect"
     },
     {
       "name": "agree",
-      "value": "已阅读并同意"
+      "value": "agree"
     },
     {
       "name": "and",
-      "value": "和"
+      "value": "and"
     },
     {
       "name": "cancel",
-      "value": "取消"
+      "value": "cancel"
     },
     {
       "name": "close",
-      "value": "关闭"
+      "value": "close"
     },
     {
       "name": "other_login_models",
-      "value": "其他方式登录"
+      "value": "other_login_models"
     },
     {
       "name": "next_step",
-      "value": "下一步"
+      "value": "next_step"
     },
     {
       "name": "pwd_login",
-      "value": "密码登录"
+      "value": "pwd_login"
     },
     {
       "name": "huaweiId_user_authentication_protocol",
-      "value": "《华为账号用户认证协议》"
+      "value": "huaweiId_user_authentication_protocol"
     },
     {
       "name": "user_agreement_and_privacy_policy",
-      "value": "用户协议与隐私条款"
+      "value": "user_agreement_and_privacy_policy"
     },
     {
       "name": "service_error",
-      "value": "服务或网络异常，请稍后重试"
+      "value": "service_error"
     },
     {
       "name": "agree_and_sign_in",
-      "value": "同意并登录"
+      "value": "agree_and_sign_in"
     },
     {
       "name": "not_login_in",
-      "value": "华为账号未登录，请重试"
+      "value": "not_login_in"
     },
     {
       "name": "scope_not_supported",
-      "value": "该scopes或permissions不支持"
+      "value": "scope_not_supported"
     },
     {
       "name": "use_hwid_silently_login",
-      "value": "使用华为账号静默登录"
+      "value": "use_hwid_silently_login"
     },
     {
       "name": "logout",
-      "value": "退出登录"
+      "value": "logout"
+    },
+    {
+      "name": "currency",
+      "value": "currency"
     },
     {
       "name": "get_network_info_reason",
-      "value": "点击隐私协议前查询设置网络状态。"
+      "value": "get_network_info_reason。"
     },
     {
       "name": "get_network_info_permission_reason",
-      "value": "用于跳转华为账号用户认证协议页面前判断当前设备是否连接网络。"
+      "value": "get_network_info_permission_reason。"
     },
     {
       "name": "CNY",
-      "value": "人民币"
+      "value": "Chinese yuan"
     },
     {
       "name": "USD",
-      "value": "美元"
+      "value": "US dollars"
     },
     {
       "name": "CAD",
-      "value": "加元"
+      "value": "Canadian dollars"
     },
     {
       "name": "EUR",
-      "value": "欧元"
+      "value": "Euro"
     },
     {
       "name": "GBP",
-      "value": "英镑"
+      "value": "British pound"
     },
     {
       "name": "AUD",
-      "value": "澳元"
+      "value": "Australian dollar"
     },
     {
       "name": "JPY",
-      "value": "日元"
+      "value": "Japanese yen"
     },
     {
       "name": "INR",
-      "value": "印度卢比"
+      "value": "Indian rupee"
     },
     {
       "name": "KRW",
-      "value": "韩元"
+      "value": "South Korean won"
     },
     {
       "name": "CHF",
-      "value": "瑞士法郎"
+      "value": "Swiss franc"
     },
     {
       "name": "BRL",
-      "value": "巴西雷亚尔"
+      "value": "Brazilian real"
     },
     {
       "name": "RUB",
-      "value": "俄罗斯卢布"
+      "value": "Russian ruble"
     },
     {
       "name": "MXN",
-      "value": "墨西哥比索"
+      "value": "Mexican peso"
     },
     {
       "name": "ZAR",
-      "value": "南非兰特"
+      "value": "South African rand"
     },
     {
       "name": "NGN",
-      "value": "尼日利亚奈拉"
+      "value": "Nigerian naira"
     },
     {
       "name": "SAR",
-      "value": "沙特里亚尔"
+      "value": "Saudi riyal"
     },
     {
       "name": "AED",
-      "value": "阿联酋迪拉姆"
+      "value": "UAE dirham"
     },
     {
       "name": "SGD",
-      "value": "新加坡元"
+      "value": "Singapore dollar"
     },
     {
       "name": "NZD",
-      "value": "新西兰元"
+      "value": "New Zealand dollar"
     },
     {
       "name": "SEK",
-      "value": "瑞典克朗"
+      "value": "Swedish krona"
     },
     {
       "name": "NOK",
-      "value": "挪威克朗"
+      "value": "Norwegian krone"
     },
     {
       "name": "DKK",
-      "value": "丹麦克朗"
+      "value": "Danish krone"
     },
     {
       "name": "THB",
-      "value": "泰铢"
+      "value": "Thai baht"
     },
     {
       "name": "MYR",
-      "value": "马来西亚林吉特"
+      "value": "Malaysian ringgit"
     },
     {
       "name": "IDR",
-      "value": "印尼盾"
+      "value": "Indonesian rupiah"
     },
     {
       "name": "PHP",
-      "value": "菲律宾比索"
+      "value": "Philippine peso"
     },
     {
       "name": "PLN",
-      "value": "波兰兹罗提"
+      "value": "Polish zloty"
     },
     {
       "name": "TRY",
-      "value": "土耳其里拉"
+      "value": "Turkish lira"
     },
     {
       "name": "ILS",
-      "value": "以色列新谢克尔"
+      "value": "Israeli new shekel"
     },
     {
       "name": "EGP",
-      "value": "埃及镑"
+      "value": "Egyptian pound"
     },
     {
       "name": "VND",
-      "value": "越南盾"
+      "value": "Vietnamese dong"
     },
     {
       "name": "UAH",
-      "value": "乌克兰格里夫纳"
+      "value": "Ukrainian hryvnia"
     },
     {
       "name": "ARS",
-      "value": "阿根廷比索"
+      "value": "Argentine peso"
     },
     {
       "name": "CLP",
-      "value": "智利比索"
+      "value": "Chilean peso"
     },
     {
       "name": "COP",
-      "value": "哥伦比亚比索"
+      "value": "Colombian peso"
     },
     {
       "name": "HKD",
-      "value": "港币"
+      "value": "Hong Kong dollar"
     },
     {
       "name": "TWD",
-      "value": "新台币"
+      "value": "New Taiwan Dollar"
     }
   ]
 }

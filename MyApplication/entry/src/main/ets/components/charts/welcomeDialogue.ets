@@ -56,15 +56,15 @@ export struct welcomeDialogue {
         width: 'auto',
         height: 180
       },
-      title: '欢迎使用全球账本',
-      content: '本App是多货币记账软件 \n请点击下方导航栏加号按钮添加账单',
+      title: 'Welcome to global accountbook',
+      content: 'This project is built on HarmonyOS 5 \nIt includes a mixture of Chinese and English text and comments. \nPress the main circle to add records',
       isChecked: this.userSetting.welcomeDialogue,
-      checkTips: '我已知晓上述内容，不再提醒',
+      checkTips: 'do not show again',
       onCheckedChange: () => {
         this.userSetting.welcomeDialogue = !this.userSetting.welcomeDialogue;
       },
       primaryButton: {
-        value: '取消',
+        value: 'cancel',
         action: () => {
           this.onCancel();
           this.dialogController?.close();
@@ -72,7 +72,7 @@ export struct welcomeDialogue {
         },
       },
       secondaryButton: {
-        value: '确认',
+        value: 'confirm',
         action: () => {
           this.onAccept();
           this.dialogController?.close();
