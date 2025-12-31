@@ -1,5 +1,10 @@
 # GlobalAccountBook
 
+This project supports running on the HarmonyOS emulator (6.0.0 or above) provided by [DevEco Studio](https://developer.huawei.com/consumer/en/deveco-studio/).
+You can launch the application directly on an emulator without requiring a physical device.
+
+The emulator supports most features used in this project, including UI rendering, navigation, state management, and local data storage.
+
 ## Introduction
 A lightweight and efficient personal finance management app built for HarmonyOS 5+. This project demonstrates how to build a real-world ArkTS application using the HarmonyOS SDK, including UI layout, state management, data persistence, and multi-device adaptability.
 ```
@@ -44,13 +49,6 @@ Video Demo for adding a new record
 An screenshot for currency page. The currency subscription board and currency card were displayed.
 
 <img width="438" height="944" alt="Screenshot_20251230221821964" src="https://github.com/user-attachments/assets/bcbcbecc-8f1c-4070-8079-3ec930d7d16c" />
-
-
-Running on the HarmonyOS Emulator
-This project supports running on the HarmonyOS emulator (6.0.0 or above) provided by DevEco Studio.
-You can launch the application directly on an emulator without requiring a physical device.
-
-The emulator supports most features used in this project, including UI rendering, navigation, state management, and local data storage.
 
 Build
 Open DevEco Studio
