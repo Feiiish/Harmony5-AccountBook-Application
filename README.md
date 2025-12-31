@@ -48,6 +48,8 @@ Video Demo for adding a new record
 
 An screenshot for currency page. The currency subscription board and currency card were displayed.
 
+Currency Information from ```https://www.exchangerate-api.com/```
+
 <img width="438" height="944" alt="Screenshot_20251230221821964" src="https://github.com/user-attachments/assets/bcbcbecc-8f1c-4070-8079-3ec930d7d16c" />
 
 Build
