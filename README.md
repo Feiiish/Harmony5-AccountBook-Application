@@ -5,6 +5,7 @@ You can launch the application directly on an emulator without requiring a physi
 
 The emulator supports most features used in this project, including UI rendering, navigation, state management, and local data storage.
 
+Currency Information from ```https://www.exchangerate-api.com/```
 ## Introduction
 A lightweight and efficient personal finance management app built for HarmonyOS 5+. This project demonstrates how to build a real-world ArkTS application using the HarmonyOS SDK, including UI layout, state management, data persistence, and multi-device adaptability.
 ```
@@ -48,18 +49,26 @@ Video Demo for adding a new record
 
 An screenshot for currency page. The currency subscription board and currency card were displayed.
 
-Currency Information from ```https://www.exchangerate-api.com/```
+
 
 <img width="438" height="944" alt="Screenshot_20251230221821964" src="https://github.com/user-attachments/assets/bcbcbecc-8f1c-4070-8079-3ec930d7d16c" />
 
-Build
+### How to Build
+
 Open DevEco Studio
+
 ```
 Select File > Open and choose the Accountbook project folder
 ```
 
 Wait for dependencies to sync
+
 Select the entry module
+
 Click ```Build > Build App(s)```
+
+Visit ```https://developer.huawei.com/consumer/en/doc/harmonyos-guides/start-with-ets-stage``` for more information
+
+
 
 
